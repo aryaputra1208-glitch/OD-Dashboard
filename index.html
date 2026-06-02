@@ -245,7 +245,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--tx);font-size:13px;mi
         <div><div class="ct">MPP vs Realisasi per Bulan</div><div class="cs" id="c1s"></div></div>
         <button class="drill-btn" onclick="goTo('fptk-tracker')">Lihat FPTK ›</button>
       </div>
-      <div class="mgrid" id="mchart"></div>
+      <canvas id="mchart" style="display:block;width:100%;margin-bottom:10px"></canvas>
       <div class="mft">
         <div class="leg"><span><span class="sq" style="background:#DDDBD5;border:.5px solid #bbb"></span>MPP Plan</span><span><span class="sq" style="background:#888"></span>FPTK Approved</span><span><span class="sq" style="background:var(--red);opacity:.75"></span>Unplanned</span></div>
         <span id="glbl" style="font-size:10px;color:var(--tx3)"></span>
