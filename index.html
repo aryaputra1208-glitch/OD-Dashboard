@@ -633,45 +633,75 @@ function renderKPIs(f){
 
 function renderMPPChart(f){
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
-  const maxV=Math.max(...MF.map((_,i)=>Math.max(mppPlan(f.div,i),all.filter(r=>r.bulan===i+1).reduce((s,r)=>s+(r.jml_approved||1),0))),1);
-  let mg=0,mgi=f.mi<0?0:f.mi;
-  const html=MF.map((m,i)=>{
+  const BAR_H=80;
+  const maxV=Math.max(...MF.map((_,i)=>{
     const plan=mppPlan(f.div,i);
-    const real=all.filter(r=>r.bulan===i+1&&r.status==='Completed').reduce((s,r)=>s+(r.jml_approved||1),0);
-    const unpl=all.filter(r=>r.bulan===i+1&&r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
-    const gap=Math.max(0,plan-real);if(gap>mg){mg=gap;mgi=i;}
-    const pH=plan?Math.max(3,Math.round(plan/maxV*46)):0;
-    const rH=real?Math.max(2,Math.round(real/maxV*46)):0;
-    const uH=unpl?Math.max(2,Math.round(unpl/maxV*46)):0;
+    const planned=all.filter(r=>r.bulan===i+1&&(r.planned==='Planned'||r.planned==='Replacement')).reduce((s,r)=>s+(r.jml_approved||1),0);
+    const unpl=all.filter(r=>r.bulan===i+1&&(r.planned==='Unplanned'||r.planned==='Penambahan')).reduce((s,r)=>s+(r.jml_approved||1),0);
+    return Math.max(plan,planned+unpl,1);
+  }),1);
+  let mg=0,mgi=f.mi<0?0:f.mi;
+  const chartHTML=MF.map((m,i)=>{
+    const plan=mppPlan(f.div,i);
+    const planned=all.filter(r=>r.bulan===i+1&&r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const repl=all.filter(r=>r.bulan===i+1&&r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const unpl=all.filter(r=>r.bulan===i+1&&(r.planned==='Unplanned'||r.planned==='Penambahan')).reduce((s,r)=>s+(r.jml_approved||1),0);
+    const gap=Math.max(0,plan-(planned+repl));if(gap>mg){mg=gap;mgi=i;}
+    const pH=plan?Math.max(3,Math.round(plan/maxV*BAR_H)):0;
+    const plH=planned?Math.max(2,Math.round(planned/maxV*BAR_H)):0;
+    const rH=repl?Math.max(2,Math.round(repl/maxV*BAR_H)):0;
+    const uH=unpl?Math.max(2,Math.round(unpl/maxV*BAR_H)):0;
     const c=f.mi>=0&&i===f.mi;
-    return '<div class="mc" data-mi="'+i+'" data-plan="'+plan+'" data-real="'+real+'" data-unpl="'+unpl+'" onmouseenter="handleChartHover(event,this)" onmouseleave="hideTT()">'+
-      '<div class="mm'+(c?' cur':'')+'">'+m+'</div>'+
-      '<div class="mb">'+
-        '<div style="flex:1;background:#DDDBD5;border-radius:2px 2px 0 0;height:'+pH+'px;pointer-events:none'+(c?';border:.5px solid #bbb':'')+'"></div>'+
-        '<div style="flex:1;background:'+(c?'var(--pink)':'#999')+';border-radius:2px 2px 0 0;height:'+rH+'px;pointer-events:none;opacity:'+(all.some(r=>r.bulan===i+1)?1:f.mi<0?0.6:.3)+'"></div>'+
-        '<div style="flex:1;background:var(--red);border-radius:2px 2px 0 0;height:'+uH+'px;pointer-events:none;opacity:.75"></div>'+
+    const hasDat=all.some(r=>r.bulan===i+1);
+    return '<div style="display:flex;flex-direction:column;align-items:center" class="mc" data-mi="'+i+'" data-plan="'+plan+'" data-planned="'+planned+'" data-repl="'+repl+'" data-unpl="'+unpl+'" onmouseenter="handleChartHover(event,this)" onmouseleave="hideTT()">'+
+      '<div style="font-size:9px;color:'+(c?'var(--pink)':'var(--tx3)')+';font-weight:'+(c?700:400)+';margin-bottom:4px;text-align:center">'+(c?'● ':'')+m+'</div>'+
+      '<div style="height:'+BAR_H+'px;display:flex;align-items:flex-end;gap:2px;width:100%">'+
+        '<div style="flex:2;background:#DDDBD5;border-radius:2px 2px 0 0;height:'+pH+'px;pointer-events:none'+(c?';border:.5px solid #bbb':'')+'"></div>'+
+        '<div style="flex:1;background:var(--green);border-radius:2px 2px 0 0;height:'+plH+'px;pointer-events:none;opacity:'+(hasDat?1:0.3)+'"></div>'+
+        '<div style="flex:1;background:var(--blue);border-radius:2px 2px 0 0;height:'+rH+'px;pointer-events:none;opacity:'+(hasDat?0.8:0.3)+'"></div>'+
+        '<div style="flex:1;background:var(--red);border-radius:2px 2px 0 0;height:'+uH+'px;pointer-events:none;opacity:'+(hasDat?0.8:0.3)+'"></div>'+
       '</div>'+
-      '<div class="mn">'+(real||'')+'</div><div class="md">'+(plan?'/'+plan:'')+'</div></div>';
+      '<div style="font-size:8px;font-weight:700;color:var(--tx);text-align:center;margin-top:3px">'+(plan||'—')+'</div>'+
+      '<div style="font-size:7px;color:var(--tx3);text-align:center">plan</div>'+
+      '</div>';
   }).join('');
-  document.getElementById('mchart').innerHTML=html;
+  document.getElementById('mchart').innerHTML=chartHTML;
   document.getElementById('c1s').textContent='Jan–Des 2026 · '+(f.div||'Semua Divisi');
-  document.getElementById('glbl').textContent=mg>0?'Gap terbesar: '+MF[mgi]+' ('+mg+')':'';
-  const curAppr=all.filter(r=>r.bulan===f.bln&&r.status==='Completed').reduce((s,r)=>s+(r.jml_approved||1),0);
-  const curPlan=f.mi<0?mppPlan(f.div,-1):mppPlan(f.div,f.mi);
-  const ins=document.getElementById('impp');ins.className='ins'+(mg>5?' warn':'');
-  ins.textContent=f.bLabel+': '+curAppr+' approved dari '+curPlan+' plan ('+pc(curAppr,curPlan)+'%). '+(mg>0?'Gap terbesar '+MF[mgi]+' ('+mg+' posisi).':'');
+  const totalPlanned=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Planned'||r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const totalUnpl=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Unplanned'||r.planned==='Penambahan').reduce((s,r)=>s+(r.jml_approved||1),0);
+  document.getElementById('glbl').textContent=mg>0?'Gap terbesar: '+MF[mgi]+' ('+mg+' posisi)':'Semua bulan sesuai plan';
+  const ins=document.getElementById('impp');ins.className='ins'+(totalUnpl>3?' warn':'ok');
+  ins.textContent=f.bLabel+': '+totalPlanned+' Planned, '+totalUnpl+' Unplanned. '+(mg>0?'Gap terbesar '+MF[mgi]+' ('+mg+' posisi).':'Target terpenuhi.');
+  // YTD summary card
+  const ytdSub=document.getElementById('ytd-sub');
+  const ytdStats=document.getElementById('ytd-stats');
+  if(ytdSub&&ytdStats){
+    ytdSub.textContent='Semua bulan · '+(f.div||'Semua Divisi');
+    const ytdAll=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+    const totPlan=mppPlan(f.div,-1);
+    const totPlanned=ytdAll.filter(r=>r.planned==='Planned'||r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const totUnpl=ytdAll.filter(r=>r.planned==='Unplanned'||r.planned==='Penambahan').reduce((s,r)=>s+(r.jml_approved||1),0);
+    ytdStats.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+      '<div class="sbox"><div class="sn">'+totPlan+'</div><div class="sl2">MPP Plan YTD</div></div>'+
+      '<div class="sbox"><div class="sn cg">'+totPlanned+'</div><div class="sl2">Planned FPTK</div></div>'+
+      '<div class="sbox"><div class="sn cr">'+totUnpl+'</div><div class="sl2">Unplanned FPTK</div></div>'+
+      '<div class="sbox"><div class="sn ca">'+Math.max(0,totPlan-totPlanned)+'</div><div class="sl2">Gap Planned</div></div>'+
+      '</div>';
+  }
 }
 
 function handleChartHover(e,el){
-  const mi=+el.dataset.mi,plan=+el.dataset.plan,real=+el.dataset.real,unpl=+el.dataset.unpl;
-  const gap=Math.max(0,plan-real),comp=plan>0?Math.round(real/plan*100):0;
+  const mi=+el.dataset.mi,plan=+el.dataset.plan,planned=+el.dataset.planned,repl=+el.dataset.repl,unpl=+el.dataset.unpl;
+  const gap=Math.max(0,plan-(planned+repl)),comp=plan>0?Math.round((planned+repl)/plan*100):0;
   showTT(e,'<div class="tt-title">'+MF[mi]+' 2026</div>'+
     '<div class="tt-row"><span class="tt-lbl">MPP Plan</span><span class="tt-val">'+plan+'</span></div>'+
-    '<div class="tt-row"><span class="tt-lbl">FPTK Approved</span><span class="tt-val green">'+real+'</span></div>'+
+    '<div class="tt-row"><span class="tt-lbl">Planned</span><span class="tt-val green">'+planned+'</span></div>'+
+    (repl>0?'<div class="tt-row"><span class="tt-lbl">Replacement</span><span class="tt-val" style="color:var(--blue)">'+repl+'</span></div>':'')+
     (unpl>0?'<div class="tt-row"><span class="tt-lbl">Unplanned</span><span class="tt-val amber">'+unpl+'</span></div>':'')+
-    '<div class="tt-row"><span class="tt-lbl">Gap</span><span class="tt-val '+(gap>0?'red':'green')+'">'+gap+'</span></div>'+
-    '<div class="tt-row"><span class="tt-lbl">Completion</span><span class="tt-val">'+comp+'%</span></div>');
+    '<div class="tt-row"><span class="tt-lbl">Gap vs Plan</span><span class="tt-val '+(gap>0?'red':'green')+'">'+gap+'</span></div>'+
+    '<div class="tt-row"><span class="tt-lbl">Achievement</span><span class="tt-val">'+comp+'%</span></div>');
 }
+
 
 function renderHC(f){
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
