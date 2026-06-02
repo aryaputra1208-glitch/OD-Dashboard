@@ -483,10 +483,10 @@ function goTo(page){
   }
   // Render page-specific content
   if(page==='fptk-tracker') renderFPTKFull();
-  if(page==='buy-build') renderBBPage();
-  if(page==='mpp-matching') renderMatch();
-  if(page==='per-divisi') renderDivisi(getF());
-  if(page==='management') renderMgmt(getF());
+  if(page==='buy-build'){try{renderBBPage();}catch(e){console.error('renderBBPage:',e);}}
+  if(page==='mpp-matching'){try{renderMatch();}catch(e){console.error('renderMatch:',e);}}
+  if(page==='per-divisi'){try{renderDivisi(getF());}catch(e){console.error('renderDivisi:',e);}}
+  if(page==='management'){try{renderMgmt(getF());}catch(e){console.error('renderMgmt:',e);}}
   window.scrollTo(0,0);
 }
 function goBack(){ goTo(prevPage==='overview'?'overview':prevPage); prevPage='overview'; }
