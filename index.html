@@ -1193,12 +1193,41 @@ function renderMgmt(f){
   const fB=FP.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
   const fBl=FP.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
   document.getElementById('mgmts').textContent=f.bLabel+' · '+(f.div||'Semua Divisi')+' · KJ 3 Up';
-  document.getElementById('mkpis').innerHTML=
-    '<div class="mkpi"><div class="mki">🎯</div><div class="mkv cg">'+pc(plannedAppr,plan)+'%</div><div class="mkl">MPP Achievement Rate</div><div class="mkt">'+plannedAppr+' Planned dari '+plan+' MPP</div></div>'+
-    '<div class="mkpi"><div class="mki">📋</div><div class="mkv ca">'+gap+'</div><div class="mkl">Posisi Belum Tercapai</div><div class="mkt">Gap vs MPP Plan</div></div>'+
-    '<div class="mkpi"><div class="mki">🏗</div><div class="mkv" style="font-size:18px"><span style="color:#16A34A">'+fB+' Buy</span> / <span class="cpr">'+fBl+' Build</span></div><div class="mkl">Buy vs Build</div><div class="mkt">Plan: '+mppBuy(f.div,f.mi)+' Buy / '+mppBuild(f.div,f.mi)+' Build</div></div>'+
-    '<div class="mkpi"><div class="mki">⏱</div><div class="mkv '+(slaAvg&&slaAvg>SLA_T?'ca':'cg')+'">'+(slaAvg?slaAvg+' hr':'-')+'</div><div class="mkl">Rata-Rata SLA</div><div class="mkt">Target '+SLA_T+' hari kerja</div></div>';
-  const divs=[...new Set([...Object.keys(D.mpp_plan_buy),...D.fptk.map(r=>r.divisi)])].sort();
+  document.getElementById('mkpis').innerHTML=(function(){
+    const repl=FP.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const unpl=FP.filter(r=>r.planned==='Unplanned'||r.planned==='Penambahan').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const planBuy=mppBuy(f.div,f.mi), planBld=mppBuild(f.div,f.mi);
+    return (
+      '<div class="mkpi">'+
+        '<div class="mki">📊</div>'+
+        '<div class="mkv">'+plan+'</div>'+
+        '<div class="mkl">Total MPP Plan</div>'+
+        '<div class="mkt"><span style="color:#16A34A">Buy '+planBuy+'</span> · <span style="color:var(--purple)">Build '+planBld+'</span></div>'+
+      '</div>'+
+      '<div class="mkpi">'+
+        '<div class="mki">📋</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:8px 0 6px">'+
+          '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#E8197D">'+plannedAppr+'</div><div style="font-size:9px;color:var(--tx3)">Planned</div></div>'+
+          '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#E8A020">'+repl+'</div><div style="font-size:9px;color:var(--tx3)">Replacement</div></div>'+
+          '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#3D9BE9">'+unpl+'</div><div style="font-size:9px;color:var(--tx3)">Unplanned</div></div>'+
+        '</div>'+
+        '<div class="mkl">FPTK '+f.bLabel+'</div>'+
+        '<div class="mkt">'+appr+' total FPTK diajukan</div>'+
+      '</div>'+
+      '<div class="mkpi">'+
+        '<div class="mki">⚠️</div>'+
+        '<div class="mkv '+(gap>0?'ca':'cg')+'">'+gap+'</div>'+
+        '<div class="mkl">Gap vs MPP Plan</div>'+
+        '<div class="mkt">'+(gap>0?'Planned belum tercapai':'Target terpenuhi')+' · '+pc(plannedAppr,plan)+'% achievement</div>'+
+      '</div>'+
+      '<div class="mkpi">'+
+        '<div class="mki">⏱</div>'+
+        '<div class="mkv '+(slaAvg&&slaAvg>5?'ca':'cg')+'">'+(slaAvg?slaAvg+' hr':'—')+'</div>'+
+        '<div class="mkl">Rata-Rata SLA</div>'+
+        '<div class="mkt">Target 5 hr kerja'+(slaAvg&&slaAvg>5?' · Melewati target':slaAvg?' · Dalam target':'')+' </div>'+
+      '</div>'
+    );
+  })()
   document.getElementById('mgd').innerHTML=(f.div?[f.div]:divs).map(d=>{
     const p=mppPlan(d,f.mi),r=FP.filter(x=>x.divisi===d&&x.status==='Completed').reduce((s,x)=>s+(x.jml_approved||1),0);
     if(!p&&!r)return '';
