@@ -484,7 +484,7 @@ function goTo(page){
   // Render page-specific content
   if(page==='fptk-tracker') renderFPTKFull();
   if(page==='buy-build'){try{renderBBPage();}catch(e){console.error('renderBBPage:',e);}}
-  if(page==='mpp-matching'){try{renderMatch();}catch(e){console.error('renderMatch:',e);}}
+  if(page==='mpp-matching'){try{renderMatch();}catch(e){console.error('renderMatch error:',e);document.getElementById('mtbody').innerHTML='<tr><td colspan="9" style="color:var(--red);padding:16px">Error: '+e.message+'</td></tr>';}}
   if(page==='per-divisi'){try{renderDivisi(getF());}catch(e){console.error('renderDivisi:',e);}}
   if(page==='management'){try{renderMgmt(getF());}catch(e){console.error('renderMgmt:',e);}}
   window.scrollTo(0,0);
@@ -508,6 +508,7 @@ document.addEventListener('mousemove',e=>{if(tt.classList.contains('show'))posTT
 
 // Event delegation for tooltips
 document.addEventListener('mouseenter',function(e){
+  if(!(e.target instanceof Element))return;
   const dept=e.target.closest('.tt-dept');
   if(dept){
     const d=dept.dataset.div,r=+dept.dataset.real,p=+dept.dataset.plan;
@@ -529,7 +530,7 @@ document.addEventListener('mouseenter',function(e){
   }
 },true);
 document.addEventListener('mouseleave',function(e){
-  if(e.target.closest('.tt-dept,.tt-sla,.mc'))hideTT();
+  if(e.target instanceof Element&&e.target.closest('.tt-dept,.tt-sla,.mc'))hideTT();
 },true);
 
 // ── HELPERS ──
