@@ -389,7 +389,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--tx);font-size:13px;mi
 </div>
 
 <!-- ══ PAGE: MPP MATCHING ══ -->
-<div class="page" id="page-mpp-matching">
+<div class="page" id="page-mpp-matching" style="min-height:400px">
   <div class="detail-hdr">
     <div class="detail-hdr-title">MPP Matching — Jabatan vs FPTK</div>
     <div class="detail-hdr-sub" id="match-detail-sub">Pencocokan posisi FPTK dengan MPP Plan · fuzzy match</div>
@@ -435,7 +435,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--tx);font-size:13px;mi
 </div>
 
 <!-- ══ PAGE: MANAGEMENT ══ -->
-<div class="page" id="page-management">
+<div class="page" id="page-management" style="min-height:400px">
   <div class="detail-hdr">
     <div class="detail-hdr-title">Management View</div>
     <div class="detail-hdr-sub" id="mgmts"></div>
@@ -484,7 +484,18 @@ function goTo(page){
   // Render page-specific content
   if(page==='fptk-tracker') renderFPTKFull();
   if(page==='buy-build'){try{renderBBPage();}catch(e){console.error('renderBBPage:',e);}}
-  if(page==='mpp-matching'){try{renderMatch();}catch(e){console.error('renderMatch error:',e);document.getElementById('mtbody').innerHTML='<tr><td colspan="9" style="color:var(--red);padding:16px">Error: '+e.message+'</td></tr>';}}
+  if(page==='mpp-matching'){
+  try{
+    renderMatch();
+    // Force scroll to top of matching card
+    const mc=document.getElementById('mtbl');
+    if(mc)mc.scrollIntoView({behavior:'instant',block:'start'});
+  }catch(e){
+    console.error('renderMatch error:',e);
+    const tb=document.getElementById('mtbody');
+    if(tb)tb.innerHTML='<tr><td colspan="9" style="color:var(--red);padding:16px">Error: '+e.message+'</td></tr>';
+  }
+}
   if(page==='per-divisi'){try{renderDivisi(getF());}catch(e){console.error('renderDivisi:',e);}}
   if(page==='management'){try{renderMgmt(getF());}catch(e){console.error('renderMgmt:',e);}}
   window.scrollTo(0,0);
@@ -931,9 +942,9 @@ const MBGL={match:'var(--green-l)',partial:'var(--amber-l)',mismatch:'var(--red-
 
 function renderMatch(){
   try{
-    const blnF=parseInt(document.getElementById('mfbln')?.value||'0')||0;
-    const divF=document.getElementById('mfdiv')?.value||'';
-    const stF=document.getElementById('mfst')?.value||'';
+    const mfblnEl=document.getElementById('mfbln');const blnF=mfblnEl?parseInt(mfblnEl.value||'0')||0:0;
+    const mfdivEl=document.getElementById('mfdiv');const divF=mfdivEl?mfdivEl.value||'':'';
+    const mfstEl=document.getElementById('mfst');const stF=mfstEl?mfstEl.value||'':'';
     const all=D.match_results.filter(r=>(!blnF||r.bulan===blnF)&&(!divF||r.divisi===divF));
     const rows=all.filter(r=>!stF||r.match_status===stF);
     const cnt=s=>all.filter(r=>r.match_status===s).length;
