@@ -635,16 +635,18 @@ function renderKPIs(f){
     kpi('MPP Plan '+f.bLabel,mT||'-','<span style="color:#16A34A">Buy '+mppBuy(f.div,f.mi)+'</span> / <span style="color:var(--purple)">Build '+mppBuild(f.div,f.mi)+'</span>',100,'var(--tx)')+
     kpi('FPTK Approved','<span class="cg">'+fmt(appr)+'</span>','<span class="cg">'+pc(plannedAppr,mT)+'% Planned dari MPP</span>',pc(plannedAppr,mT),'var(--green)')+
     kpi('Gap','<span class="'+(gap>0?'ca':'cg')+'">'+gap+'</span>','<span class="'+(gap>0?'ca':'cg')+'">'+(gap>0?'Posisi belum tercapai':'Terpenuhi')+'</span>',mT?pc(gap,mT):0,'var(--amber)')+
-    kpi('Buy / Build FPTK','<span style="font-size:15px"><span style="color:#16A34A">'+fBuy+' Buy</span> / <span class="cpr">'+fBld+' Build</span></span>','dari '+appr+' approved',appr?pc(fBuy,appr):0,'#16A34A')+
+    kpi('Total FPTK Buy/Build','<span style="font-size:15px"><span style="color:#16A34A">'+fBuy+' Buy</span> / <span class="cpr">'+fBld+' Build</span></span>','semua kategori · '+appr+' total',appr?pc(fBuy,appr):0,'#16A34A')+
     kpi('Rata-Rata SLA','<span class="'+(slaAvg&&slaAvg>SLA_T?'ca':'cg')+'">'+(slaAvg||'-')+'</span>','<span class="'+(slaAvg&&slaAvg>SLA_T?'ca':'cg')+'">'+(slaAvg?'hr kerja · target '+SLA_T:'Belum ada data')+'</span>',slaAvg?Math.min(100,Math.round(SLA_T/slaAvg*100)):0,'var(--green)');
 }
 
 function renderMPPChart(f){
-  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  {const _cv=document.getElementById('mchart');if(_cv&&_cv.parentElement&&_cv.parentElement.offsetWidth<10){setTimeout(()=>renderMPPChart(f),50);return;}}
   const canvas=document.getElementById('mchart');
   if(!canvas)return;
 
-  // Calculate data
+  // Calculate data first
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const BAR_H=90;
   const chartData=MF.map((m,i)=>{
     const plan=mppPlan(f.div,i);
     const planned=all.filter(r=>r.bulan===i+1&&r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
@@ -652,21 +654,21 @@ function renderMPPChart(f){
     const unpl=all.filter(r=>r.bulan===i+1&&(r.planned==='Unplanned'||r.planned==='Penambahan')).reduce((s,r)=>s+(r.jml_approved||1),0);
     return{m,plan,planned,repl,unpl};
   });
-
   const maxV=Math.max(...chartData.map(d=>Math.max(d.plan,d.planned+d.repl+d.unpl)),1)+2;
   let mg=0,mgi=0;
   chartData.forEach((d,i)=>{const gap=Math.max(0,d.plan-d.planned);if(gap>mg){mg=gap;mgi=i;}});
 
   // Setup canvas
   const dpr=window.devicePixelRatio||1;
-  const W=canvas.parentElement.offsetWidth||640;
-  const H=180;
+  const W=Math.max(canvas.parentElement?canvas.parentElement.offsetWidth:0,canvas.offsetWidth||0,560);
+  const H=210;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  canvas.style.display='block';
   const ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
-  const PAD={t:8,r:12,b:28,l:36};
+  const PAD={t:12,r:12,b:36,l:36};
   const CW=W-PAD.l-PAD.r;
   const CH=H-PAD.t-PAD.b;
   const slotW=CW/12;
@@ -674,84 +676,92 @@ function renderMPPChart(f){
   const barW=(slotW-GAP*3)/2;
   const yPx=v=>PAD.t+CH-(v/maxV*CH);
 
-  // Grid
-  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  const gridCol=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)';
-  const lblCol=isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)';
-  // Y axis line
-  ctx.strokeStyle=isDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.12)';
-  ctx.lineWidth=0.5;
-  ctx.beginPath();ctx.moveTo(PAD.l,PAD.t);ctx.lineTo(PAD.l,PAD.t+CH);ctx.stroke();
+  // ── STEP 1: Draw grid (FIRST so bars appear on top) ──
+  const lblCol='rgba(0,0,0,0.45)';
+  const gridCol='rgba(0,0,0,0.07)';
 
-  // Grid lines + labels
-  const steps=maxV>30?[10,20,30,40]:maxV>15?[5,10,15,20]:[5,10];
+  // Y axis vertical line
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.5; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+CH); ctx.stroke();
+
+  // Baseline
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t+CH); ctx.lineTo(W-PAD.r,PAD.t+CH); ctx.stroke();
+
+  // Horizontal grid lines + Y labels
+  const steps=maxV>40?[10,20,30,40,50]:maxV>20?[5,10,15,20,25,30]:maxV>10?[5,10,15,20]:[2,4,6,8,10];
   steps.forEach(v=>{
     if(v>maxV)return;
     const y=yPx(v);
-    ctx.strokeStyle=gridCol; ctx.lineWidth=0.5;
-    ctx.setLineDash([3,3]);
-    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(W-PAD.r,y);ctx.stroke();
+    ctx.strokeStyle=gridCol; ctx.lineWidth=0.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(W-PAD.r,y); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle=lblCol;ctx.font='10px system-ui';ctx.textAlign='right';
-    ctx.fillText(v,PAD.l-5,y+3);
+    ctx.fillStyle=lblCol; ctx.font='10px system-ui'; ctx.textAlign='right';
+    ctx.fillText(v,PAD.l-4,y+3.5);
   });
 
-  // Baseline
-  ctx.strokeStyle=isDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.12)';
-  ctx.lineWidth=0.5; ctx.setLineDash([]);
-  ctx.beginPath();ctx.moveTo(PAD.l,PAD.t+CH);ctx.lineTo(W-PAD.r,PAD.t+CH);ctx.stroke();
-
-  function rRect(x,y,w,h,r,top){
+  // ── STEP 2: Helper for rounded top bars ──
+  function rRect(x,y,w,h,r,roundTop){
     if(h<=0||w<=0)return;
     r=Math.min(r,h/2,w/2);
     ctx.beginPath();
-    if(top){
-      ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+    if(roundTop){
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
       ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-      ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);
-      ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+      ctx.lineTo(x+w,y+h); ctx.lineTo(x,y+h);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
     } else {
       ctx.rect(x,y,w,h);
     }
-    ctx.closePath();ctx.fill();
+    ctx.closePath(); ctx.fill();
   }
 
-  // Store hit areas for tooltip
+  // ── STEP 3: Draw bars + month labels ──
   canvas._hits=[];
-
   chartData.forEach((d,i)=>{
     const slotX=PAD.l+i*slotW;
     const leftX=slotX+GAP;
     const rightX=leftX+barW+GAP;
     const c=f.mi>=0&&i===f.mi;
+    const hasDat=all.some(r=>r.bulan===i+1);
 
-    // MPP Plan bar (left) - highlight current month
-    ctx.fillStyle=c?'#B4B2A9':'#D3D1C7';
-    if(d.plan>0){const ph=d.plan/maxV*CH;rRect(leftX,yPx(d.plan),barW,ph,2,true);}
+    // MPP Plan bar (left)
+    if(d.plan>0){
+      ctx.fillStyle=c?'#B8B6B0':'#D3D1C7';
+      rRect(leftX,yPx(d.plan),barW,d.plan/maxV*CH,2,true);
+    }
 
-    // Stacked FPTK (right)
+    // Stacked FPTK (right): Planned bottom, Replacement middle, Unplanned top
     const segs=[{v:d.planned,col:'#E8197D'},{v:d.repl,col:'#E8A020'},{v:d.unpl,col:'#3D9BE9'}];
     let stackY=yPx(0);
     const nonZero=segs.filter(s=>s.v>0);
-    segs.forEach((s,si)=>{
-      if(!s.v)return;
-      const sh=s.v/maxV*CH;
+    segs.forEach(seg=>{
+      if(!seg.v)return;
+      const sh=seg.v/maxV*CH;
       stackY-=sh;
-      ctx.fillStyle=s.col;
-      const isTop=(s===nonZero[nonZero.length-1]);
-      rRect(rightX,stackY,barW,sh,2,isTop);
+      ctx.fillStyle=seg.col;
+      ctx.globalAlpha=hasDat?1:0.3;
+      rRect(rightX,stackY,barW,sh,2,seg===nonZero[nonZero.length-1]);
+      ctx.globalAlpha=1;
     });
 
-    // Month label
+    // Month label below
     ctx.fillStyle=c?'#E8197D':lblCol;
-    ctx.font=(c?'bold ':'')+'10px system-ui';
+    ctx.font=(c?'bold ':'' )+'11px system-ui';
     ctx.textAlign='center';
-    ctx.fillText(d.m,slotX+slotW/2,H-PAD.b+12);
+    ctx.fillText(d.m,slotX+slotW/2,H-PAD.b+16);
+
+    // Plan number below bar
+    if(d.plan>0){
+      ctx.fillStyle='rgba(0,0,0,0.4)';
+      ctx.font='9px system-ui';
+      ctx.textAlign='center';
+      ctx.fillText('/'+d.plan,slotX+slotW/2,H-PAD.b+6);
+    }
 
     canvas._hits.push({x:slotX,w:slotW,d,i});
   });
 
-  // Tooltip
+  // ── STEP 4: Tooltip ──
   const oldTip=document.getElementById('mchart-tip');
   if(oldTip)oldTip.remove();
   const tip=document.createElement('div');
@@ -762,11 +772,11 @@ function renderMPPChart(f){
   canvas.onmousemove=e=>{
     const rect=canvas.getBoundingClientRect();
     const mx=(e.clientX-rect.left)*(W/rect.width);
-    const hit=canvas._hits.find(b=>mx>=b.x&&mx<=b.x+b.w);
+    const hit=canvas._hits&&canvas._hits.find(b=>mx>=b.x&&mx<=b.x+b.w);
     if(hit){
       const d=hit.d;
       const tot=d.planned+d.repl+d.unpl;
-      const gap=Math.max(0,d.plan-tot);
+      const gap=Math.max(0,d.plan-d.planned);
       tip.innerHTML='<b>'+d.m+' 2026</b><br>'+
         'MPP Plan: '+d.plan+'<br>'+
         '<span style="color:#F9A8D4">Planned: '+d.planned+'</span><br>'+
@@ -776,11 +786,11 @@ function renderMPPChart(f){
       tip.style.display='block';
       tip.style.left=(e.clientX+14)+'px';
       tip.style.top=(e.clientY-20)+'px';
-    } else tip.style.display='none';
+    } else { tip.style.display='none'; }
   };
-  canvas.onmouseleave=()=>tip.style.display='none';
+  canvas.onmouseleave=()=>{if(tip)tip.style.display='none';};
 
-  // Update text elements
+  // ── STEP 5: Update text elements ──
   document.getElementById('c1s').textContent='Jan–Des 2026 · '+(f.div||'Semua Divisi');
   const totalPlanned=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
   const totalUnpl=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Unplanned'||r.planned==='Penambahan').reduce((s,r)=>s+(r.jml_approved||1),0);
@@ -788,7 +798,7 @@ function renderMPPChart(f){
   const ins=document.getElementById('impp');ins.className='ins'+(totalUnpl>3?' warn':'ok');
   ins.textContent=f.bLabel+': '+totalPlanned+' Planned, '+totalUnpl+' Unplanned. '+(mg>0?'Gap terbesar '+MF[mgi]+' ('+mg+' posisi).':'Target terpenuhi.');
 
-  // YTD summary
+  // YTD summary card
   const ytdSub=document.getElementById('ytd-sub');
   const ytdStats=document.getElementById('ytd-stats');
   if(ytdSub&&ytdStats){
@@ -800,13 +810,12 @@ function renderMPPChart(f){
     const totUnpl=ytdAll.filter(r=>r.planned==='Unplanned'||r.planned==='Penambahan').reduce((s,r)=>s+(r.jml_approved||1),0);
     ytdStats.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
       '<div class="sbox"><div class="sn">'+totPlan+'</div><div class="sl2">MPP Plan YTD</div></div>'+
-      '<div class="sbox"><div class="sn cp">'+totPlanned+'</div><div class="sl2">Planned FPTK</div></div>'+
-      '<div class="sbox"><div class="sn cb">'+totUnpl+'</div><div class="sl2">Unplanned FPTK</div></div>'+
-      '<div class="sbox"><div class="sn ca">'+Math.max(0,totPlan-totPlanned)+'</div><div class="sl2">Gap Planned</div></div>'+
+      '<div class="sbox"><div class="sn cp">'+totFPTKPlanned+'</div><div class="sl2">Planned FPTK</div></div>'+
+      '<div class="sbox"><div class="sn cr">'+totUnpl+'</div><div class="sl2">Unplanned FPTK</div></div>'+
+      '<div class="sbox"><div class="sn ca">'+Math.max(0,totPlan-totFPTKPlanned)+'</div><div class="sl2">Gap Planned</div></div>'+
       '</div>';
   }
 }
-
 
 
 function renderHC(f){
