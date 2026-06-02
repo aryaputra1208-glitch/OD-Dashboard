@@ -633,46 +633,141 @@ function renderKPIs(f){
 
 function renderMPPChart(f){
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
-  const BAR_H=80;
-  const maxV=Math.max(...MF.map((_,i)=>{
-    const plan=mppPlan(f.div,i);
-    const planned=all.filter(r=>r.bulan===i+1&&(r.planned==='Planned'||r.planned==='Replacement')).reduce((s,r)=>s+(r.jml_approved||1),0);
-    const unpl=all.filter(r=>r.bulan===i+1&&(r.planned==='Unplanned'||r.planned==='Penambahan')).reduce((s,r)=>s+(r.jml_approved||1),0);
-    return Math.max(plan,planned+unpl,1);
-  }),1);
-  let mg=0,mgi=f.mi<0?0:f.mi;
-  const chartHTML=MF.map((m,i)=>{
+  const canvas=document.getElementById('mchart');
+  if(!canvas)return;
+
+  // Calculate data
+  const chartData=MF.map((m,i)=>{
     const plan=mppPlan(f.div,i);
     const planned=all.filter(r=>r.bulan===i+1&&r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
     const repl=all.filter(r=>r.bulan===i+1&&r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
     const unpl=all.filter(r=>r.bulan===i+1&&(r.planned==='Unplanned'||r.planned==='Penambahan')).reduce((s,r)=>s+(r.jml_approved||1),0);
-    const gap=Math.max(0,plan-(planned+repl));if(gap>mg){mg=gap;mgi=i;}
-    const pH=plan?Math.max(3,Math.round(plan/maxV*BAR_H)):0;
-    const plH=planned?Math.max(2,Math.round(planned/maxV*BAR_H)):0;
-    const rH=repl?Math.max(2,Math.round(repl/maxV*BAR_H)):0;
-    const uH=unpl?Math.max(2,Math.round(unpl/maxV*BAR_H)):0;
+    return{m,plan,planned,repl,unpl};
+  });
+
+  const maxV=Math.max(...chartData.map(d=>Math.max(d.plan,d.planned+d.repl+d.unpl)),1)+2;
+  let mg=0,mgi=0;
+  chartData.forEach((d,i)=>{const gap=Math.max(0,d.plan-(d.planned+d.repl));if(gap>mg){mg=gap;mgi=i;}});
+
+  // Setup canvas
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.offsetWidth||640;
+  const H=180;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  const PAD={t:8,r:10,b:28,l:28};
+  const CW=W-PAD.l-PAD.r;
+  const CH=H-PAD.t-PAD.b;
+  const slotW=CW/12;
+  const GAP=2;
+  const barW=(slotW-GAP*3)/2;
+  const yPx=v=>PAD.t+CH-(v/maxV*CH);
+
+  // Grid
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const gridCol=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)';
+  const lblCol=isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)';
+  ctx.strokeStyle=gridCol; ctx.lineWidth=0.5;
+  const steps=maxV>30?[10,20,30,40]:maxV>15?[5,10,15,20]:[5,10];
+  steps.forEach(v=>{
+    if(v>maxV)return;
+    const y=yPx(v);
+    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(W-PAD.r,y);ctx.stroke();
+    ctx.fillStyle=lblCol;ctx.font='9px system-ui';ctx.textAlign='right';
+    ctx.fillText(v,PAD.l-3,y+3);
+  });
+
+  function rRect(x,y,w,h,r,top){
+    if(h<=0||w<=0)return;
+    r=Math.min(r,h/2,w/2);
+    ctx.beginPath();
+    if(top){
+      ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+      ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);
+      ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+    } else {
+      ctx.rect(x,y,w,h);
+    }
+    ctx.closePath();ctx.fill();
+  }
+
+  // Store hit areas for tooltip
+  canvas._hits=[];
+
+  chartData.forEach((d,i)=>{
+    const slotX=PAD.l+i*slotW;
+    const leftX=slotX+GAP;
+    const rightX=leftX+barW+GAP;
     const c=f.mi>=0&&i===f.mi;
-    const hasDat=all.some(r=>r.bulan===i+1);
-    return '<div style="display:flex;flex-direction:column;align-items:center" class="mc" data-mi="'+i+'" data-plan="'+plan+'" data-planned="'+planned+'" data-repl="'+repl+'" data-unpl="'+unpl+'" onmouseenter="handleChartHover(event,this)" onmouseleave="hideTT()">'+
-      '<div style="font-size:9px;color:'+(c?'var(--pink)':'var(--tx3)')+';font-weight:'+(c?700:400)+';margin-bottom:4px;text-align:center">'+(c?'● ':'')+m+'</div>'+
-      '<div style="height:'+BAR_H+'px;display:flex;align-items:flex-end;gap:2px;width:100%">'+
-        '<div style="flex:2;background:#DDDBD5;border-radius:2px 2px 0 0;height:'+pH+'px;pointer-events:none'+(c?';border:.5px solid #bbb':'')+'"></div>'+
-        '<div style="flex:1;background:var(--green);border-radius:2px 2px 0 0;height:'+plH+'px;pointer-events:none;opacity:'+(hasDat?1:0.3)+'"></div>'+
-        '<div style="flex:1;background:var(--blue);border-radius:2px 2px 0 0;height:'+rH+'px;pointer-events:none;opacity:'+(hasDat?0.8:0.3)+'"></div>'+
-        '<div style="flex:1;background:var(--red);border-radius:2px 2px 0 0;height:'+uH+'px;pointer-events:none;opacity:'+(hasDat?0.8:0.3)+'"></div>'+
-      '</div>'+
-      '<div style="font-size:8px;font-weight:700;color:var(--tx);text-align:center;margin-top:3px">'+(plan||'—')+'</div>'+
-      '<div style="font-size:7px;color:var(--tx3);text-align:center">plan</div>'+
-      '</div>';
-  }).join('');
-  document.getElementById('mchart').innerHTML=chartHTML;
+
+    // MPP Plan bar (left) - highlight current month
+    ctx.fillStyle=c?'#B4B2A9':'#D3D1C7';
+    if(d.plan>0){const ph=d.plan/maxV*CH;rRect(leftX,yPx(d.plan),barW,ph,2,true);}
+
+    // Stacked FPTK (right)
+    const segs=[{v:d.planned,col:'#E8197D'},{v:d.repl,col:'#E8A020'},{v:d.unpl,col:'#3D9BE9'}];
+    let stackY=yPx(0);
+    const nonZero=segs.filter(s=>s.v>0);
+    segs.forEach((s,si)=>{
+      if(!s.v)return;
+      const sh=s.v/maxV*CH;
+      stackY-=sh;
+      ctx.fillStyle=s.col;
+      const isTop=(s===nonZero[nonZero.length-1]);
+      rRect(rightX,stackY,barW,sh,2,isTop);
+    });
+
+    // Month label
+    ctx.fillStyle=c?'#E8197D':lblCol;
+    ctx.font=(c?'bold ':'')+'10px system-ui';
+    ctx.textAlign='center';
+    ctx.fillText(d.m,slotX+slotW/2,H-PAD.b+12);
+
+    canvas._hits.push({x:slotX,w:slotW,d,i});
+  });
+
+  // Tooltip
+  const oldTip=document.getElementById('mchart-tip');
+  if(oldTip)oldTip.remove();
+  const tip=document.createElement('div');
+  tip.id='mchart-tip';
+  tip.style.cssText='position:fixed;display:none;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;line-height:1.7;z-index:9999';
+  document.body.appendChild(tip);
+
+  canvas.onmousemove=e=>{
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(W/rect.width);
+    const hit=canvas._hits.find(b=>mx>=b.x&&mx<=b.x+b.w);
+    if(hit){
+      const d=hit.d;
+      const tot=d.planned+d.repl+d.unpl;
+      const gap=Math.max(0,d.plan-tot);
+      tip.innerHTML='<b>'+d.m+' 2026</b><br>'+
+        'MPP Plan: '+d.plan+'<br>'+
+        '<span style="color:#F9A8D4">Planned: '+d.planned+'</span><br>'+
+        (d.repl>0?'<span style="color:#FCD34D">Replacement: '+d.repl+'</span><br>':'')+
+        (d.unpl>0?'<span style="color:#93C5FD">Unplanned: '+d.unpl+'</span><br>':'')+
+        '──────<br>Total FPTK: '+tot+'<br>Gap: <b>'+gap+'</b>';
+      tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px';
+      tip.style.top=(e.clientY-20)+'px';
+    } else tip.style.display='none';
+  };
+  canvas.onmouseleave=()=>tip.style.display='none';
+
+  // Update text elements
   document.getElementById('c1s').textContent='Jan–Des 2026 · '+(f.div||'Semua Divisi');
   const totalPlanned=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Planned'||r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
   const totalUnpl=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Unplanned'||r.planned==='Penambahan').reduce((s,r)=>s+(r.jml_approved||1),0);
   document.getElementById('glbl').textContent=mg>0?'Gap terbesar: '+MF[mgi]+' ('+mg+' posisi)':'Semua bulan sesuai plan';
   const ins=document.getElementById('impp');ins.className='ins'+(totalUnpl>3?' warn':'ok');
   ins.textContent=f.bLabel+': '+totalPlanned+' Planned, '+totalUnpl+' Unplanned. '+(mg>0?'Gap terbesar '+MF[mgi]+' ('+mg+' posisi).':'Target terpenuhi.');
-  // YTD summary card
+
+  // YTD summary
   const ytdSub=document.getElementById('ytd-sub');
   const ytdStats=document.getElementById('ytd-stats');
   if(ytdSub&&ytdStats){
@@ -683,24 +778,13 @@ function renderMPPChart(f){
     const totUnpl=ytdAll.filter(r=>r.planned==='Unplanned'||r.planned==='Penambahan').reduce((s,r)=>s+(r.jml_approved||1),0);
     ytdStats.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
       '<div class="sbox"><div class="sn">'+totPlan+'</div><div class="sl2">MPP Plan YTD</div></div>'+
-      '<div class="sbox"><div class="sn cg">'+totPlanned+'</div><div class="sl2">Planned FPTK</div></div>'+
-      '<div class="sbox"><div class="sn cr">'+totUnpl+'</div><div class="sl2">Unplanned FPTK</div></div>'+
+      '<div class="sbox"><div class="sn cp">'+totPlanned+'</div><div class="sl2">Planned FPTK</div></div>'+
+      '<div class="sbox"><div class="sn cb">'+totUnpl+'</div><div class="sl2">Unplanned FPTK</div></div>'+
       '<div class="sbox"><div class="sn ca">'+Math.max(0,totPlan-totPlanned)+'</div><div class="sl2">Gap Planned</div></div>'+
       '</div>';
   }
 }
 
-function handleChartHover(e,el){
-  const mi=+el.dataset.mi,plan=+el.dataset.plan,planned=+el.dataset.planned,repl=+el.dataset.repl,unpl=+el.dataset.unpl;
-  const gap=Math.max(0,plan-(planned+repl)),comp=plan>0?Math.round((planned+repl)/plan*100):0;
-  showTT(e,'<div class="tt-title">'+MF[mi]+' 2026</div>'+
-    '<div class="tt-row"><span class="tt-lbl">MPP Plan</span><span class="tt-val">'+plan+'</span></div>'+
-    '<div class="tt-row"><span class="tt-lbl">Planned</span><span class="tt-val green">'+planned+'</span></div>'+
-    (repl>0?'<div class="tt-row"><span class="tt-lbl">Replacement</span><span class="tt-val" style="color:var(--blue)">'+repl+'</span></div>':'')+
-    (unpl>0?'<div class="tt-row"><span class="tt-lbl">Unplanned</span><span class="tt-val amber">'+unpl+'</span></div>':'')+
-    '<div class="tt-row"><span class="tt-lbl">Gap vs Plan</span><span class="tt-val '+(gap>0?'red':'green')+'">'+gap+'</span></div>'+
-    '<div class="tt-row"><span class="tt-lbl">Achievement</span><span class="tt-val">'+comp+'%</span></div>');
-}
 
 
 function renderHC(f){
