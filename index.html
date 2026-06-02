@@ -919,7 +919,7 @@ function renderMgmtPreview(f){
   const slaA=FP.filter(r=>r.sla!=null);
   const slaAvg=slaA.length?Math.round(slaA.reduce((s,r)=>s+r.sla,0)/slaA.length):null;
   document.getElementById('mgmt-preview').innerHTML=[
-    {icon:'🎯',v:pc(appr,plan)+'%',l:'Achievement Rate'},
+    {icon:'🎯',v:pc(plannedAppr,plan)+'%',l:'Achievement Rate'},
     {icon:'📋',v:gap,l:'Gap Posisi'},
     {icon:'⚠',v:mm,l:'Mismatch Jabatan'},
     {icon:'⏱',v:slaAvg?slaAvg+' hr':'-',l:'Rata-Rata SLA'},
