@@ -610,6 +610,12 @@ function applyFilters(){
   const{div,bln}=getF();
   FP=D.fptk.filter(r=>(!div||r.divisi===div)&&(bln===0||r.bulan===bln));
   renderOverview();
+  // Re-render active detail page if filter changes
+  if(currentPage==='management'){try{renderMgmt(getF());}catch(e){console.error('renderMgmt:',e);}}
+  if(currentPage==='per-divisi'){try{renderDivisi(getF());}catch(e){console.error('renderDivisi:',e);}}
+  if(currentPage==='buy-build'){try{renderBBPage();}catch(e){console.error('renderBBPage:',e);}}
+  if(currentPage==='fptk-tracker'){renderFPTKFull();}
+  if(currentPage==='mpp-matching'){try{renderMatch();}catch(e){console.error('renderMatch:',e);}}
 }
 
 // ── RENDER OVERVIEW ──
