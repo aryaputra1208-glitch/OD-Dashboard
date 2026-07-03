@@ -460,6 +460,16 @@ canvas{display:block;width:100%}
       <div id="ipe-level"></div>
     </div>
   </div>
+  <div class="r2" style="margin-bottom:12px" id="pm-divisi">
+    <div class="card" style="overflow-y:auto;max-height:500px">
+      <div class="chdr"><div><div class="ct">IPP per Divisi</div><div class="cs">% Approved per divisi</div></div></div>
+      <div id="pm-divisi-ipp"></div>
+    </div>
+    <div class="card" style="overflow-y:auto;max-height:500px">
+      <div class="chdr"><div><div class="ct">IPE per Divisi</div><div class="cs">% Approved per divisi</div></div></div>
+      <div id="pm-divisi-ipe"></div>
+    </div>
+  </div>
   <div class="card">
     <div class="chdr">
       <div><div class="ct">Reminder — Karyawan Belum Mengisi</div><div class="cs" id="remind-sub"></div></div>
@@ -1051,25 +1061,34 @@ function renderPM(){
   const ipeDraft=kpi.filter(r=>r.ipe==='DRAFT').length;
   const ipeWait=kpi.filter(r=>r.ipe==='Waiting Approval').length;
   const ipeNot=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
-  function kpi2(l,v,s,c){return '<div class="kpi"><div class="kpi-label">'+l+'</div><div class="kpi-val" style="color:'+c+'">'+v+'</div><div class="kpi-sub">'+s+'</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Math.min(100,parseInt(s)||0)+'%;background:'+c+'"></div></div></div>';}
+
+  function kpi2(l,v,s,c){
+    return '<div class="kpi"><div class="kpi-label">'+l+'</div><div class="kpi-val" style="color:'+c+'">'+v+'</div><div class="kpi-sub">'+s+'</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Math.min(100,parseInt(s)||0)+'%;background:'+c+'"></div></div></div>';
+  }
   document.getElementById('pm-kpis').innerHTML=
     kpi2('Total Karyawan',tot,'','var(--tx)')+
     kpi2('IPP Approved',ippAppr,pc(ippAppr,tot)+'%','var(--green)')+
     kpi2('IPP Belum Selesai',ippNot+ippWait,pc(ippNot+ippWait,tot)+'%','var(--amber)')+
     kpi2('IPE Approved',ipeAppr,pc(ipeAppr,tot)+'%','var(--blue)')+
     kpi2('IPE Not Yet',ipeNot,pc(ipeNot,tot)+'%','var(--red)');
+
+  // IPP distribution
   const ippStatuses=['Approved','Waiting Approval','Not Yet','Revise'];
   const ippCols={'Approved':'var(--green)','Waiting Approval':'var(--amber)','Not Yet':'#888','Revise':'var(--red)'};
   document.getElementById('ipp-dist').innerHTML=ippStatuses.map(s=>{
     const c=kpi.filter(r=>r.ipp===s).length;if(!c)return'';
     return '<div class="dist-row"><span class="dist-label"><span class="pill '+pillClass(s)+'">'+s+'</span></span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pc(c,tot)+'%;background:'+(ippCols[s]||'#888')+'"></div></div><span class="dist-num" style="color:'+(ippCols[s]||'#888')+'">'+c+' ('+pc(c,tot)+'%)</span></div>';
   }).join('');
+
+  // IPE distribution
   const ipeStatuses=['Approved','Waiting Approval','DRAFT','Not Yet','REVISE'];
   const ipeCols={'Approved':'var(--green)','Waiting Approval':'var(--amber)','DRAFT':'var(--blue)','Not Yet':'#888','REVISE':'var(--red)'};
   document.getElementById('ipe-dist').innerHTML=ipeStatuses.map(s=>{
     const c=kpi.filter(r=>r.ipe===s).length;if(!c)return'';
     return '<div class="dist-row"><span class="dist-label"><span class="pill '+pillClass(s)+'">'+s+'</span></span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pc(c,tot)+'%;background:'+(ipeCols[s]||'#888')+'"></div></div><span class="dist-num" style="color:'+(ipeCols[s]||'#888')+'">'+c+' ('+pc(c,tot)+'%)</span></div>';
   }).join('');
+
+  // Per level
   const levels=[...new Set(kpi.map(r=>r.level).filter(Boolean))];
   ['ipp','ipe'].forEach(type=>{
     const el=document.getElementById(type+'-level');
@@ -1082,6 +1101,68 @@ function renderPM(){
       return '<div class="dist-row"><span class="dist-label">'+l+'</span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pc(appr,tot2)+'%;background:'+col+'"></div></div><span class="dist-num" style="color:'+col+'">'+appr+'/'+tot2+' ('+pc(appr,tot2)+'%)</span></div>';
     }).join('');
   });
+
+  // Per divisi breakdown
+  const divEl=document.getElementById('pm-divisi');
+  if(divEl){
+    const divs=[...new Set(kpi.map(r=>r.divisi).filter(Boolean))].sort();
+    if(!divs.length){
+      divEl.innerHTML='<div style="color:var(--tx3);font-size:11px;padding:12px">Data divisi belum tersedia — klik Refresh Data untuk sinkronisasi dari Google Sheets</div>';
+    } else {
+      // IPP per divisi
+      const ippDiv=document.getElementById('pm-divisi-ipp');
+      const ipeDiv=document.getElementById('pm-divisi-ipe');
+      if(ippDiv) ippDiv.innerHTML=divs.map(d=>{
+        const gr=kpi.filter(r=>r.divisi===d);
+        const appr=gr.filter(r=>r.ipp==='Approved').length;
+        const tot2=gr.length||1;
+        const col=pc(appr,tot2)>=80?'var(--green)':pc(appr,tot2)>=50?'var(--amber)':'var(--red)';
+        const wait=gr.filter(r=>r.ipp==='Waiting Approval').length;
+        const ny=gr.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise').length;
+        return '<div style="margin-bottom:10px">'+
+          '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'+
+          '<span style="font-weight:500;color:var(--tx)">'+d+'</span>'+
+          '<span style="color:'+col+'">'+appr+'/'+tot2+' ('+pc(appr,tot2)+'%)</span>'+
+          '</div>'+
+          '<div class="pb" style="height:7px"><div style="display:flex;height:7px">'+
+          '<div style="width:'+pc(appr,tot2)+'%;background:var(--green);border-radius:4px 0 0 4px"></div>'+
+          '<div style="width:'+pc(wait,tot2)+'%;background:var(--amber)"></div>'+
+          '<div style="width:'+pc(ny,tot2)+'%;background:var(--red);border-radius:0 4px 4px 0"></div>'+
+          '</div></div>'+
+          '<div style="display:flex;gap:8px;font-size:9px;color:var(--tx3);margin-top:2px">'+
+          (appr?'<span style="color:var(--green)">Approved: '+appr+'</span>':'')+
+          (wait?'<span style="color:var(--amber)">Waiting: '+wait+'</span>':'')+
+          (ny?'<span style="color:var(--red)">Not Yet: '+ny+'</span>':'')+
+          '</div></div>';
+      }).join('');
+      if(ipeDiv) ipeDiv.innerHTML=divs.map(d=>{
+        const gr=kpi.filter(r=>r.divisi===d);
+        const appr=gr.filter(r=>r.ipe==='Approved').length;
+        const draft=gr.filter(r=>r.ipe==='DRAFT').length;
+        const wait=gr.filter(r=>r.ipe==='Waiting Approval').length;
+        const ny=gr.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
+        const tot2=gr.length||1;
+        const col=pc(appr,tot2)>=80?'var(--green)':pc(appr,tot2)>=50?'var(--amber)':'var(--red)';
+        return '<div style="margin-bottom:10px">'+
+          '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'+
+          '<span style="font-weight:500;color:var(--tx)">'+d+'</span>'+
+          '<span style="color:'+col+'">'+appr+'/'+tot2+' ('+pc(appr,tot2)+'%)</span>'+
+          '</div>'+
+          '<div class="pb" style="height:7px"><div style="display:flex;height:7px">'+
+          '<div style="width:'+pc(appr,tot2)+'%;background:var(--green);border-radius:4px 0 0 4px"></div>'+
+          '<div style="width:'+pc(draft,tot2)+'%;background:var(--blue)"></div>'+
+          '<div style="width:'+pc(wait,tot2)+'%;background:var(--amber)"></div>'+
+          '<div style="width:'+pc(ny,tot2)+'%;background:var(--red);border-radius:0 4px 4px 0"></div>'+
+          '</div></div>'+
+          '<div style="display:flex;gap:8px;font-size:9px;color:var(--tx3);margin-top:2px">'+
+          (appr?'<span style="color:var(--green)">Approved: '+appr+'</span>':'')+
+          (draft?'<span style="color:var(--blue)">Draft: '+draft+'</span>':'')+
+          (wait?'<span style="color:var(--amber)">Waiting: '+wait+'</span>':'')+
+          (ny?'<span style="color:var(--red)">Not Yet: '+ny+'</span>':'')+
+          '</div></div>';
+      }).join('');
+    }
+  }
 }
 
 function renderReminder(){
