@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OD Hub — Anteraja</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pink:#E8197D;--amber:#E8A020;--blue:#3D9BE9;--green:#1D9E75;--purple:#7C3AED;
+  --red:#D94040;--grey:#D3D1C7;
+  --bg:#F5F3EE;--surface:#FFFFFF;--border:#E4E2DC;
+  --tx:#111111;--tx2:#555555;--tx3:#999999;
+  --rs:8px;--rc:12px;--f:'Inter',system-ui,sans-serif;
+}
+body{font-family:var(--f);background:var(--bg);color:var(--tx);font-size:13px;min-height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:.5px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:700;color:var(--pink);margin-right:4px;flex-shrink:0}
+.back-btn{font-size:11px;color:var(--tx3);cursor:pointer;padding:4px 10px;border-radius:var(--rs);border:.5px solid var(--border);background:none;display:none}
+.back-btn:hover{background:var(--bg)}
+.page-label{font-size:12px;color:var(--tx3);font-weight:500}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;color:var(--green);background:#EDFAF4;border:.5px solid #9FE1CB;padding:3px 10px;border-radius:20px;font-weight:500}
+select.tf{font-size:11px;padding:5px 10px;border-radius:var(--rs);border:.5px solid var(--border);background:var(--surface);color:var(--tx);cursor:pointer}
+.btn{font-size:11px;padding:6px 14px;border-radius:var(--rs);border:.5px solid var(--border);background:var(--surface);color:var(--tx);cursor:pointer;font-family:var(--f)}
+.btn:hover{background:var(--bg)}
+.btn-pink{background:var(--pink);color:#fff;border-color:var(--pink)}
+.btn-pink:hover{background:#cc1570}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PAGES */
+.page{display:none;flex-direction:column;gap:12px;padding:16px 20px;max-width:1400px;margin:0 auto}
+.page.active{display:flex}
+
+/* CARDS */
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:16px}
+.chdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.ct{font-size:13px;font-weight:600;color:var(--tx)}
+.cs{font-size:11px;color:var(--tx3);margin-top:2px}
+.drill-btn{font-size:11px;color:var(--pink);background:none;border:none;cursor:pointer;font-family:var(--f);padding:0;white-space:nowrap}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.kpi{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:14px}
+.kpi-label{font-size:10px;color:var(--tx3);margin-bottom:6px;font-weight:500}
+.kpi-val{font-size:26px;font-weight:700;color:var(--tx);line-height:1}
+.kpi-sub{font-size:10px;color:var(--tx3);margin-top:6px}
+.kpi-bar{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:2px;transition:width .3s}
+
+/* GRID LAYOUTS */
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.r2b{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.r4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* CHART */
+canvas{display:block;width:100%}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:var(--pink);color:#fff;padding:8px 10px;text-align:left;font-weight:500}
+.tbl td{padding:7px 10px;border-bottom:.5px solid var(--border)}
+.tbl tr:hover td{background:#fafaf8}
+.tbl tr:last-child td{border-bottom:none}
+
+/* PILLS */
+.pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.pill-green{background:#EDFAF4;color:#085041}
+.pill-pink{background:#FBEAF0;color:#72243E}
+.pill-amber{background:#FAEEDA;color:#633806}
+.pill-blue{background:#EFF6FF;color:#0C447C}
+.pill-grey{background:#F1EFE8;color:#5F5E5A}
+.pill-red{background:#FCEBEB;color:#A32D2D}
+.pill-purple{background:#EEEDFE;color:#3C3489}
+
+/* PROGRESS BAR */
+.pb{background:var(--border);border-radius:4px;height:6px;overflow:hidden}
+.pb-fill{height:100%;border-radius:4px;transition:width .3s}
+
+/* INSIGHT */
+.ins{font-size:11px;padding:8px 12px;border-radius:var(--rs);margin-top:8px;line-height:1.5}
+.ins.ok{background:#EDFAF4;color:#085041}
+.ins.warn{background:#FAEEDA;color:#633806}
+.ins.info{background:#EFF6FF;color:#0C447C}
+
+/* DETAIL HDR */
+.detail-hdr{padding:4px 0 8px}
+.detail-hdr-title{font-size:16px;font-weight:700;color:var(--tx)}
+.detail-hdr-sub{font-size:11px;color:var(--tx3);margin-top:3px}
+
+/* OD HUB MINI CARDS */
+.od-mini{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:14px;cursor:pointer;transition:box-shadow .15s}
+.od-mini:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+
+/* SO STATUS */
+.so-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:.5px solid var(--border)}
+.so-row:last-child{border-bottom:none}
+
+/* KPI DIST */
+.dist-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px}
+.dist-label{width:130px;color:var(--tx2);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dist-bar-bg{flex:1;background:var(--border);border-radius:4px;height:6px;overflow:hidden}
+.dist-bar{height:6px;border-radius:4px}
+.dist-num{font-size:10px;color:var(--tx3);min-width:30px;text-align:right}
+
+/* REMINDER */
+.remind-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid var(--border);font-size:11px}
+.remind-row:last-child{border-bottom:none}
+
+/* TOOLTIP */
+#tooltip{position:fixed;display:none;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;line-height:1.7;z-index:9999;max-width:220px}
+
+/* MGMT */
+.mkpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.mkpi{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:14px}
+.mki{font-size:22px;margin-bottom:6px}
+.mkv{font-size:28px;font-weight:700;color:var(--tx)}
+.mkl{font-size:11px;font-weight:500;color:var(--tx);margin-top:4px}
+.mkt{font-size:10px;color:var(--tx3);margin-top:2px}
+.cg{color:var(--green)} .ca{color:var(--amber)} .cr{color:var(--red)} .cp{color:var(--pink)} .cb{color:var(--blue)} .cpr{color:var(--purple)}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--tx3);font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="logo">anteraja</span>
+  <button class="back-btn" id="back-btn" onclick="goBack()">← Kembali</button>
+  <span class="page-label" id="page-label"></span>
+  <div class="topbar-right">
+    <span class="badge" id="badge">Loading...</span>
+    <select class="tf" id="fdiv" onchange="applyFilters()"><option value="">Semua Divisi</option></select>
+    <select class="tf" id="fbln" onchange="applyFilters()"><option value="0">Semua 2026</option></select>
+    <div style="position:relative">
+      <button class="btn" id="export-btn" onclick="toggleExportMenu()">↓ Export ▾</button>
+      <div id="export-menu" style="display:none;position:absolute;top:36px;right:0;background:var(--surface);border:.5px solid var(--border);border-radius:var(--rs);box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:200;min-width:160px;overflow:hidden">
+        <button onclick="exportCSV();toggleExportMenu()" style="width:100%;text-align:left;padding:9px 14px;font-size:11px;border:none;background:none;cursor:pointer;color:var(--tx);font-family:var(--f)">📄 Export CSV</button>
+        <button onclick="exportPPT();toggleExportMenu()" style="width:100%;text-align:left;padding:9px 14px;font-size:11px;border:none;background:none;cursor:pointer;color:var(--tx);font-family:var(--f)">📊 Export PowerPoint</button>
+      </div>
+    </div>
+    <button class="btn btn-pink" id="refresh-btn" onclick="refreshData()">↺ Refresh Data</button>
+    <div style="width:32px;height:32px;border-radius:50%;background:var(--pink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">OD</div>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<!-- ══ PAGE: OVERVIEW ══ -->
+<div class="page active" id="page-overview">
+  <div class="kpi-row" id="kpi-row"></div>
+  <div class="r2b">
+    <div class="card">
+      <div class="chdr">
+        <div><div class="ct">MPP vs Realisasi per Bulan</div><div class="cs" id="c1s"></div></div>
+        <button class="drill-btn" onclick="goTo('fptk-tracker')">Lihat FPTK ›</button>
+      </div>
+      <canvas id="mchart" style="height:190px"></canvas>
+      <div class="mft" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <div class="leg" style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--tx3)">
+          <span><span style="width:8px;height:8px;border-radius:2px;background:var(--grey);border:.5px solid #aaa;display:inline-block;margin-right:4px"></span>MPP Plan</span>
+          <span><span style="width:8px;height:8px;border-radius:2px;background:var(--pink);display:inline-block;margin-right:4px"></span>Planned</span>
+          <span><span style="width:8px;height:8px;border-radius:2px;background:var(--amber);display:inline-block;margin-right:4px"></span>Replacement</span>
+          <span><span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block;margin-right:4px"></span>Unplanned</span>
+        </div>
+        <span id="glbl" style="font-size:10px;color:var(--tx3)"></span>
+      </div>
+      <div class="ins info" id="impp"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div class="chdr"><div><div class="ct">Headcount Trend</div><div class="cs" id="hcs"></div></div></div>
+        <div id="hspk" style="display:flex;gap:2px;align-items:flex-end;height:50px;margin-bottom:4px"></div>
+        <div id="hlbl" style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3)"></div>
+        <div id="hnum" style="font-size:22px;font-weight:700;color:var(--tx);margin-top:6px"></div>
+        <div class="ins ok" id="ihc"></div>
+      </div>
+      <div class="card">
+        <div class="chdr"><div><div class="ct">Ringkasan YTD</div><div class="cs" id="ytd-sub"></div></div></div>
+        <div id="ytd-stats"></div>
+      </div>
+    </div>
+  </div>
+  <div class="r3">
+    <div class="card">
+      <div class="chdr"><div><div class="ct">Status FPTK</div><div class="cs" id="sfptks"></div></div><button class="drill-btn" onclick="goTo('fptk-tracker')">Detail ›</button></div>
+      <div id="sfptk-body"></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div><div class="ct">Planned vs Unplanned</div><div class="cs" id="pvus"></div></div><button class="drill-btn" onclick="goTo('mpp-matching')">Lihat Matching ›</button></div>
+      <div id="pvu-body"></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div><div class="ct">Buy / Build</div><div class="cs"></div></div><button class="drill-btn" onclick="goTo('buy-build')">Detail ›</button></div>
+      <div id="bb-body"></div>
+    </div>
+  </div>
+  <!-- OD HUB SECTION -->
+  <div style="font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;padding:4px 0 2px">OD Hub</div>
+  <div class="r3">
+    <div class="od-mini" onclick="goTo('so')">
+      <div class="chdr"><div><div class="ct">Struktur Organisasi</div><div class="cs" id="so-kpi-sub"></div></div><button class="drill-btn">Detail ›</button></div>
+      <div id="so-kpi"></div>
+    </div>
+    <div class="od-mini" onclick="goTo('jd')">
+      <div class="chdr"><div><div class="ct">Job Description</div><div class="cs" id="jd-kpi-sub"></div></div><button class="drill-btn">Detail ›</button></div>
+      <div id="jd-kpi"></div>
+    </div>
+    <div class="od-mini" onclick="goTo('pm')">
+      <div class="chdr"><div><div class="ct">Performance Management</div><div class="cs" id="pm-kpi-sub"></div></div><button class="drill-btn">Detail ›</button></div>
+      <div id="pm-kpi"></div>
+    </div>
+  </div>
+  <div class="r2">
+    <div class="card" style="cursor:pointer" onclick="goTo('management')">
+      <div class="chdr"><div><div class="ct">Management View</div><div class="cs">Ringkasan eksekutif — klik untuk buka</div></div><button class="drill-btn">Buka ›</button></div>
+      <div id="mgmt-preview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div><div class="ct">SLA per Divisi</div><div class="cs" id="sla-div-sub"></div></div></div>
+      <div id="sla-div-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: FPTK TRACKER ══ -->
+<div class="page" id="page-fptk-tracker">
+  <div class="detail-hdr"><div class="detail-hdr-title">FPTK Tracker</div><div class="detail-hdr-sub">Detail semua FPTK · KJ 3 Up · 2026</div></div>
+  <div class="card">
+    <div class="filter-bar">
+      <select class="tf" id="ff-status" onchange="renderFPTKFull()"><option value="">Semua Status</option><option>Completed</option><option>On Process</option><option>Pending</option></select>
+      <select class="tf" id="ff-jenis" onchange="renderFPTKFull()"><option value="">Semua Jenis</option><option>Planned</option><option>Replacement</option><option>Unplanned</option></select>
+      <select class="tf" id="ff-bb" onchange="renderFPTKFull()"><option value="">Buy & Build</option><option>Buy</option><option>Build</option></select>
+      <select class="tf" id="ff-pic" onchange="renderFPTKFull()"><option value="">Semua PIC</option></select>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl" id="fptk-tbl">
+      <thead><tr><th>No</th><th>Posisi</th><th>Divisi</th><th>Dept</th><th>Level</th><th>Jml</th><th>Tgl Diajukan</th><th>Tgl Approved OD</th><th>SLA</th><th>PIC</th><th>Jenis</th><th>Buy/Build</th><th>Note</th></tr></thead>
+      <tbody id="ftbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ══ PAGE: BUY BUILD ══ -->
+<div class="page" id="page-buy-build">
+  <div class="detail-hdr"><div class="detail-hdr-title">Buy / Build Analysis</div><div class="detail-hdr-sub" id="bb-hdr-sub"></div></div>
+  <div class="r2b">
+    <div class="card"><div class="chdr"><div class="ct">Realisasi Buy/Build per Divisi</div></div><div id="bb-divisi"></div></div>
+    <div class="card"><div class="chdr"><div class="ct">MPP Plan Detail</div></div><div id="mpp-detail-body"></div></div>
+  </div>
+</div>
+
+<!-- ══ PAGE: MPP MATCHING ══ -->
+<div class="page" id="page-mpp-matching">
+  <div class="detail-hdr"><div class="detail-hdr-title">MPP Matching</div><div class="detail-hdr-sub">Pencocokan posisi FPTK dengan MPP Plan · fuzzy match</div></div>
+  <div class="card">
+    <div class="filter-bar">
+      <select class="tf" id="mfst" onchange="renderMatch()"><option value="">Semua Status</option><option value="match">Match</option><option value="partial">Partial</option><option value="mismatch">Mismatch</option><option value="unplanned">Unplanned</option><option value="replacement">Replacement</option></select>
+    </div>
+    <div id="msum" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>Bulan</th><th>Divisi</th><th>Posisi FPTK</th><th>Jenis</th><th>MPP Match</th><th>Score</th><th>Status</th></tr></thead>
+      <tbody id="mtbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ══ PAGE: PER DIVISI ══ -->
+<div class="page" id="page-per-divisi">
+  <div class="detail-hdr"><div class="detail-hdr-title">Realisasi per Divisi</div><div class="detail-hdr-sub" id="divisi-sub"></div></div>
+  <div class="card"><div id="divisi-body"></div></div>
+</div>
+
+<!-- ══ PAGE: MANAGEMENT ══ -->
+<div class="page" id="page-management">
+  <div class="detail-hdr"><div class="detail-hdr-title">Management View</div><div class="detail-hdr-sub" id="mgmts"></div></div>
+  <div class="mkpi-grid" id="mkpis"></div>
+  <div class="r2">
+    <div class="card"><div class="chdr"><div><div class="ct">Realisasi per Divisi</div></div></div><div id="mgd"></div></div>
+    <div class="card"><div class="chdr"><div><div class="ct">Key Highlights</div></div></div><div id="mghl"></div></div>
+  </div>
+  <div class="r2">
+    <div class="card"><div class="chdr"><div><div class="ct">Buy / Build Rekap YTD</div><div class="cs" id="mgbbs"></div></div></div><div id="mgbb"></div></div>
+    <div class="card"><div class="chdr"><div><div class="ct">MPP Matching Summary</div></div></div><div id="mgmatch"></div></div>
+  </div>
+</div>
+
+<!-- ══ PAGE: SO ══ -->
+<div class="page" id="page-so">
+  <div class="detail-hdr"><div class="detail-hdr-title">Struktur Organisasi Tracking</div><div class="detail-hdr-sub">Status SO per divisi · 2026</div></div>
+  <div class="r2">
+    <div class="card">
+      <div class="chdr"><div><div class="ct">Status per Divisi</div><div class="cs" id="so-sub"></div></div></div>
+      <div id="so-list"></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div><div class="ct">Summary</div></div></div>
+      <div id="so-summary"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: JD ══ -->
+<div class="page" id="page-jd">
+  <div class="detail-hdr"><div class="detail-hdr-title">Job Description Tracking</div><div class="detail-hdr-sub">Status JD per jabatan · 2026</div></div>
+  <div class="card">
+    <div class="chdr"><div><div class="ct">Daftar JD</div><div class="cs" id="jd-sub"></div></div></div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>Divisi</th><th>Department</th><th>Level</th><th>Jabatan</th><th>Status</th></tr></thead>
+      <tbody id="jd-tbody"></tbody>
+    </table></div>
+    <div id="jd-completion" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- ══ PAGE: PM ══ -->
+<div class="page" id="page-pm">
+  <div class="detail-hdr"><div class="detail-hdr-title">Performance Management</div><div class="detail-hdr-sub" id="pm-sub">IPP & IPE Tracking · 2026</div></div>
+  <div class="kpi-row" id="pm-kpis"></div>
+  <div class="r2">
+    <div class="card">
+      <div class="chdr"><div><div class="ct">Distribusi Status IPP</div></div></div>
+      <div id="ipp-dist"></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div><div class="ct">Distribusi Status IPE</div></div></div>
+      <div id="ipe-dist"></div>
+    </div>
+  </div>
+  <div class="r2">
+    <div class="card">
+      <div class="chdr"><div><div class="ct">IPP per Level</div></div></div>
+      <div id="ipp-level"></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div><div class="ct">IPE per Level</div></div></div>
+      <div id="ipe-level"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="chdr">
+      <div><div class="ct">Reminder — Belum Mengisi</div><div class="cs" id="remind-sub"></div></div>
+      <div style="display:flex;gap:8px">
+        <select class="tf" id="remind-filter" onchange="renderReminder()"><option value="all">IPP & IPE</option><option value="ipp">IPP saja</option><option value="ipe">IPE saja</option></select>
+        <button class="btn btn-pink" onclick="sendBulkReminder()">✉ Kirim Reminder</button>
+      </div>
+    </div>
+    <div id="remind-list"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script>
+// ── CONFIG ──
+const SHEET_ID = '1Y4okept6ADvk-KZVU8qgkBkTaCvH8dwkhDVSYaOnTuQ';
+const API_KEY = 'AIzaSyA_K5XPnnvGvPzt08Bvdg9vmcW-gWJJt8k';
+const SHEET_NAMES = {fptk:'FPTK KJ 3Up', mpp:'MPP', so:'SO', jd:'Job Description', kpi:'KPI', mk:'Master Karyawan'};
+
+// ── EMBEDDED DATA (fallback) ──
+const EMBEDDED = {"fptk":[{"divisi":"Operation","dept":"Region Jabodetabek-Kalbar","posisi":"Hub Coordinator","kj":3,"level":"Coordinator","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Unplanned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Retail & Non Marketplace Business Development","posisi":"Head of Retail & Non Marketplace Business Development","kj":4,"level":"Departement Head","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Unplanned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Corporate Sales Group 1","posisi":"Account Manager Group 1","kj":3,"level":"Staff","jml_diajukan":2,"jml_approved":2,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Corporate Sales Group 1","posisi":"Account Manager Group 1","kj":4,"level":"Supervisor","jml_diajukan":3,"jml_approved":3,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Corporate Sales Group 2","posisi":"Account Manager Group 2","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Corporate Sales Group 2","posisi":"Account Manager Group 2","kj":4,"level":"Supervisor","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Corporate Sales Group 2","posisi":"Account Manager Group 2","kj":4,"level":"Section Head","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Corporate Sales Group 2","posisi":"Account Manager Group 2","kj":4,"level":"Supervisor","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/01/2026","tgl_approved":"19/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":"Replacement Dita (prev FPTK Closed)"},{"divisi":"IT Development","dept":"Commercial Application Developer","posisi":"Retail Application Developer","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"01/01/2026","tgl_approved":"20/01/2026","bulan":1,"pic":"Raya","sla":14,"planned":"Planned","buy_build":"Buy","status":"Completed","note":"Hiring dari IT bootcamp"},{"divisi":"Finance","dept":"Account Receivable","posisi":"AR COD Staff","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/11/2025","tgl_approved":"21/01/2026","bulan":1,"pic":"Arya","sla":46,"planned":"Unplanned","buy_build":"Buy","status":"Completed","note":"Replacement mutasi jhonferi yang belum di mutasi"},{"divisi":"IT Services & Project Coordination","dept":"IT SPC","posisi":"HMS Corporate Assitance (OS)","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"21/01/2026","tgl_approved":"21/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":"Replacement temporary karyawan cuti hamil"},{"divisi":"Brand & Business Ecosystem","dept":"Brand & Marketing","posisi":"Content Creator","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"19/01/2026","tgl_approved":"22/01/2026","bulan":1,"pic":"Arya","sla":4,"planned":"Planned","buy_build":"Buy","status":"Completed","note":"Freelance to Organic"},{"divisi":"Operation","dept":"Control Tower","posisi":"Solution Center Hub Leader","kj":3,"level":"Coordinator","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"27/01/2026","tgl_approved":"27/01/2026","bulan":1,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":"Replacement Demosi"},{"divisi":"Operation","dept":"Control Tower","posisi":"Data Operation Support Officer","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/02/2026","tgl_approved":"02/02/2026","bulan":2,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":"Replacement resign"},{"divisi":"Sales, Growth & Customer Experience","dept":"Sales Support","posisi":"Account Executive","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/02/2026","tgl_approved":"02/02/2026","bulan":2,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Operation","dept":"Control Tower","posisi":"Business Operation Associate Service Type Officer","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/02/2026","tgl_approved":"02/02/2026","bulan":2,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":"Use MPP carry over"},{"divisi":"Business Operation & Monitoring Support","dept":"Quality Assurance Operational","posisi":"QA Operation Officer (JTBNT-Kalsulam)","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/02/2026","tgl_approved":"03/02/2026","bulan":2,"pic":"Arya","sla":2,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":"Replacement resign QA Officer Jateng-DIY"},{"divisi":"Business Process & Risk Management","dept":"Portfolio Analyst","posisi":"Portfolio Analyst","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/02/2026","tgl_approved":"03/02/2026","bulan":2,"pic":"Arya","sla":2,"planned":"Planned","buy_build":"Buy","status":"Completed","note":"Nambah MPP"},{"divisi":"IT Development","dept":"Commercial Application Developer","posisi":"Commercial Application Developer","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"04/02/2026","tgl_approved":"04/02/2026","bulan":2,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Sales Support","posisi":"Sales Support","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"20/02/2026","tgl_approved":"20/02/2026","bulan":2,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"IT Product Management & Technology Innovation","dept":"Technology Specialist","posisi":"Technology Specialist","kj":4,"level":"Section Head","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"20/02/2026","tgl_approved":"20/02/2026","bulan":2,"pic":"Arya","sla":1,"planned":"Unplanned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Finance","dept":"Procurement & Vendor Management","posisi":"Procurement Staff","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"16/03/2026","tgl_approved":"16/03/2026","bulan":3,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":"Contract-based"},{"divisi":"Human Capital","dept":"People & Organization Development","posisi":"Logistic Ecosystem Management Trainee","kj":3,"level":"Staff","jml_diajukan":11,"jml_approved":11,"tgl_diajukan":"17/03/2026","tgl_approved":"17/03/2026","bulan":3,"pic":"Arya","sla":1,"planned":"Unplanned","buy_build":"Buy","status":"Completed","note":"MT ASSA"},{"divisi":"IT Product Management & Technology Innovation","dept":"Digital Office","posisi":"Finance System Product Owner","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"25/03/2026","tgl_approved":"27/03/2026","bulan":3,"pic":"Arya","sla":3,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"IT Product Management & Technology Innovation","dept":"Digital Enterprise","posisi":"IT Service Analyst","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"27/03/2026","tgl_approved":"27/03/2026","bulan":3,"pic":"Arya","sla":1,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Warehouse & Fulfillment Services","dept":"Warehouse & Fulfillment Services","posisi":"Deputy SPV Karawaci 1 (B2C)","kj":3,"level":"Coordinator","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"27/03/2026","tgl_approved":"31/03/2026","bulan":3,"pic":"Arya","sla":3,"planned":"Planned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Business & Commercial Growth","posisi":"Business Performance & Monitoring Analyst","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"06/04/2026","tgl_approved":"07/04/2026","bulan":4,"pic":"Arya","sla":2,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Business Operation & Monitoring Support","dept":"Quality Assurance Operational","posisi":"QA Operation Officer (JTB 3)","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"15/04/2026","tgl_approved":"15/04/2026","bulan":4,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Corporate Sales Group 2","posisi":"Account Manager","kj":4,"level":"Supervisor","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"16/04/2026","tgl_approved":"16/04/2026","bulan":4,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"IT Product Management & Technology Innovation","dept":"IT Product Management & Technology Innovation","posisi":"Solution Engineer","kj":3,"level":"Staff","jml_diajukan":30,"jml_approved":30,"tgl_diajukan":"30/04/2026","tgl_approved":"30/04/2026","bulan":4,"pic":"Arya","sla":1,"planned":"Unplanned","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Operation","dept":"Performance Control & Monitoring","posisi":"Performance Montioring Support Lead Time & Claim","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"30/04/2026","tgl_approved":"30/04/2026","bulan":4,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Operation","dept":"Performance Control & Monitoring","posisi":"Solution Center Hub Leader","kj":3,"level":"Coordinator","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"30/04/2026","tgl_approved":"30/04/2026","bulan":4,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Finance","dept":"Finance Operation & Procurement","posisi":"Procurement Supervisor Transport","kj":4,"level":"Supervisor","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"05/05/2026","tgl_approved":"05/05/2026","bulan":5,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":"Replacement temporary karyawan cuti hamil"},{"divisi":"IT Development","dept":"FM-LM Development","posisi":"First Mile-Last Mile Application QAT","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"06/05/2026","tgl_approved":"11/05/2026","bulan":5,"pic":"Raya","sla":4,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"IT Development","dept":"FM-LM Development","posisi":"First Mile-Last Developer","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"06/05/2026","tgl_approved":"11/05/2026","bulan":5,"pic":"Raya","sla":4,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Human Capital","dept":"HCBP Regional","posisi":"HC Regional Staff","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"20/05/2026","tgl_approved":"25/05/2026","bulan":5,"pic":"Arya","sla":4,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Sales, Growth & Customer Experience","dept":"Sales Support","posisi":"Account Executive","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"13/05/2026","tgl_approved":"26/05/2026","bulan":5,"pic":"Arya","sla":10,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Operation","dept":"Transport Operation","posisi":"Transport Operation Head Jabar","kj":4,"level":"Section Head","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/01/2026","tgl_approved":"02/01/2026","bulan":1,"pic":"Raya","sla":1,"planned":"Planned","buy_build":"Build","status":"Completed","note":""},{"divisi":"Business Operation & Monitoring Support","dept":"General Affair & CREM","posisi":"CREM Head","kj":4,"level":"Section Head","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/01/2026","tgl_approved":"02/01/2026","bulan":1,"pic":"Raya","sla":1,"planned":"Planned","buy_build":"Build","status":"Completed","note":""},{"divisi":"Finance","dept":"Treasury & Bank Relation","posisi":"Treasury SPV","kj":4,"level":"Supervisor","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"01/01/2026","tgl_approved":"01/01/2026","bulan":1,"pic":"Raya","sla":1,"planned":"Planned","buy_build":"Build","status":"Completed","note":""},{"divisi":"IT Development","dept":"Commercial Application Development","posisi":"COMMERCIAL APPLICATION DEVELOPMENT QAT LEAD","kj":4,"level":"Supervisor","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/04/2026","tgl_approved":"02/04/2026","bulan":3,"pic":"Raya","sla":1,"planned":"Planned","buy_build":"Build","status":"Completed","note":""},{"divisi":"E-Fulfillment","dept":"Operation","posisi":"Coordinator Outbound","kj":3,"level":"Coordinator","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/06/2026","tgl_approved":"02/06/2026","bulan":6,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Finance","dept":"Budget & Cost Control & Finance Improvement","posisi":"Head of Budget & Cost Control & Finance Improvement","kj":4,"level":"Departement Head","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/04/2026","tgl_approved":"02/04/2026","bulan":4,"pic":"Raya","sla":1,"planned":"Planned","buy_build":"Build","status":"Completed","note":""},{"divisi":"Human Capital","dept":"HCBP Regional","posisi":"HC Regional Staff","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"29/05/2026","tgl_approved":"02/06/2026","bulan":4,"pic":"Arya","sla":3,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Operation","dept":"Mid Mile Operation","posisi":"Hub Coordinator","kj":3,"level":"Coordinator","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"04/06/2026","tgl_approved":"04/06/2026","bulan":6,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"IT Product Management & Technology Innovation","dept":"Digital Office","posisi":"Finance System Product Owner","kj":3,"level":"Coordinator","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"04/06/2026","tgl_approved":"04/06/2026","bulan":6,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Brand & Business Ecosystem","dept":"Brand & Marketing","posisi":"Marketing Officer","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"04/06/2026","tgl_approved":"09/06/2026","bulan":6,"pic":"Arya","sla":4,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Brand & Business Ecosystem","dept":"Brand & Marketing","posisi":"Brand Experience Lead","kj":4,"level":"Supervisor","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"04/06/2026","tgl_approved":"09/06/2026","bulan":6,"pic":"Arya","sla":4,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Operation","dept":"First & Last Mile Operation","posisi":"GA Regional Head","kj":4,"level":"Section Head","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"22/06/2026","tgl_approved":"24/06/2026","bulan":6,"pic":"Arya","sla":3,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Finance","dept":"Budget & Cost Control & Finance Improvement","posisi":"Budget & Cost Control & Finance Improvement Staff","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"22/06/2026","tgl_approved":"30/06/2026","bulan":6,"pic":"Arya","sla":7,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""},{"divisi":"Finance","dept":"Account Payable","posisi":"Account Payable Staff","kj":3,"level":"Staff","jml_diajukan":1,"jml_approved":1,"tgl_diajukan":"02/07/2026","tgl_approved":"02/07/2026","bulan":7,"pic":"Arya","sla":1,"planned":"Replacement","buy_build":"Buy","status":"Completed","note":""}],"match_results":[{"bulan":1,"divisi":"Operation","posisi":"Hub Coordinator","planned":"Unplanned","jml":1,"level":"Coordinator","note":"","mpp_match":null,"score":null,"match_status":"unplanned","div_in_mpp":true},{"bulan":1,"divisi":"Sales, Growth & Customer Experience","posisi":"Head of Retail & Non Marketplace Business Development","planned":"Unplanned","jml":1,"level":"Departement Head","note":"","mpp_match":null,"score":null,"match_status":"unplanned","div_in_mpp":true},{"bulan":1,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Manager Group 1","planned":"Planned","jml":2,"level":"Staff","note":"","mpp_match":"Account Manager","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Manager Group 1","planned":"Planned","jml":3,"level":"Supervisor","note":"","mpp_match":"Account Manager","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Manager Group 2","planned":"Planned","jml":1,"level":"Staff","note":"","mpp_match":"Account Manager","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Manager Group 2","planned":"Planned","jml":1,"level":"Supervisor","note":"","mpp_match":"Account Manager","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Manager Group 2","planned":"Planned","jml":1,"level":"Section Head","note":"","mpp_match":"Account Manager","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Manager Group 2","planned":"Planned","jml":1,"level":"Supervisor","note":"Replacement Dita (prev FPTK Closed)","mpp_match":"Account Manager","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"IT Development","posisi":"Retail Application Developer","planned":"Planned","jml":1,"level":"Staff","note":"Hiring dari IT bootcamp","mpp_match":"RETAIL APPLICATION DEVELOPMENT HEAD","score":0.5,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Finance","posisi":"AR COD Staff","planned":"Unplanned","jml":1,"level":"Staff","note":"Replacement mutasi jhonferi yang belum di mutasi","mpp_match":null,"score":null,"match_status":"unplanned","div_in_mpp":true},{"bulan":1,"divisi":"IT Services & Project Coordination","posisi":"HMS Corporate Assitance (OS)","planned":"Replacement","jml":1,"level":"Staff","note":"Replacement temporary karyawan cuti hamil","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":false},{"bulan":1,"divisi":"Brand & Business Ecosystem","posisi":"Content Creator","planned":"Planned","jml":1,"level":"Staff","note":"Freelance to Organic","mpp_match":"Content Creator","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Operation","posisi":"Solution Center Hub Leader","planned":"Replacement","jml":1,"level":"Coordinator","note":"Replacement Demosi","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":2,"divisi":"Operation","posisi":"Data Operation Support Officer","planned":"Replacement","jml":1,"level":"Staff","note":"Replacement resign","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":2,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Executive","planned":"Planned","jml":1,"level":"Staff","note":"","mpp_match":"Account Executive","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":2,"divisi":"Operation","posisi":"Business Operation Associate Service Type Officer","planned":"Planned","jml":1,"level":"Staff","note":"Use MPP carry over","mpp_match":"BUSINESS OPERATION ASSOCIATE (B2B)","score":0.6,"match_status":"match","div_in_mpp":true},{"bulan":2,"divisi":"Business Operation & Monitoring Support","posisi":"QA Operation Officer (JTBNT-Kalsulam)","planned":"Replacement","jml":1,"level":"Staff","note":"Replacement resign QA Officer Jateng-DIY","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":2,"divisi":"Business Process & Risk Management","posisi":"Portfolio Analyst","planned":"Planned","jml":1,"level":"Staff","note":"Nambah MPP","mpp_match":"Portfolio Analyst","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":2,"divisi":"IT Development","posisi":"Commercial Application Developer","planned":"Planned","jml":1,"level":"Staff","note":"","mpp_match":"COMMERCIAL APPLICATION QAT LEAD (Replace to Commercial Application Developer)","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":2,"divisi":"Sales, Growth & Customer Experience","posisi":"Sales Support","planned":"Planned","jml":1,"level":"Staff","note":"","mpp_match":"Sales Support","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":2,"divisi":"IT Product Management & Technology Innovation","posisi":"Technology Specialist","planned":"Unplanned","jml":1,"level":"Section Head","note":"","mpp_match":null,"score":null,"match_status":"unplanned","div_in_mpp":true},{"bulan":3,"divisi":"Finance","posisi":"Procurement Staff","planned":"Planned","jml":1,"level":"Staff","note":"Contract-based","mpp_match":"PROCUREMENT ANALYST","score":1.0,"match_status":"match","div_in_mpp":true},{"bulan":3,"divisi":"Human Capital","posisi":"Logistic Ecosystem Management Trainee","planned":"Unplanned","jml":11,"level":"Staff","note":"MT ASSA","mpp_match":null,"score":null,"match_status":"unplanned","div_in_mpp":true},{"bulan":3,"divisi":"IT Product Management & Technology Innovation","posisi":"Finance System Product Owner","planned":"Planned","jml":1,"level":"Staff","note":"","mpp_match":"Finance System Product Owner","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":3,"divisi":"IT Product Management & Technology Innovation","posisi":"IT Service Analyst","planned":"Planned","jml":1,"level":"Staff","note":"","mpp_match":"IT Service Analyst","score":0.8,"match_status":"match","div_in_mpp":true},{"bulan":3,"divisi":"Warehouse & Fulfillment Services","posisi":"Deputy SPV Karawaci 1 (B2C)","planned":"Planned","jml":1,"level":"Coordinator","note":"","mpp_match":null,"score":0,"match_status":"mismatch","div_in_mpp":false},{"bulan":4,"divisi":"Sales, Growth & Customer Experience","posisi":"Business Performance & Monitoring Analyst","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":4,"divisi":"Business Operation & Monitoring Support","posisi":"QA Operation Officer (JTB 3)","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":4,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Manager","planned":"Replacement","jml":1,"level":"Supervisor","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":4,"divisi":"IT Product Management & Technology Innovation","posisi":"Solution Engineer","planned":"Unplanned","jml":30,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"unplanned","div_in_mpp":true},{"bulan":4,"divisi":"Operation","posisi":"Performance Montioring Support Lead Time & Claim","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":4,"divisi":"Operation","posisi":"Solution Center Hub Leader","planned":"Replacement","jml":1,"level":"Coordinator","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":5,"divisi":"Finance","posisi":"Procurement Supervisor Transport","planned":"Replacement","jml":1,"level":"Supervisor","note":"Replacement temporary karyawan cuti hamil","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":5,"divisi":"IT Development","posisi":"First Mile-Last Mile Application QAT","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":5,"divisi":"IT Development","posisi":"First Mile-Last Developer","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":5,"divisi":"Human Capital","posisi":"HC Regional Staff","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":5,"divisi":"Sales, Growth & Customer Experience","posisi":"Account Executive","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":1,"divisi":"Operation","posisi":"Transport Operation Head Jabar","planned":"Planned","jml":1,"level":"Section Head","note":"","mpp_match":"HEAD OF MIDMILE OPERATION","score":0.25,"match_status":"partial","div_in_mpp":true},{"bulan":1,"divisi":"Business Operation & Monitoring Support","posisi":"CREM Head","planned":"Planned","jml":1,"level":"Section Head","note":"","mpp_match":"CREM Officer","score":1.0,"match_status":"match","div_in_mpp":true},{"bulan":1,"divisi":"Finance","posisi":"Treasury SPV","planned":"Planned","jml":1,"level":"Supervisor","note":"","mpp_match":null,"score":0,"match_status":"mismatch","div_in_mpp":true},{"bulan":3,"divisi":"IT Development","posisi":"COMMERCIAL APPLICATION DEVELOPMENT QAT LEAD","planned":"Planned","jml":1,"level":"Supervisor","note":"","mpp_match":"COMMERCIAL APPLICATION QAT LEAD (Replace to Commercial Application Developer)","score":0.5,"match_status":"match","div_in_mpp":true},{"bulan":6,"divisi":"E-Fulfillment","posisi":"Coordinator Outbound","planned":"Replacement","jml":1,"level":"Coordinator","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":4,"divisi":"Finance","posisi":"Head of Budget & Cost Control & Finance Improvement","planned":"Planned","jml":1,"level":"Departement Head","note":"","mpp_match":null,"score":0,"match_status":"mismatch","div_in_mpp":true},{"bulan":4,"divisi":"Human Capital","posisi":"HC Regional Staff","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":6,"divisi":"Operation","posisi":"Hub Coordinator","planned":"Replacement","jml":1,"level":"Coordinator","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":6,"divisi":"IT Product Management & Technology Innovation","posisi":"Finance System Product Owner","planned":"Replacement","jml":1,"level":"Coordinator","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":6,"divisi":"Brand & Business Ecosystem","posisi":"Marketing Officer","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":6,"divisi":"Brand & Business Ecosystem","posisi":"Brand Experience Lead","planned":"Replacement","jml":1,"level":"Supervisor","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":6,"divisi":"Operation","posisi":"GA Regional Head","planned":"Replacement","jml":1,"level":"Section Head","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":6,"divisi":"Finance","posisi":"Budget & Cost Control & Finance Improvement Staff","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true},{"bulan":7,"divisi":"Finance","posisi":"Account Payable Staff","planned":"Replacement","jml":1,"level":"Staff","note":"","mpp_match":null,"score":null,"match_status":"replacement","div_in_mpp":true}],"mpp_positions":{"Sales, Growth & Customer Experience":["Account Manager","AGGREGATOR COORDINATOR","B2B COORDINATOR","Sales Support","Account Executive","RFTM Coordinator","Trainer & SOP Life Cycle Management Coordinator","Insight & Solution Supervisor"],"Operation":["Regional Operations Analyst","HEAD OF MIDMILE OPERATION","BUSINESS OPERATION ASSOCIATE (B2B)","First & Last Mile Development Specialist","Mid Mile Development Specialist","Technology Development Specialist","Equipment and Facility Development Specialist","Mid Mile Development Head","Head of Operation Support"],"E-Fulfillment":["PDCA Staff"],"Human Capital":["Culture & Employer Branding Staff","HCBP Non-TAB Staff","TALENT ACQUISITION ORGANIC STAFF","REWARD STAFF"],"It Development":["AVP EXPERIENCE DEVELOPMENT","AVP PLATFORM DEVELOPMENT","FIRST MILE APPLICATION DEVELOPMENT LEAD","FIRST & LAST MILE APPLICATION DEVELOPMENT","FIRST & LAST MILE APPLICATION QAT","RETAIL APPLICATION DEVELOPMENT HEAD","FINANCIAL REPORTING HEAD","MID MILE AND TRANSPORT APP QAT SPECIALIST","COMMERCIAL APPLICATION QAT LEAD (Replace to Commercial Application Developer)","COMMERCIAL APPLICATION DEVELOPER"],"Finance":["HEAD OF ACCOUNT RECEIVABLE","PROCUREMENT ANALYST","ACCOUNTING STAFF","Procurement Staff"],"Internal Audit And Anti Fraud":["INTERNAL AUDIT DEVELOPMENT OFFICER"],"It Product Management & Technology Innovation":["Associate Full Stack Engineer","Solution Architect","Finance System Product Owner","IT Service Analyst"],"Business Operation & Monitoring Support":["QA Operational Staff","CREM Officer"],"Brand & Business Ecosystem":["Content Creator","Brand & Campaign Strategist"],"It Services And It Project Coordination":["Technical Field Operation Supervisor","IT Budget Control Officer","IT Field Support Officer","Corporate Assistance Officer"],"Business Process & Risk Management":["Portfolio Analyst"]},"mpp_plan_buy":{"Sales, Growth & Customer Experience":{"Jan":10,"Feb":2,"Mar":0,"Apr":0,"Mei":1,"Jun":1,"Jul":0,"Agt":0,"Sep":1,"Okt":0,"Nov":0,"Des":0},"Operation":{"Jan":1,"Feb":0,"Mar":3,"Apr":1,"Mei":2,"Jun":1,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"E-Fulfillment":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":1,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Human Capital":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":4,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"It Development":{"Jan":0,"Feb":0,"Mar":4,"Apr":1,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Finance":{"Jan":0,"Feb":0,"Mar":3,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Internal Audit And Anti Fraud":{"Jan":0,"Feb":0,"Mar":1,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"It Product Management & Technology Innovation":{"Jan":0,"Feb":0,"Mar":3,"Apr":0,"Mei":2,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Business Operation & Monitoring Support":{"Jan":0,"Feb":0,"Mar":0,"Apr":1,"Mei":0,"Jun":3,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Brand & Business Ecosystem":{"Jan":0,"Feb":0,"Mar":0,"Apr":3,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"It Services And It Project Coordination":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":1,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Business Process & Risk Management":{"Jan":0,"Feb":1,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0}},"mpp_plan_build":{"Sales, Growth & Customer Experience":{"Jan":0,"Feb":0,"Mar":0,"Apr":3,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Operation":{"Jan":0,"Feb":0,"Mar":5,"Apr":1,"Mei":0,"Jun":1,"Jul":0,"Agt":1,"Sep":0,"Okt":0,"Nov":0,"Des":0},"E-Fulfillment":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Human Capital":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"It Development":{"Jan":0,"Feb":0,"Mar":2,"Apr":0,"Mei":0,"Jun":3,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Finance":{"Jan":0,"Feb":0,"Mar":1,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Internal Audit And Anti Fraud":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"It Product Management & Technology Innovation":{"Jan":0,"Feb":0,"Mar":1,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Business Operation & Monitoring Support":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Brand & Business Ecosystem":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"It Services And It Project Coordination":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0},"Business Process & Risk Management":{"Jan":0,"Feb":0,"Mar":0,"Apr":0,"Mei":0,"Jun":0,"Jul":0,"Agt":0,"Sep":0,"Okt":0,"Nov":0,"Des":0}},"mpp_detail":{"Sales, Growth & Customer Experience":[{"pos":"Account Manager","level":"Staff","total_buy":10,"total_build":0,"months":{"Jan":{"buy":10,"build":0}}},{"pos":"AGGREGATOR COORDINATOR","level":"Coordinator","total_buy":1,"total_build":0,"months":{"Jun":{"buy":1,"build":0}}},{"pos":"B2B COORDINATOR","level":"Coordinator","total_buy":2,"total_build":0,"months":{"Mei":{"buy":1,"build":0},"Sep":{"buy":1,"build":0}}},{"pos":"Sales Support","level":"Staff","total_buy":1,"total_build":0,"months":{"Feb":{"buy":1,"build":0}}},{"pos":"Account Executive","level":"Staff","total_buy":1,"total_build":0,"months":{"Feb":{"buy":1,"build":0}}},{"pos":"RFTM Coordinator","level":"Coordinator","total_buy":0,"total_build":1,"months":{"Apr":{"buy":0,"build":1}}},{"pos":"Trainer & SOP Life Cycle Management Coordinator","level":"Coordinator","total_buy":0,"total_build":1,"months":{"Apr":{"buy":0,"build":1}}},{"pos":"Insight & Solution Supervisor","level":"Supervisor","total_buy":0,"total_build":1,"months":{"Apr":{"buy":0,"build":1}}}],"Operation":[{"pos":"Regional Operations Analyst","level":"Supervisor","total_buy":0,"total_build":5,"months":{"Mar":{"buy":0,"build":5}}},{"pos":"HEAD OF MIDMILE OPERATION","level":"Department Head","total_buy":0,"total_build":1,"months":{"Agt":{"buy":0,"build":1}}},{"pos":"BUSINESS OPERATION ASSOCIATE (B2B)","level":"Staff","total_buy":3,"total_build":0,"months":{"Jan":{"buy":1,"build":0},"Mei":{"buy":2,"build":0}}},{"pos":"First & Last Mile Development Specialist","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"Mid Mile Development Specialist","level":"Staff","total_buy":1,"total_build":0,"months":{"Apr":{"buy":1,"build":0}}},{"pos":"Technology Development Specialist","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"Equipment and Facility Development Specialist","level":"Staff","total_buy":2,"total_build":0,"months":{"Mar":{"buy":1,"build":0},"Jun":{"buy":1,"build":0}}},{"pos":"Mid Mile Development Head","level":"Section Head","total_buy":0,"total_build":1,"months":{"Jun":{"buy":0,"build":1}}},{"pos":"Head of Operation Support","level":"Department Head","total_buy":0,"total_build":1,"months":{"Apr":{"buy":0,"build":1}}}],"E-Fulfillment":[{"pos":"PDCA Staff","level":"Staff","total_buy":1,"total_build":0,"months":{"Mei":{"buy":1,"build":0}}}],"Human Capital":[{"pos":"Culture & Employer Branding Staff","level":"Staff","total_buy":1,"total_build":0,"months":{"Mei":{"buy":1,"build":0}}},{"pos":"HCBP Non-TAB Staff","level":"Staff","total_buy":1,"total_build":0,"months":{"Mei":{"buy":1,"build":0}}},{"pos":"TALENT ACQUISITION ORGANIC STAFF","level":"Staff","total_buy":1,"total_build":0,"months":{"Mei":{"buy":1,"build":0}}},{"pos":"REWARD STAFF","level":"Staff","total_buy":1,"total_build":0,"months":{"Mei":{"buy":1,"build":0}}}],"It Development":[{"pos":"AVP EXPERIENCE DEVELOPMENT","level":"AVP","total_buy":0,"total_build":1,"months":{"Mar":{"buy":0,"build":1}}},{"pos":"AVP PLATFORM DEVELOPMENT","level":"AVP","total_buy":0,"total_build":1,"months":{"Jun":{"buy":0,"build":1}}},{"pos":"FIRST MILE APPLICATION DEVELOPMENT LEAD","level":"Supervisor","total_buy":0,"total_build":1,"months":{"Mar":{"buy":0,"build":1}}},{"pos":"FIRST & LAST MILE APPLICATION DEVELOPMENT","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"FIRST & LAST MILE APPLICATION QAT","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"RETAIL APPLICATION DEVELOPMENT HEAD","level":"Section Head","total_buy":0,"total_build":1,"months":{"Jun":{"buy":0,"build":1}}},{"pos":"FINANCIAL REPORTING HEAD","level":"Section Head","total_buy":0,"total_build":1,"months":{"Jun":{"buy":0,"build":1}}},{"pos":"MID MILE AND TRANSPORT APP QAT SPECIALIST","level":"Staff","total_buy":1,"total_build":0,"months":{"Apr":{"buy":1,"build":0}}},{"pos":"COMMERCIAL APPLICATION QAT LEAD (Replace to Commercial Application Developer)","level":"Supervisor","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"COMMERCIAL APPLICATION DEVELOPER","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}}],"Finance":[{"pos":"HEAD OF ACCOUNT RECEIVABLE","level":"Department Head","total_buy":0,"total_build":1,"months":{"Mar":{"buy":0,"build":1}}},{"pos":"PROCUREMENT ANALYST","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"ACCOUNTING STAFF","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"Procurement Staff","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}}],"Internal Audit And Anti Fraud":[{"pos":"INTERNAL AUDIT DEVELOPMENT OFFICER","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}}],"It Product Management & Technology Innovation":[{"pos":"Associate Full Stack Engineer","level":"Staff","total_buy":3,"total_build":0,"months":{"Mar":{"buy":1,"build":0},"Mei":{"buy":2,"build":0}}},{"pos":"Solution Architect","level":"Supervisor","total_buy":0,"total_build":1,"months":{"Mar":{"buy":0,"build":1}}},{"pos":"Finance System Product Owner","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}},{"pos":"IT Service Analyst","level":"Staff","total_buy":1,"total_build":0,"months":{"Mar":{"buy":1,"build":0}}}],"Business Operation & Monitoring Support":[{"pos":"QA Operational Staff","level":"Staff","total_buy":3,"total_build":0,"months":{"Jun":{"buy":3,"build":0}}},{"pos":"CREM Officer","level":"Staff","total_buy":1,"total_build":0,"months":{"Apr":{"buy":1,"build":0}}}],"Brand & Business Ecosystem":[{"pos":"Content Creator","level":"Staff","total_buy":2,"total_build":0,"months":{"Apr":{"buy":2,"build":0}}},{"pos":"Brand & Campaign Strategist","level":"Staff","total_buy":1,"total_build":0,"months":{"Apr":{"buy":1,"build":0}}}],"It Services And It Project Coordination":[{"pos":"Technical Field Operation Supervisor","level":"Supervisor","total_buy":1,"total_build":0,"months":{"Jul":{"buy":1,"build":0}}}],"Business Process & Risk Management":[{"pos":"Portfolio Analyst","level":"Staff","total_buy":1,"total_build":0,"months":{"Feb":{"buy":1,"build":0}}}]},"so":[{"divisi":"Brand & Business Ecosystem","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Business Collaboration And Implementation","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Business Operation & Monitoring Support","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Business Process & Risk Management","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Customer Experience","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"E-Fulfillment","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Finance","no_name":true,"name":true,"signed":"Sent to User","effective_status":"Sent to User"},{"divisi":"Human Capital","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Internal Audit And Anti Fraud","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"It Development","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"It Operation","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"It Product Management & Technology Innovation","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"It Services And Project Coordination","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Operation Regional","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Sales, Growth & Customer Experience","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Warehouse And Fulfillment Services","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"Control Tower","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"},{"divisi":"B2B Operation","no_name":true,"name":true,"signed":"Sent to User","effective_status":"Sent to User"},{"divisi":"Business Ecosystem","no_name":true,"name":true,"signed":"Signed by User","effective_status":"Signed by User"}],"jd":[{"divisi":"Human Capital","sub_divisi":"","dept":"PEOPLE & ORGANIZATION DEVELOPMENT","jabatan":"Talent Placement and Assessment Center Head","level":"SECT HEAD","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"PEOPLE & ORGANIZATION DEVELOPMENT","jabatan":"Talent Placement and Assessment Center Officer","level":"STAFF","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"PEOPLE & ORGANIZATION DEVELOPMENT","jabatan":"OD & Talent Management System Head","level":"SECT HEAD","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"PEOPLE & ORGANIZATION DEVELOPMENT","jabatan":"OD & Performance Management Officer","level":"STAFF","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"PEOPLE & ORGANIZATION DEVELOPMENT","jabatan":"Training and Competencies Management Head","level":"SECT HEAD","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"PEOPLE & ORGANIZATION DEVELOPMENT","jabatan":"Training Specialist","level":"SUPERVISOR","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"PEOPLE & ORGANIZATION DEVELOPMENT","jabatan":"Training and Competencies Management Officer","level":"STAFF","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"INDUSTRIAL RELATION & HCBP Non TAB","jabatan":"Industrial Relation Staff","level":"STAFF","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"INDUSTRIAL RELATION & HCBP Non TAB","jabatan":"HC Representative Supervisor (ASL)","level":"SUPERVISOR","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"TALENT ACQUISITION","jabatan":"Talent Acquisition Organic & Vendor Relation Supervisor","level":"SUPERVISOR","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"TALENT ACQUISITION","jabatan":"Talent Acquisition Non Organic Supervisor","level":"SUPERVISOR","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"TALENT ACQUISITION","jabatan":"HC Vendor Relation Staff","level":"STAFF","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"TALENT ACQUISITION","jabatan":"Talent Acquisition Non Organic Staff","level":"STAFF","status":"Review by User"},{"divisi":"Human Capital","sub_divisi":"","dept":"HCBP REGIONAL","jabatan":"HC Regional Head","level":"SECT HEAD","status":"On Progress"},{"divisi":"Human Capital","sub_divisi":"","dept":"HCBP REGIONAL","jabatan":"HC Regional Supervisor","level":"SUPERVISOR","status":"On Progress"},{"divisi":"Human Capital","sub_divisi":"","dept":"HCBP REGIONAL","jabatan":"HC Regional Officer","level":"STAFF","status":"On Progress"}],"kpi":[{"nik":"10000005","nama":"KEVIN MARCELLINO","email":"kevin.marcellino@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10000009","nama":"ALBERT","email":"albert@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10000011","nama":"STEFFI ANDRIANE","email":"steffi.andriane@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000013","nama":"RIO SATRIO WIBOWO","email":"rio.satrio@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Human Capital"},{"nik":"10000015","nama":"ALOISIUS KENAN ADITIO","email":"kenan.aditio@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000019","nama":"REINA CYTHERIA","email":"reina.cytheria@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10000022","nama":"JOVI MEITRY","email":"jovi.meitry@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Human Capital"},{"nik":"10000025","nama":"RHEZA RIVALDI HI HUKUM","email":"rheza.rivaldi@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Development"},{"nik":"10000026","nama":"MARTIAN LOGI OTAMA","email":"martian.otama@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Development"},{"nik":"10000027","nama":"HASSEL ANGELYN SABATHINI","email":"hassel.sabathini@anteraja.id","ipp":"Approved","ipe":"Approved","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10000030","nama":"MAY HERLAMBANG","email":"may.herlambang@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Development"},{"nik":"10000033","nama":"PUTERI ATHIYA","email":"puteri.athiya@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10000036","nama":"ALIEF RIZKIAN","email":"alief.rizkian@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Development"},{"nik":"10000038","nama":"MICAHEL YULIUS MUNTHE","email":"micahel.munthe@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Development"},{"nik":"10000039","nama":"ARDIANSYAH","email":"ardiansyah.ardi@anteraja.id","ipp":"Approved","ipe":"Approved","level":"DEPT HEAD","divisi":"Human Capital"},{"nik":"10000050","nama":"MAYA FARINA YULIANI","email":"maya.yuliani@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Brand & Business Ecosystem"},{"nik":"10000052","nama":"ERIC ARIANTO","email":"eric.arianto@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"DEPT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10000053","nama":"ALI MURTADO","email":"ali.murtado@anteraja.id","ipp":"Approved","ipe":"REVISE","level":"SECT HEAD","divisi":"It Development"},{"nik":"10000055","nama":"ADHI WISESA TANUJAYA","email":"adhi.tanujaya@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10000058","nama":"ALBAB HERI PRASETYO","email":"ALBAB.PRASETYO@ANTERAJA.ID","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Development"},{"nik":"10000060","nama":"ADHITYA NUGRAHA","email":"adhitya.nugraha@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"It Development"},{"nik":"10000063","nama":"RANIA FAISAL ALMADANI","email":"rania.almadani@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Operation"},{"nik":"20000017","nama":"SUHERI","email":"suheri@titipaja.id","ipp":"Approved","ipe":"Waiting Approval","level":"DEPT HEAD","divisi":"E-Fulfillment"},{"nik":"10000070","nama":"DIMAS RAHMAWAN","email":"dimas.rahmawan@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10000074","nama":"AGUNG ARYO ANSARA","email":"agung.ansara@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000082","nama":"RIZKY RACHMAN WISMAWANSYAH","email":"rizky.rahman@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000085","nama":"MUHAMMAD ERFAN KHOERONI ANAM","email":"muhammad.khoeron@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000095","nama":"BUDDI MAULANA","email":"buddi.maulana@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000100","nama":"ARJUNA SURYA MENDRA","email":"arjuna.mendra@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Operation"},{"nik":"10008725","nama":"ALDI.A.J.GERUNG","email":"ALDI.GERUNG@ANTERAJA.ID","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10008727","nama":"NATASHA","email":"natasha.estelle@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Brand & Business Ecosystem"},{"nik":"10000114","nama":"RIJAL HARDIANTO","email":"rizal.hardiyanto@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000127","nama":"KURNIAWAN","email":"kurniawan.kurniawan@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10009079","nama":"SURYA PANCA WINATA","email":"surya.winata@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10009450","nama":"JESSICA AGUS HAKIM","email":"jessica.hakim@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10009592","nama":"MOCHAMMAD IQBAL FAHRUL ZAIN","email":"iqbal.fz@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000264","nama":"ELVI SUSANTI","email":"elvy.susanti@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"It Operation"},{"nik":"10009916","nama":"MUHAMMAD KUSPRAYOGO","email":"muhammad.kusprayogo@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10009917","nama":"MUHAMAD YUSUF","email":"muhammad.yusuf@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Internal Audit And Anti Fraud"},{"nik":"10000351","nama":"TIUR MINARMA SIRAIT","email":"tiur.minarma@anteraja.id","ipp":"Approved","ipe":"Approved","level":"DEPT HEAD","divisi":"Human Capital"},{"nik":"10000370","nama":"ERWIN SUDARSYAH","email":"erwin.sudarsyah@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000471","nama":"CHANDRA GUNAWAN","email":"CHANDRA.GUNAWAN@ANTERAJA.ID","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10000552","nama":"ALVIN CHANDRA","email":"alvin.chandra@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000553","nama":"RAIHAN SURURI","email":"raihan.sururi@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000605","nama":"IRWAN MARDOHAR SITUMORANG","email":"irwan.situmorang@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10000606","nama":"SUGENG SANTOSO","email":"sugeng.santoso@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":""},{"nik":"10000660","nama":"AGNES AGUSTINA","email":"AGNES.AGUSTINA@ANTERAJA.ID","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Operation"},{"nik":"10000662","nama":"HIZRIAN LESTY PRABOWO","email":"hizrian.prabowo@anteraja.id","ipp":"Approved","ipe":"Approved","level":"DEPT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10010669","nama":"ANDRE WIJAYA LIMBONG","email":"andre.limbong@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10011457","nama":"YOGIE LESMANA","email":"yogie.lesmana@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Development"},{"nik":"10001010","nama":"ANSEL FABIANTA TAMBUNAN","email":"ansel.tambunan@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10001011","nama":"ANDREAS","email":"andreas.andreas@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Development"},{"nik":"10013810","nama":"HERU PRAMANA ST","email":"heru.pramana@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Business Process & Risk Management"},{"nik":"10014201","nama":"RESTI HARIYATI","email":"resti.hariyati@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Development"},{"nik":"10014257","nama":"SHOLIKHUDIN","email":"sholikhudin.sholikhudin@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10014614","nama":"MILKO","email":"milko.milko@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001166","nama":"MUHAMAD SETIYAWAN","email":"muhamad.setiyawan@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001167","nama":"LINA MENTARI WAHYUNINGTYAS","email":"lina.wahyuningtyas@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001168","nama":"TRYBAWA RAMADHANA HUTAGALUNG","email":"trybawa.hutagalung@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001170","nama":"DEDI SUGIARTO","email":"dedi.sugiarto@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10001172","nama":"ARIQ ADIB PRADANA","email":"ariq.pradana@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001175","nama":"JODIE REVEL PALASROHA","email":"jodie.palasroha@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001176","nama":"ALEXIUS KENDREW","email":"ALEXIUS.KENDREW@ANTERAJA.ID","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10001177","nama":"ARIEF WIRAGUNA","email":"arief.wiraguna@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10015250","nama":"SARTIKA MARBUN","email":"SARTIKA.MARBUN@ANTERAJA.ID","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Finance"},{"nik":"10015269","nama":"BUDI HARYANTO","email":"budi.haryanto@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001243","nama":"MUTIARA MUSLIM","email":"mutiara.muslim@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10001373","nama":"MOHAMAD RIDWAN","email":"mohamad.ridwan@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Operation"},{"nik":"10001452","nama":"IVAN YONAS S.H NAINGGOLAN","email":"ivan.yonas@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10001461","nama":"JONI HENDRI","email":"joni.hendri@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10017944","nama":"IBNU KHOLIL","email":"ibnu.kholil@anteraja.id","ipp":"Not Yet","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Business Collaboration And Implementation"},{"nik":"10001537","nama":"BAMBANG ADRIAN FINTRIANI","email":"bambang.adrian@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10001716","nama":"ALDO MANDALA SAPUTRA","email":"ALDO.MANDALA@ANTERAJA.ID","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10001895","nama":"WAHYUDI","email":"wahyudi.wahyudi@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10002354","nama":"PUNGKY NURHAYATI","email":"pungky.nurhayati@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10002355","nama":"TRISNA ADITYA","email":"trisna.aditya@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10002721","nama":"DADANG SETIAJI","email":"dadang.setiaji@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10002740","nama":"ARGA PRASETYO UTOMO","email":"ARGA.UTOMO@ANTERAJA.ID","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10002782","nama":"AYI NUGRAHA","email":"ayi.nugraha@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Finance"},{"nik":"10002784","nama":"JUWANDY SUSILO NG","email":"juwandy.susilo@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10022478","nama":"JODI HERMA AMBONY","email":"jodi.ambony@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10003160","nama":"ACHMAD IRTONNY","email":"achmad.irtonny@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10003161","nama":"RIZKY ANDRIANI","email":"rizky.andriani@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10024580","nama":"MALDY SYAHRAMA","email":"maldy.syahrama@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10024586","nama":"ANGGA MULYA","email":"angga.mulya@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10003531","nama":"ROMIYATI","email":"romiyati.romiyati@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10026981","nama":"ADINDA FAUZIAH JULIANA","email":"adinda.juliana@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Brand & Business Ecosystem"},{"nik":"10026983","nama":"PARWANTO","email":"parwanto.parwanto@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Internal Audit And Anti Fraud"},{"nik":"10026984","nama":"TANTYO UTOMO","email":"tantyo.utomo@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Finance"},{"nik":"10026987","nama":"ANGESTI S KUSUMAWARDANI","email":"angesti.kusumawardani@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Operation"},{"nik":"10029062","nama":"ANNISA RAHMA MAHMUDA","email":"annisa.mahmuda@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Business Process & Risk Management"},{"nik":"10029042","nama":"NIO PANGESTU","email":"nio.pangestu@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10004062","nama":"ANTHONY ATMADJA","email":"anthony.atmadja@anteraja.id","ipp":"Revise","ipe":"Not Yet","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10004119","nama":"DONY FEBRIANTO","email":"dony.febrianto@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10004249","nama":"WAHYU SUDRAJAT","email":"wahyu.sudrajat@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Operation"},{"nik":"10004422","nama":"AAN TRIHINDARTO","email":"aan.trihindarto@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10004426","nama":"AULIA RAMADHAN KOPAYONA","email":"ramadhan.kopayona@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Finance"},{"nik":"10004427","nama":"STEPHEN HENDINA","email":"stephen.hendina@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10004430","nama":"BRIYAN RAMADHAN HARAHAP","email":"briyan.harahap@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10004432","nama":"ALVIN FARHAN VILARDI","email":"alvin.vilardi@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Operation"},{"nik":"10004435","nama":"OCTAVIYAN ADI NUGROHO","email":"octaviyan.nugroho@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10004438","nama":"FAUZIAH RAYA SHINTA","email":"fauziah.shinta@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10004441","nama":"ARUM PATMADANI","email":"arum.patmadani@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Operation"},{"nik":"10030920","nama":"RUDY PURNAMA","email":"rudy.purnama@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Finance"},{"nik":"10030922","nama":"NURISTYO DAMARSASI","email":"nuristyo.damarsasi@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10030924","nama":"MUHAMMAD RIZKI RAMDANI","email":"RIZKI.RAMDANI@ANTERAJA.ID","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10030925","nama":"REN ASRIL KURNIAWAN","email":"ren.asril@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10030926","nama":"TIRTO ROHADIN","email":"tirto.rohadin@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10030928","nama":"ASRI YADI","email":"asri.yadi@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10030929","nama":"AGUS WAHYUDI","email":"agus.wahyudi@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10004626","nama":"ADI RYANSYAH","email":"adi.ryansyah@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Development"},{"nik":"10035331","nama":"ADITYAWARMAN","email":"adityawarman.adityawarman@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10035339","nama":"FAHRUR ROZI","email":"fahrur.rozi@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10036166","nama":"HENDRO SULISTIYONO","email":"hendro.sulistiyono@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Operation"},{"nik":"10037873","nama":"ANINDYA KINTAN PRADESTI","email":"anindya.kintan@anteraja.id","ipp":"Approved","ipe":"Approved","level":"SECT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10038705","nama":"ADITYA WIDAYANTO","email":"aditya.widayanto@anteraja.id","ipp":"Approved","ipe":"Approved","level":"SECT HEAD","divisi":"It Development"},{"nik":"10042300","nama":"SISKA RAHMAWATI","email":"siska.rahmawati@anteraja.id","ipp":"Not Yet","ipe":"Not Yet","level":"SECT HEAD","divisi":""},{"nik":"10042306","nama":"ASEP NANDA HERMANA","email":"asep.hermana@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10006833","nama":"CHRISTIAN HADIANTO","email":"christian.hadianto@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10043175","nama":"NICO FIRMAN WIJAYA","email":"NICO.WIJAYA@ANTERAJA.ID","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10043179","nama":"SUFAN FERLANDY","email":"sufan.ferlandy@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Operation"},{"nik":"10043188","nama":"JANRY PARTOGI TOBING","email":"janry.tobing@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Finance"},{"nik":"10043192","nama":"YUSTINUS","email":"yustinus.yustinus@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10007123","nama":"PAUL FELIX OENTOE","email":"paul.felix@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10043297","nama":"ANG SUK CEN","email":"ang.cen@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"DEPT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10043315","nama":"AHMAD DAELAMI","email":"ahmad.daelami@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Finance"},{"nik":"10043384","nama":"DEAN GRYMALDI PRADANA","email":"dean.pradana@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Finance"},{"nik":"10043387","nama":"DEVINA","email":"devina.devina@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Operation"},{"nik":"10043571","nama":"MASTON LAMHOT SANVINDER AMBARITA","email":"maston.ambarita@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10007266","nama":"REZA DWI GUSTIA PILLY","email":"reza.pilly@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10007319","nama":"TOMMY ROMADHON","email":"tommy.romadhon@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10007521","nama":"NICKY AFRIASHA","email":"nicky.afriasha@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10007527","nama":"NAJIB FAWWAZ","email":"najib.fawwaz@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Finance"},{"nik":"10007563","nama":"MUHAMMAD HAICHAL RAIHAN","email":"muhammad.raihan@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"20007574","nama":"HELDA TRIANA","email":"helda.triana@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Finance"},{"nik":"10007888","nama":"SAMANTHA ALANA DODDS","email":"samantha.dodds@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Brand & Business Ecosystem"},{"nik":"10008089","nama":"RAMADANSYAH TANJUNG","email":"ramadansyah.tanjung@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10044311","nama":"BAMBANG TRIYONO","email":"bambang.triyono@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"DEPT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"20014571","nama":"ROLAND GANDA SIMANJUNTAK","email":"roland.simanjuntak@titipaja.id","ipp":"Approved","ipe":"Waiting Approval","level":"DEPT HEAD","divisi":"Warehouse And Fulfillment Services"},{"nik":"10044437","nama":"ZUHDAN MOHAMMAD UBAY","email":"zuhdan.ubay@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"It Operation"},{"nik":"20014573","nama":"SEPTIAN SAPUTRA","email":"septian.saputra@titipaja.id","ipp":"Approved","ipe":"Waiting Approval","level":"DEPT HEAD","divisi":"It Services And Project Coordination"},{"nik":"20014607","nama":"ARIF RIYANTO","email":"arif.riyanto@titipaja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"E-Fulfillment"},{"nik":"10044841","nama":"AHSAN KHULUK","email":"ahsan.khuluk@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Development"},{"nik":"10044850","nama":"ENGGAR PRASETYANTI","email":"enggar.prasetyanti@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Finance"},{"nik":"10049013","nama":"HILDA LUSIANI","email":"hilda.lusiani@anteraja.id","ipp":"Approved","ipe":"Approved","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"20014710","nama":"AGUS STIYO","email":"agus.stiyo@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10052045","nama":"ADITYA PUTRA MAHARDHIKA","email":"aditya.mahardika@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10056080","nama":"RATNA DEWI FITRIANI","email":"ratna.fitriani@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10056961","nama":"MELVA RAMALANY","email":"melva.ramalany@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10056968","nama":"JANET CORINTH","email":"janet.corinth@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10062205","nama":"ARYA SEDAYU DANANG P","email":"arya.danang@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"Human Capital"},{"nik":"10067166","nama":"RIKY PERDANA","email":"riky.perdana@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10068146","nama":"DONDIK MAISIFA ARDIANSYAH","email":"dondik.ardiansyah@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10072151","nama":"HADI SUTEJO","email":"hadi.sutejo@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10072737","nama":"SIGIT SUPARNO PUTRA","email":"sigit.putra@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10073297","nama":"BAGAS ARI WIJAYA","email":"bagas.ari@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Operation"},{"nik":"10073709","nama":"SUKRON DAWAMI","email":"sukron.dawami@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"SECT HEAD","divisi":"Finance"},{"nik":"10076855","nama":"CALVIN TANIKA","email":"calvin.tanika@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Human Capital"},{"nik":"10077056","nama":"NOVANTRY CHANDRA","email":"novantry.chandra@anteraja.id","ipp":"Approved","ipe":"Approved","level":"DEPT HEAD","divisi":"Sales, Growth & Customer Experience"},{"nik":"10077460","nama":"HENDRO UTOMO","email":"hendro.utomo@anteraja.id","ipp":"Waiting Approval","ipe":"Not Yet","level":"DEPT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10077461","nama":"IMAM SAIFULOH","email":"imam.saifuloh@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10077462","nama":"RIZA WAHYUDI","email":"riza.wahyudi@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"It Product Management & Technology Innovation"},{"nik":"10078961","nama":"RICKY ALAM WANDHA","email":"ricky.wandha@anteraja.id","ipp":"Approved","ipe":"Waiting Approval","level":"SECT HEAD","divisi":"Business Operation & Monitoring Support"},{"nik":"10079075","nama":"NIKEN NYDIA NATHANIA W","email":"niken.nathania@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"DEPT HEAD","divisi":"Finance"},{"nik":"10083358","nama":"RIZKI PRIHANDINI","email":"rizki.prihandini@anteraja.id","ipp":"Approved","ipe":"DRAFT","level":"SECT HEAD","divisi":"Sales, Growth & Customer Experience"}],"months":["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"],"generated":"03 Jul 2026 07:24"};
+
+// ── STATE ──
+let D = EMBEDDED;
+let FP = [];
+let currentPage = 'overview';
+let prevPage = 'overview';
+const MF = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+const ML = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const SLA_T = 5;
+
+// ── GOOGLE SHEETS FETCH ──
+async function fetchSheet(sheetName) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/$1Y4okept6ADvk-KZVU8qgkBkTaCvH8dwkhDVSYaOnTuQ/values/${encodeURIComponent(sheetName)}?key=$AIzaSyA_K5XPnnvGvPzt08Bvdg9vmcW-gWJJt8k`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(`${sheetName}: ${r.status}`);
+  const j = await r.json();
+  return j.values || [];
+}
+
+function parseDate(s) {
+  if(!s) return null;
+  const parts = s.split('/');
+  if(parts.length===3) return new Date(parts[2],parts[1]-1,parts[0]);
+  const d = new Date(s);
+  return isNaN(d)?null:d;
+}
+
+function workingDays(d1,d2) {
+  if(!d1||!d2) return null;
+  let days=0,cur=new Date(d1);
+  while(cur<=d2){if(cur.getDay()>0&&cur.getDay()<6)days++;cur.setDate(cur.getDate()+1);}
+  return days;
+}
+
+async function refreshData() {
+  const btn = document.getElementById('refresh-btn');
+  btn.innerHTML='<span class="spin">↺</span> Loading...';
+  btn.disabled=true;
+  try {
+    // Fetch FPTK
+    const fptk_rows = await fetchSheet(SHEET_NAMES.fptk);
+    const fptk_data = [];
+    for(let i=1;i<fptk_rows.length;i++) {
+      const r=fptk_rows[i];
+      if(!r[3]) continue;
+      let planned = r[17]||'Planned';
+      if(planned==='Replacement Mutasi') planned='Replacement';
+      const tgl_d = r[11]?new Date(r[11]):null;
+      const tgl_a = r[14]?new Date(r[14]):null;
+      let sla = r[16]?parseInt(r[16]):null;
+      if(!sla&&tgl_d&&tgl_a) sla=workingDays(tgl_d,tgl_a);
+      const status = tgl_a?'Completed':(r[13]?'On Process':'Pending');
+      fptk_data.push({
+        divisi:r[3]||'',dept:r[4]||'',posisi:r[5]||'',kj:parseInt(r[6])||0,
+        level:r[7]||'',jml_diajukan:parseInt(r[8])||0,jml_approved:parseInt(r[9])||0,
+        tgl_diajukan:r[11]||'',tgl_approved:r[14]||'',
+        bulan:parseInt(r[12])||0,pic:r[15]||'',
+        sla:sla,planned:planned,buy_build:r[18]||'Buy',status:status,note:r[20]||''
+      });
+    }
+
+    // Fetch SO
+    const so_rows = await fetchSheet(SHEET_NAMES.so);
+    const so_data = [];
+    for(let i=1;i<so_rows.length;i++) {
+      const r=so_rows[i];
+      if(!r[2]) continue;
+      const status=r[5]||'';
+      so_data.push({divisi:r[2].trim(),no_name:r[3]==='v',name:r[4]==='v',signed:status,effective_status:status});
+    }
+
+    // Fetch JD
+    const jd_rows = await fetchSheet(SHEET_NAMES.jd);
+    const jd_data = [];
+    for(let i=1;i<jd_rows.length;i++) {
+      const r=jd_rows[i];
+      if(!r[0]) continue;
+      jd_data.push({divisi:r[0]||'',sub_divisi:r[1]||'',dept:r[2]||'',jabatan:r[3]||'',level:r[4]||'',status:r[5]||''});
+    }
+
+    // Fetch KPI
+    const kpi_rows = await fetchSheet(SHEET_NAMES.kpi);
+    const kpi_data = [];
+    for(let i=1;i<kpi_rows.length;i++) {
+      const r=kpi_rows[i];
+      if(!r[0]) continue;
+      kpi_data.push({nik:r[0]||'',nama:r[1]||'',email:r[2]||'',ipp:r[3]||'',ipe:r[4]||'',level:r[5]||'',divisi:''});
+    }
+
+    // Fetch Master (for KPI divisi lookup) - only first 500 rows for speed
+    const mk_url = `https://sheets.googleapis.com/v4/spreadsheets/$1Y4okept6ADvk-KZVU8qgkBkTaCvH8dwkhDVSYaOnTuQ/values/${encodeURIComponent(SHEET_NAMES.mk)}!A:H?key=$AIzaSyA_K5XPnnvGvPzt08Bvdg9vmcW-gWJJt8k`;
+    const mk_r = await fetch(mk_url);
+    if(mk_r.ok) {
+      const mk_j = await mk_r.json();
+      const mk_rows = mk_j.values||[];
+      const mk_lookup = {};
+      for(let i=1;i<mk_rows.length;i++) {
+        const r=mk_rows[i];
+        if(r[1]) mk_lookup[r[1]]={divisi:(r[3]||'').trim()};
+      }
+      kpi_data.forEach(k=>{k.divisi=(mk_lookup[k.nik]||{}).divisi||''});
+    }
+
+    D.fptk = fptk_data;
+    D.so = so_data;
+    D.jd = jd_data;
+    D.kpi = kpi_data;
+    D.generated = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('badge').textContent = 'Data per '+D.generated;
+    applyFilters();
+    alert('Data berhasil diperbarui dari Google Sheets!');
+  } catch(e) {
+    console.error(e);
+    alert('Gagal fetch data: '+e.message+'. Menggunakan data lokal.');
+  } finally {
+    btn.innerHTML='↺ Refresh Data';
+    btn.disabled=false;
+  }
+}
+
+// ── HELPERS ──
+function pc(a,b){return b>0?Math.round(a/b*100):0;}
+function fmt(n){return n!=null?n.toLocaleString('id'):'-';}
+
+function mppBuy(div,mi){
+  const months=mi<0?MF:[MF[mi]];
+  if(div){const k=Object.keys(D.mpp_plan_buy).find(k=>k.toLowerCase()===div.toLowerCase());return k?months.reduce((s,m)=>s+(D.mpp_plan_buy[k][m]||0),0):0;}
+  return Object.values(D.mpp_plan_buy).reduce((s,p)=>s+months.reduce((ss,m)=>ss+(p[m]||0),0),0);
+}
+function mppBuild(div,mi){
+  const months=mi<0?MF:[MF[mi]];
+  if(div){const k=Object.keys(D.mpp_plan_build).find(k=>k.toLowerCase()===div.toLowerCase());return k?months.reduce((s,m)=>s+(D.mpp_plan_build[k][m]||0),0):0;}
+  return Object.values(D.mpp_plan_build).reduce((s,p)=>s+months.reduce((ss,m)=>ss+(p[m]||0),0),0);
+}
+function mppPlan(div,mi){return mppBuy(div,mi)+mppBuild(div,mi);}
+
+function pillClass(s){
+  const m={'Planned':'pill-pink','Replacement':'pill-amber','Unplanned':'pill-blue',
+    'Completed':'pill-green','On Process':'pill-blue','Pending':'pill-grey',
+    'Buy':'pill-green','Build':'pill-purple',
+    'match':'pill-green','partial':'pill-amber','mismatch':'pill-red','unplanned':'pill-blue','replacement':'pill-amber',
+    'Approved':'pill-green','Waiting Approval':'pill-amber','Not Yet':'pill-grey','DRAFT':'pill-blue','Revise':'pill-red','REVISE':'pill-red',
+    'Signed All':'pill-green','Signed by User':'pill-pink','Sent to User':'pill-amber','Available':'pill-grey',
+    'Done':'pill-green','Review by User':'pill-pink','On Progress':'pill-amber','Not Started':'pill-grey'
+  };
+  return m[s]||'pill-grey';
+}
+
+// ── NAVIGATION ──
+function getF(){
+  const div=document.getElementById('fdiv').value;
+  const bln=parseInt(document.getElementById('fbln').value)||0;
+  const mi=bln>0?bln-1:-1;
+  const bLabel=bln>0?MF[bln-1]+' 2026':'Semua 2026';
+  return{div,bln,mi,bLabel};
+}
+
+function goTo(page){
+  prevPage=currentPage; currentPage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const tp=document.getElementById('page-'+page);
+  if(tp)tp.classList.add('active');
+  const btn=document.getElementById('back-btn');
+  const lbl=document.getElementById('page-label');
+  const labels={overview:'Overview','fptk-tracker':'FPTK Tracker','buy-build':'Buy / Build','mpp-matching':'MPP Matching','per-divisi':'Per Divisi','management':'Management View','so':'SO Tracking','jd':'JD Tracking','pm':'Performance Management'};
+  if(page==='overview'){btn.style.display='none';lbl.textContent='';}
+  else{btn.style.display='';lbl.textContent=labels[page]||page;}
+  window.scrollTo(0,0);
+  if(page==='fptk-tracker')renderFPTKFull();
+  if(page==='buy-build')try{renderBBPage();}catch(e){console.error(e);}
+  if(page==='mpp-matching')try{renderMatch();}catch(e){console.error(e);}
+  if(page==='per-divisi')try{renderDivisi(getF());}catch(e){console.error(e);}
+  if(page==='management')try{renderMgmt(getF());}catch(e){console.error(e);}
+  if(page==='so')renderSO();
+  if(page==='jd')renderJD();
+  if(page==='pm')renderPM();
+}
+
+function goBack(){goTo(prevPage==='overview'?'overview':prevPage);prevPage='overview';}
+
+// ── FILTERS ──
+function buildFilters(){
+  const divs=[...new Set(D.fptk.map(r=>r.divisi).filter(Boolean))].sort();
+  const fdiv=document.getElementById('fdiv');
+  fdiv.innerHTML='<option value="">Semua Divisi</option>'+divs.map(d=>`<option>${d}</option>`).join('');
+  const fbln=document.getElementById('fbln');
+  fbln.innerHTML='<option value="0">Semua 2026</option>'+MF.map((m,i)=>`<option value="${i+1}">${m} 2026</option>`).join('');
+}
+
+function applyFilters(){
+  const f=getF();
+  FP=D.fptk.filter(r=>(!f.div||r.divisi===f.div)&&(f.bln===0||r.bulan===f.bln));
+  renderOverview();
+  if(currentPage==='management')try{renderMgmt(f);}catch(e){console.error(e);}
+  if(currentPage==='per-divisi')try{renderDivisi(f);}catch(e){console.error(e);}
+  if(currentPage==='buy-build')try{renderBBPage();}catch(e){console.error(e);}
+  if(currentPage==='fptk-tracker')renderFPTKFull();
+  if(currentPage==='mpp-matching')try{renderMatch();}catch(e){console.error(e);}
+}
+
+// ── RENDER OVERVIEW ──
+function renderOverview(){
+  const f=getF();
+  renderKPIs(f);
+  renderMPPChart(f);
+  renderHC(f);
+  renderStatusFPTK(f);
+  renderPVU(f);
+  renderBB(f);
+  renderSLADivisi(f);
+  renderODHub(f);
+  document.getElementById('impp')&&renderMgmtPreview(f);
+}
+
+function renderKPIs(f){
+  const mT=mppPlan(f.div,f.mi);
+  const appr=FP.reduce((s,r)=>s+(r.jml_approved||1),0);
+  const plannedAppr=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const gap=Math.max(0,mT-plannedAppr);
+  const slaA=FP.filter(r=>r.sla!=null);
+  const slaAvg=slaA.length?Math.round(slaA.reduce((s,r)=>s+r.sla,0)/slaA.length):null;
+  const fB=FP.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const fBl=FP.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+  function kpi(label,val,sub,pct,color){
+    return '<div class="kpi"><div class="kpi-label">'+label+'</div><div class="kpi-val" style="color:'+(color||'var(--tx)')+'">'+val+'</div><div class="kpi-sub">'+sub+'</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Math.min(100,pct)+'%;background:'+(color||'var(--pink)')+'"></div></div></div>';
+  }
+  document.getElementById('kpi-row').innerHTML=
+    kpi('MPP Plan '+f.bLabel,fmt(mT),'Buy '+mppBuy(f.div,f.mi)+' / Build '+mppBuild(f.div,f.mi),100,'var(--tx)')+
+    kpi('Planned FPTK',fmt(plannedAppr),pc(plannedAppr,mT)+'% dari MPP',pc(plannedAppr,mT),'var(--pink)')+
+    kpi('Gap vs MPP',fmt(gap),gap>0?'Posisi belum tercapai':'Terpenuhi',Math.max(0,100-pc(plannedAppr,mT)),gap>0?'var(--amber)':'var(--green)')+
+    kpi('Total FPTK Buy/Build',`<span style="color:var(--green)">${fB} Buy</span>/<span style="color:var(--purple)">${fBl} Build</span>`,'semua kategori · '+appr+' total',pc(fB,fB+fBl||1),'var(--green)')+
+    kpi('Rata-Rata SLA',slaAvg!=null?slaAvg+' hr':'—','Target '+SLA_T+' hr kerja',slaAvg?Math.min(100,slaAvg/SLA_T*100):0,slaAvg&&slaAvg>SLA_T?'var(--amber)':'var(--green)');
+}
+
+function renderMPPChart(f){
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const canvas=document.getElementById('mchart');
+  if(!canvas)return;
+  const{_cv}={_cv:canvas};
+  if(_cv.parentElement&&_cv.parentElement.offsetWidth<10){setTimeout(()=>renderMPPChart(f),50);return;}
+  const BAR_H=90;
+  const chartData=MF.map((m,i)=>{
+    const plan=mppPlan(f.div,i);
+    const planned=all.filter(r=>r.bulan===i+1&&r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const repl=all.filter(r=>r.bulan===i+1&&r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const unpl=all.filter(r=>r.bulan===i+1&&(r.planned==='Unplanned'||r.planned==='Penambahan')).reduce((s,r)=>s+(r.jml_approved||1),0);
+    return{m,plan,planned,repl,unpl};
+  });
+  const maxV=Math.max(...chartData.map(d=>Math.max(d.plan,d.planned+d.repl+d.unpl)),1)+2;
+  let mg=0,mgi=0;
+  chartData.forEach((d,i)=>{const gap=Math.max(0,d.plan-d.planned);if(gap>mg){mg=gap;mgi=i;}});
+  const dpr=window.devicePixelRatio||1;
+  const W=Math.max(canvas.parentElement?canvas.parentElement.offsetWidth:0,560);
+  const H=210;
+  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const PAD={t:12,r:12,b:36,l:36};
+  const CW=W-PAD.l-PAD.r,CH=H-PAD.t-PAD.b;
+  const slotW=CW/12,GAP=2,barW=(slotW-GAP*3)/2;
+  const yPx=v=>PAD.t+CH-(v/maxV*CH);
+  const lblCol='rgba(0,0,0,.45)',gridCol='rgba(0,0,0,.07)';
+  ctx.strokeStyle='rgba(0,0,0,.15)';ctx.lineWidth=.5;ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(PAD.l,PAD.t);ctx.lineTo(PAD.l,PAD.t+CH);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(PAD.l,PAD.t+CH);ctx.lineTo(W-PAD.r,PAD.t+CH);ctx.stroke();
+  const steps=maxV>40?[10,20,30,40,50]:maxV>20?[5,10,15,20,25,30]:maxV>10?[5,10,15,20]:[2,4,6,8,10];
+  steps.forEach(v=>{
+    if(v>maxV)return;
+    const y=yPx(v);
+    ctx.strokeStyle=gridCol;ctx.lineWidth=.5;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(W-PAD.r,y);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=lblCol;ctx.font='10px system-ui';ctx.textAlign='right';
+    ctx.fillText(v,PAD.l-4,y+3.5);
+  });
+  function rRect(x,y,w,h,r,top){
+    if(h<=0||w<=0)return;r=Math.min(r,h/2,w/2);
+    ctx.beginPath();
+    if(top){ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);}
+    else ctx.rect(x,y,w,h);
+    ctx.closePath();ctx.fill();
+  }
+  canvas._hits=[];
+  chartData.forEach((d,i)=>{
+    const slotX=PAD.l+i*slotW,leftX=slotX+GAP,rightX=leftX+barW+GAP;
+    const c=f.mi>=0&&i===f.mi,hasDat=all.some(r=>r.bulan===i+1);
+    if(d.plan>0){ctx.fillStyle=c?'#B8B6B0':'#D3D1C7';rRect(leftX,yPx(d.plan),barW,d.plan/maxV*CH,2,true);}
+    const segs=[{v:d.planned,col:'#E8197D'},{v:d.repl,col:'#E8A020'},{v:d.unpl,col:'#3D9BE9'}];
+    let stackY=yPx(0);
+    const nz=segs.filter(s=>s.v>0);
+    segs.forEach(seg=>{
+      if(!seg.v)return;const sh=seg.v/maxV*CH;stackY-=sh;
+      ctx.fillStyle=seg.col;ctx.globalAlpha=hasDat?1:.3;
+      rRect(rightX,stackY,barW,sh,2,seg===nz[nz.length-1]);ctx.globalAlpha=1;
+    });
+    ctx.fillStyle=c?'#E8197D':lblCol;ctx.font=(c?'bold ':'')+' 11px system-ui';ctx.textAlign='center';
+    ctx.fillText(d.m,slotX+slotW/2,H-PAD.b+16);
+    canvas._hits.push({x:slotX,w:slotW,d,i});
+  });
+  const oldTip=document.getElementById('mchart-tip');if(oldTip)oldTip.remove();
+  const tip=document.createElement('div');tip.id='mchart-tip';
+  tip.style.cssText='position:fixed;display:none;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;line-height:1.7;z-index:9999';
+  document.body.appendChild(tip);
+  canvas.onmousemove=e=>{
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(W/rect.width);
+    const hit=canvas._hits&&canvas._hits.find(b=>mx>=b.x&&mx<=b.x+b.w);
+    if(hit){
+      const d=hit.d,tot=d.planned+d.repl+d.unpl,gap=Math.max(0,d.plan-d.planned);
+      tip.innerHTML=`<b>${d.m} 2026</b><br>MPP Plan: ${d.plan}<br><span style="color:#F9A8D4">Planned: ${d.planned}</span><br>${d.repl>0?`<span style="color:#FCD34D">Replacement: ${d.repl}</span><br>`:''}${d.unpl>0?`<span style="color:#93C5FD">Unplanned: ${d.unpl}</span><br>`:''}──────<br>Total FPTK: ${tot}<br>Gap: <b>${gap}</b>`;
+      tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-20)+'px';
+    } else tip.style.display='none';
+  };
+  canvas.onmouseleave=()=>{if(tip)tip.style.display='none';};
+  document.getElementById('c1s').textContent='Jan–Des 2026 · '+(f.div||'Semua Divisi');
+  const totalPlanned=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const totalUnpl=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  document.getElementById('glbl').textContent=mg>0?'Gap terbesar: '+MF[mgi]+' ('+mg+' posisi)':'Semua bulan sesuai plan';
+  const ins=document.getElementById('impp');ins.className='ins '+(totalUnpl>3?'warn':'info');
+  ins.textContent=f.bLabel+': '+totalPlanned+' Planned, '+totalUnpl+' Unplanned. '+(mg>0?'Gap terbesar '+MF[mgi]+' ('+mg+' posisi).':'Target terpenuhi.');
+  const ytdAll=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const totPlan=mppPlan(f.div,-1);
+  const totFPTKPlanned=ytdAll.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const totRepl=ytdAll.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const totUnpl=ytdAll.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const ys=document.getElementById('ytd-sub'),yst=document.getElementById('ytd-stats');
+  if(ys)ys.textContent='Semua bulan · '+(f.div||'Semua Divisi');
+  if(yst)yst.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700">${totPlan}</div><div style="font-size:10px;color:var(--tx3)">MPP Plan YTD</div></div>
+    <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--pink)">${totFPTKPlanned}</div><div style="font-size:10px;color:var(--tx3)">Planned FPTK</div></div>
+    <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--blue)">${totUnpl}</div><div style="font-size:10px;color:var(--tx3)">Unplanned FPTK</div></div>
+    <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--amber)">${Math.max(0,totPlan-totFPTKPlanned)}</div><div style="font-size:10px;color:var(--tx3)">Gap Planned</div></div>
+  </div>`;
+}
+
+function renderHC(f){
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const byMonth=MF.map((_,i)=>all.filter(r=>r.bulan===i+1).reduce((s,r)=>s+(r.jml_approved||1),0));
+  const maxHC=Math.max(...byMonth,1);
+  const hspk=document.getElementById('hspk');
+  hspk.innerHTML=byMonth.map((v,i)=>`<div style="flex:1;background:${v>0?'var(--pink)':'var(--border)'};height:${Math.max(4,Math.round(v/maxHC*50))}px;border-radius:2px 2px 0 0;opacity:${f.mi>=0&&i===f.mi?1:.6}" title="${MF[i]}: ${v}"></div>`).join('');
+  document.getElementById('hlbl').innerHTML=MF.map(m=>`<span>${m}</span>`).join('');
+  const total=byMonth.reduce((a,b)=>a+b,0);
+  const ytd=byMonth.slice(0,Math.max(1,...byMonth.map((v,i)=>v>0?i+1:0))).reduce((a,b)=>a+b,0);
+  document.getElementById('hnum').innerHTML=`<span style="color:var(--pink)">${total}</span> <span style="font-size:11px;color:var(--tx3)">total approved YTD</span>`;
+  document.getElementById('hcs').textContent='Realisasi per bulan · '+(f.div||'Semua Divisi');
+  document.getElementById('ihc').textContent='Total FPTK approved YTD: '+total+' posisi dari semua kategori.';
+}
+
+function renderStatusFPTK(f){
+  const comp=FP.filter(r=>r.status==='Completed').length;
+  const proc=FP.filter(r=>r.status==='On Process').length;
+  const pend=FP.filter(r=>r.status==='Pending').length;
+  const tot=FP.length;
+  document.getElementById('sfptks').textContent=tot+' FPTK · '+f.bLabel;
+  document.getElementById('sfptk-body').innerHTML=
+    `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--green)">${comp}</div><div style="font-size:10px;color:var(--tx3)">Completed</div></div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--blue)">${proc}</div><div style="font-size:10px;color:var(--tx3)">On Process</div></div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--amber)">${pend}</div><div style="font-size:10px;color:var(--tx3)">Pending</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--tx3);margin-bottom:4px">Completion Rate</div>
+    <div class="pb"><div class="pb-fill" style="width:${pc(comp,tot||1)}%;background:var(--green)"></div></div>
+    <div style="font-size:10px;color:var(--tx3);margin-top:4px">${pc(comp,tot||1)}% completed</div>
+    ${comp===tot&&tot>0?'<div class="ins ok">100% completed. Semua diproses.</div>':''}`;
+}
+
+function renderPVU(f){
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const pl=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const rp=FP.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const un=FP.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const tot=pl+rp+un||1;
+  document.getElementById('pvus').textContent=f.bLabel+' · '+(f.div||'Semua Divisi');
+  const divs=[...new Set(all.map(r=>r.divisi))].sort();
+  let rows='';
+  divs.forEach(d=>{
+    const dr=all.filter(r=>r.divisi===d&&(f.bln===0||r.bulan===f.bln));
+    const p=dr.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const r2=dr.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const u=dr.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const t=p+r2+u;if(!t)return;
+    rows+=`<div style="margin-bottom:6px"><div style="font-size:10px;color:var(--tx2);margin-bottom:2px">${d.length>28?d.slice(0,28)+'...':d}</div>
+      <div class="pb"><div style="height:6px;display:flex">
+        <div style="width:${pc(p,t)}%;background:var(--pink);border-radius:4px 0 0 4px"></div>
+        <div style="width:${pc(r2,t)}%;background:var(--amber)"></div>
+        <div style="width:${pc(u,t)}%;background:var(--blue);border-radius:0 4px 4px 0"></div>
+      </div></div>
+      ${u>0?`<div style="font-size:9px;color:var(--blue);text-align:right">${pc(u,t)}% unpl</div>`:''}
+    </div>`;
+  });
+  document.getElementById('pvu-body').innerHTML=
+    `<div style="display:flex;gap:12px;font-size:11px;color:var(--tx3);margin-bottom:10px;flex-wrap:wrap">
+      <span><span style="width:8px;height:8px;border-radius:2px;background:var(--pink);display:inline-block;margin-right:3px"></span>Planned ${pl} (${pc(pl,tot)}%)</span>
+      <span><span style="width:8px;height:8px;border-radius:2px;background:var(--amber);display:inline-block;margin-right:3px"></span>Repl ${rp} (${pc(rp,tot)}%)</span>
+      <span><span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block;margin-right:3px"></span>Unpl ${un} (${pc(un,tot)}%)</span>
+    </div>${rows}`;
+}
+
+function renderBB(f){
+  const fB=FP.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const fBl=FP.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const tot=fB+fBl||1;
+  const planB=mppBuy(f.div,f.mi),planBl=mppBuild(f.div,f.mi);
+  document.getElementById('bb-body').innerHTML=
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--green)">${fB}</div><div style="font-size:10px;color:var(--tx3)">Buy FPTK</div><div style="font-size:9px;color:var(--tx3)">Plan ${planB}</div></div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--purple)">${fBl}</div><div style="font-size:10px;color:var(--tx3)">Build FPTK</div><div style="font-size:9px;color:var(--tx3)">Plan ${planBl}</div></div>
+    </div>
+    <div class="pb"><div style="display:flex;height:6px">
+      <div style="width:${pc(fB,tot)}%;background:var(--green);border-radius:4px 0 0 4px"></div>
+      <div style="width:${pc(fBl,tot)}%;background:var(--purple);border-radius:0 4px 4px 0"></div>
+    </div></div>
+    <div style="font-size:10px;color:var(--tx3);margin-top:4px">${pc(fBl,tot)}% Build dari total FPTK</div>`;
+}
+
+function renderSLADivisi(f){
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const divs=[...new Set(all.map(r=>r.divisi))].sort();
+  document.getElementById('sla-div-sub').textContent=f.bLabel+' · '+(f.div||'Semua Divisi');
+  const maxSLA=Math.max(...divs.map(d=>{const s=all.filter(r=>r.divisi===d&&r.sla!=null);return s.length?Math.round(s.reduce((a,b)=>a+b.sla,0)/s.length):0;}),SLA_T+1);
+  document.getElementById('sla-div-body').innerHTML=divs.map(d=>{
+    const s=all.filter(r=>r.divisi===d&&r.sla!=null&&(f.bln===0||r.bulan===f.bln));
+    const avg=s.length?Math.round(s.reduce((a,b)=>a+b.sla,0)/s.length):null;
+    const col=avg==null?'var(--border)':avg>SLA_T?'var(--amber)':'var(--green)';
+    return `<div class="dist-row">
+      <span class="dist-label">${d.length>22?d.slice(0,22)+'...':d}</span>
+      <div class="dist-bar-bg"><div class="dist-bar" style="width:${avg?Math.min(100,avg/maxSLA*100):0}%;background:${col}"></div></div>
+      <span class="dist-num" style="color:${col}">${avg!=null?avg+' hr':'—'}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderODHub(f){
+  const so=D.so||[];
+  const soTotal=so.length;
+  const soSigned=so.filter(d=>d.effective_status==='Signed All').length;
+  const soSignedUser=so.filter(d=>d.effective_status==='Signed by User').length;
+  const soSent=so.filter(d=>d.effective_status==='Sent to User').length;
+  const soAvail=so.filter(d=>d.effective_status==='Available').length;
+  const soKpi=document.getElementById('so-kpi');
+  if(soKpi){
+    document.getElementById('so-kpi-sub').textContent=soTotal+' divisi';
+    soKpi.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+      ${[['Signed All','#1D9E75','#EDFAF4',soSigned],['Signed by User','#E8197D','#FBEAF0',soSignedUser],['Sent to User','#E8A020','#FAEEDA',soSent],['Available','#888','#F5F5F5',soAvail]].map(([l,c,bg,v])=>
+        `<div style="text-align:center;background:${bg};border-radius:6px;padding:5px"><div style="font-size:18px;font-weight:700;color:${c}">${v}</div><div style="font-size:8px;color:${c};line-height:1.2">${l}</div></div>`
+      ).join('')}
+    </div>
+    <div class="pb"><div style="display:flex;height:6px">
+      <div style="width:${pc(soSigned,soTotal)}%;background:#1D9E75"></div>
+      <div style="width:${pc(soSignedUser,soTotal)}%;background:var(--pink)"></div>
+      <div style="width:${pc(soSent,soTotal)}%;background:var(--amber)"></div>
+      <div style="width:${pc(soAvail,soTotal)}%;background:#888"></div>
+    </div></div>
+    <div style="font-size:10px;color:var(--tx3);margin-top:4px">${pc(soSigned+soSignedUser,soTotal)}% sudah signed</div>`;
+  }
+  const jd=D.jd||[];
+  const jdKpi=document.getElementById('jd-kpi');
+  if(jdKpi){
+    const done=jd.filter(r=>r.status==='Done').length;
+    const review=jd.filter(r=>r.status==='Review by User').length;
+    const prog=jd.filter(r=>r.status==='On Progress').length;
+    document.getElementById('jd-kpi-sub').textContent=jd.length+' jabatan';
+    jdKpi.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="text-align:center;background:#EDFAF4;border-radius:6px;padding:6px"><div style="font-size:18px;font-weight:700;color:#1D9E75">${done}</div><div style="font-size:8px;color:#085041">Done</div></div>
+      <div style="text-align:center;background:#FBEAF0;border-radius:6px;padding:6px"><div style="font-size:18px;font-weight:700;color:var(--pink)">${review}</div><div style="font-size:8px;color:#72243E">Review</div></div>
+      <div style="text-align:center;background:#FAEEDA;border-radius:6px;padding:6px"><div style="font-size:18px;font-weight:700;color:var(--amber)">${prog}</div><div style="font-size:8px;color:#633806">On Progress</div></div>
+    </div>
+    <div class="pb"><div style="display:flex;height:6px">
+      <div style="width:${pc(done,jd.length||1)}%;background:var(--green)"></div>
+      <div style="width:${pc(review,jd.length||1)}%;background:var(--pink)"></div>
+      <div style="width:${pc(prog,jd.length||1)}%;background:var(--amber)"></div>
+    </div></div>`;
+  }
+  const kpi=D.kpi||[];
+  const pmKpi=document.getElementById('pm-kpi');
+  if(pmKpi){
+    const ippAppr=kpi.filter(r=>r.ipp==='Approved').length;
+    const ipeAppr=kpi.filter(r=>r.ipe==='Approved').length;
+    const tot=kpi.length||1;
+    document.getElementById('pm-kpi-sub').textContent=tot+' karyawan';
+    pmKpi.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="text-align:center;background:#FBEAF0;border-radius:6px;padding:6px"><div style="font-size:18px;font-weight:700;color:var(--pink)">${pc(ippAppr,tot)}%</div><div style="font-size:8px;color:#72243E">IPP Approved</div></div>
+      <div style="text-align:center;background:#EFF6FF;border-radius:6px;padding:6px"><div style="font-size:18px;font-weight:700;color:var(--blue)">${pc(ipeAppr,tot)}%</div><div style="font-size:8px;color:#0C447C">IPE Approved</div></div>
+    </div>
+    <div class="pb" style="margin-bottom:2px"><div class="pb-fill" style="width:${pc(ippAppr,tot)}%;background:var(--pink)"></div></div>
+    <div class="pb"><div class="pb-fill" style="width:${pc(ipeAppr,tot)}%;background:var(--blue)"></div></div>`;
+  }
+}
+
+function renderMgmtPreview(f){
+  const plan=mppPlan(f.div,f.mi);
+  const plannedAppr=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const gap=Math.max(0,plan-plannedAppr);
+  const slaA=FP.filter(r=>r.sla!=null);
+  const slaAvg=slaA.length?Math.round(slaA.reduce((s,r)=>s+r.sla,0)/slaA.length):null;
+  const mm=D.match_results.filter(r=>r.match_status==='mismatch'&&(f.bln===0||r.bulan===f.bln)).length;
+  document.getElementById('mgmt-preview').innerHTML=[
+    {icon:'📊',v:plan,l:'MPP Plan'},
+    {icon:'🎯',v:pc(plannedAppr,plan)+'%',l:'Achievement'},
+    {icon:'⚠️',v:gap,l:'Gap'},
+    {icon:'⏱',v:slaAvg?slaAvg+' hr':'—',l:'SLA Avg'},
+  ].map(x=>`<div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;margin-bottom:4px">${x.icon}</div><div style="font-size:20px;font-weight:700;color:var(--tx)">${x.v}</div><div style="font-size:10px;color:var(--tx3)">${x.l}</div></div>`).join('');
+}
+
+// ── FPTK FULL TABLE ──
+function renderFPTKFull(){
+  const f=getF();
+  const stF=document.getElementById('ff-status').value;
+  const jnF=document.getElementById('ff-jenis').value;
+  const bbF=document.getElementById('ff-bb').value;
+  const picF=document.getElementById('ff-pic').value;
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  let rows=all.filter(r=>(f.bln===0||r.bulan===f.bln)&&(!stF||r.status===stF)&&(!jnF||r.planned===jnF)&&(!bbF||r.buy_build===bbF)&&(!picF||r.pic===picF));
+  // build pic filter
+  const pics=[...new Set(all.map(r=>r.pic).filter(Boolean))];
+  const picEl=document.getElementById('ff-pic');
+  if(picEl.options.length<=1){pics.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;picEl.appendChild(o);})}
+  const SLA_T2=5;
+  document.getElementById('ftbody').innerHTML=rows.map((r,i)=>{
+    const slaClass=r.sla!=null?(r.sla>SLA_T2?'ca':'cg'):'';
+    return `<tr>
+      <td>${i+1}</td><td style="max-width:200px">${r.posisi}</td>
+      <td style="max-width:150px;font-size:10px">${r.divisi}</td>
+      <td style="max-width:130px;font-size:10px">${r.dept}</td>
+      <td>${r.level}</td><td style="text-align:center">${r.jml_approved}</td>
+      <td>${r.tgl_diajukan}</td><td>${r.tgl_approved||'—'}</td>
+      <td class="${slaClass}" style="text-align:center">${r.sla!=null?r.sla+' hr':'—'}</td>
+      <td>${r.pic}</td>
+      <td><span class="pill ${pillClass(r.planned)}">${r.planned}</span></td>
+      <td><span class="pill ${pillClass(r.buy_build)}">${r.buy_build}</span></td>
+      <td style="font-size:10px;max-width:150px">${r.note||''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── BUY BUILD PAGE ──
+function renderBBPage(){
+  const f=getF();
+  document.getElementById('bb-hdr-sub').textContent=f.bLabel+' · '+(f.div||'Semua Divisi');
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const divs=[...new Set(all.map(r=>r.divisi))].sort();
+  document.getElementById('bb-divisi').innerHTML=divs.map(d=>{
+    const dr=all.filter(r=>r.divisi===d&&(f.bln===0||r.bulan===f.bln));
+    const buy=dr.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const bld=dr.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const tot=buy+bld;if(!tot)return'';
+    return `<div class="dist-row">
+      <span class="dist-label">${d.length>22?d.slice(0,22)+'...':d}</span>
+      <div class="dist-bar-bg"><div style="display:flex;height:6px">
+        <div style="width:${pc(buy,tot)}%;background:var(--green);border-radius:4px 0 0 4px"></div>
+        <div style="width:${pc(bld,tot)}%;background:var(--purple);border-radius:0 4px 4px 0"></div>
+      </div></div>
+      <span class="dist-num"><span style="color:var(--green)">${buy}</span>/<span style="color:var(--purple)">${bld}</span></span>
+    </div>`;
+  }).join('');
+  document.getElementById('mpp-detail-body').innerHTML=Object.entries(D.mpp_detail).map(([div,pos])=>{
+    if(f.div&&div.toLowerCase()!==f.div.toLowerCase())return'';
+    return pos.map(p=>`<div style="padding:6px 0;border-bottom:.5px solid var(--border);font-size:11px">
+      <div style="font-weight:500">${p.pos}</div>
+      <div style="color:var(--tx3);font-size:10px">${div} · ${p.level} · Buy ${p.total_buy} / Build ${p.total_build}</div>
+    </div>`).join('');
+  }).join('');
+}
+
+// ── MATCH ──
+function renderMatch(){
+  const stF=document.getElementById('mfst').value;
+  const f=getF();
+  const all=D.match_results.filter(r=>(f.bln===0||r.bulan===f.bln)&&(f.div===''||r.divisi===f.div)&&(!stF||r.match_status===stF));
+  const cnt=s=>all.filter(r=>r.match_status===s).length;
+  const MBGCOL={match:'var(--green)',partial:'var(--amber)',mismatch:'var(--red)',unplanned:'var(--blue)',replacement:'var(--amber)'};
+  document.getElementById('msum').innerHTML=['match','partial','mismatch','unplanned','replacement'].map(s=>{
+    const c=cnt(s);if(!c)return'';
+    return `<span class="pill ${pillClass(s)}" style="cursor:pointer" onclick="document.getElementById('mfst').value='${s}';renderMatch()">${s} (${c})</span>`;
+  }).join('');
+  document.getElementById('mtbody').innerHTML=all.map(r=>
+    `<tr><td>${r.bulan?MF[r.bulan-1]:'—'}</td><td style="font-size:11px">${r.divisi}</td>
+    <td style="font-size:11px">${r.posisi}</td>
+    <td><span class="pill ${pillClass(r.planned)}">${r.planned}</span></td>
+    <td style="font-size:11px;color:var(--tx3)">${r.mpp_match||'—'}</td>
+    <td style="text-align:center">${r.score!=null?Math.round(r.score*100)+'%':'—'}</td>
+    <td><span class="pill ${pillClass(r.match_status)}">${r.match_status}</span></td></tr>`
+  ).join('');
+}
+
+// ── DIVISI ──
+function renderDivisi(f){
+  const divs=[...new Set([...Object.keys(D.mpp_plan_buy),...D.fptk.map(r=>r.divisi)])].sort();
+  document.getElementById('divisi-sub').textContent=f.bLabel+' · Semua Divisi';
+  document.getElementById('divisi-body').innerHTML=`<table class="tbl">
+    <thead><tr><th>Divisi</th><th>Plan</th><th>Plan Buy</th><th>Plan Build</th><th>Planned</th><th>Repl</th><th>Unpl</th><th>Buy</th><th>Build</th><th>Gap</th></tr></thead>
+    <tbody>${divs.map(d=>{
+      const dr=D.fptk.filter(r=>r.divisi===d&&(f.bln===0||r.bulan===f.bln));
+      const plan=mppPlan(d,f.mi),pB=mppBuy(d,f.mi),pBl=mppBuild(d,f.mi);
+      const pl=dr.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+      const rp=dr.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+      const un=dr.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
+      const buy=dr.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+      const bld=dr.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+      const gap=Math.max(0,plan-pl);
+      if(!plan&&!dr.length)return'';
+      return `<tr><td>${d}</td><td>${plan}</td><td style="color:var(--green)">${pB}</td><td style="color:var(--purple)">${pBl}</td>
+        <td style="color:var(--pink)">${pl}</td><td style="color:var(--amber)">${rp}</td><td style="color:var(--blue)">${un}</td>
+        <td style="color:var(--green)">${buy}</td><td style="color:var(--purple)">${bld}</td>
+        <td style="color:${gap>0?'var(--amber)':'var(--green)'};font-weight:600">${gap}</td></tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+// ── MANAGEMENT VIEW ──
+function renderMgmt(f){
+  const plan=mppPlan(f.div,f.mi);
+  const appr=FP.reduce((s,r)=>s+(r.jml_approved||1),0);
+  const plannedAppr=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const gap=Math.max(0,plan-plannedAppr);
+  const slaA=FP.filter(r=>r.sla!=null);
+  const slaAvg=slaA.length?Math.round(slaA.reduce((s,r)=>s+r.sla,0)/slaA.length):null;
+  const fB=FP.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const fBl=FP.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const divs=[...new Set([...Object.keys(D.mpp_plan_buy),...D.fptk.map(r=>r.divisi)])].sort();
+  document.getElementById('mgmts').textContent=f.bLabel+' · '+(f.div||'Semua Divisi')+' · KJ 3 Up';
+  document.getElementById('mkpis').innerHTML=(function(){
+    var _repl=FP.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
+    var _unpl=FP.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
+    var _planBuy=mppBuy(f.div,f.mi),_planBld=mppBuild(f.div,f.mi);
+    return '<div class="mkpi"><div class="mki">📊</div><div class="mkv">'+plan+'</div><div class="mkl">Total MPP Plan</div><div class="mkt"><span style="color:var(--green)">Buy '+_planBuy+'</span> · <span style="color:var(--purple)">Build '+_planBld+'</span></div></div>'+
+    '<div class="mkpi"><div class="mki">📋</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0 6px">'+
+      '<div style="text-align:center;background:#FBEAF0;border-radius:6px;padding:6px"><div style="font-size:22px;font-weight:700;color:var(--pink)">'+plannedAppr+'</div><div style="font-size:9px;color:#9d1459;font-weight:500">Planned</div></div>'+
+      '<div style="text-align:center;background:#FAEEDA;border-radius:6px;padding:6px"><div style="font-size:22px;font-weight:700;color:var(--amber)">'+_repl+'</div><div style="font-size:9px;color:#633806;font-weight:500">Replacement</div></div>'+
+      '<div style="text-align:center;background:#EFF6FF;border-radius:6px;padding:6px"><div style="font-size:22px;font-weight:700;color:var(--blue)">'+_unpl+'</div><div style="font-size:9px;color:#1d4ed8;font-weight:500">Unplanned</div></div>'+
+    '</div>'+
+    '<div class="mkl">FPTK '+f.bLabel+'</div><div class="mkt">'+appr+' total FPTK</div></div>'+
+    '<div class="mkpi"><div class="mki">⚠️</div><div class="mkv '+(gap>0?'ca':'cg')+'">'+gap+'</div><div class="mkl">Gap vs MPP Plan</div><div class="mkt">'+(gap>0?'Planned belum tercapai':'Target terpenuhi')+' · '+pc(plannedAppr,plan)+'% achievement</div></div>'+
+    '<div class="mkpi"><div class="mki">⏱</div><div class="mkv '+(slaAvg&&slaAvg>SLA_T?'ca':'cg')+'">'+(slaAvg?slaAvg+' hr':'—')+'</div><div class="mkl">Rata-Rata SLA</div><div class="mkt">Target '+SLA_T+' hr kerja'+(slaAvg&&slaAvg>SLA_T?' · Melewati target':slaAvg?' · Dalam target':'')+' </div></div>';
+  })();
+  // Realisasi per Divisi
+  document.getElementById('mgd').innerHTML=(f.div?[f.div]:divs).map(d=>{
+    const p=mppPlan(d,f.mi),r=FP.filter(x=>x.divisi===d).reduce((s,x)=>s+(x.jml_approved||1),0);
+    if(!p&&!r)return'';
+    const pt=pc(r,p),col=pt>=80?'var(--green)':pt>=50?'var(--amber)':'var(--red)';
+    return `<div class="dist-row"><span class="dist-label">${d.length>22?d.slice(0,22)+'...':d}</span>
+      <div class="dist-bar-bg"><div class="dist-bar" style="width:${pt}%;background:${col}"></div></div>
+      <span class="dist-num">${r}/${p}</span></div>`;
+  }).filter(Boolean).join('');
+  // Key Highlights
+  const hl=[];
+  const mm=D.match_results.filter(r=>r.match_status==='mismatch'&&(f.bln===0||r.bulan===f.bln)).length;
+  if(mm>0)hl.push({c:'warn',t:mm+' FPTK Planned jabatan mismatch MPP'});
+  const huDivs=divs.filter(d=>{const dr=FP.filter(r=>r.divisi===d);const u=dr.filter(r=>r.planned==='Unplanned').length;return dr.length>0&&u/dr.length>0.3;});
+  if(huDivs.length)hl.push({c:'warn',t:'Unplanned rate tinggi: '+huDivs.join(', ')});
+  const bl=divs.filter(d=>{const p=mppPlan(d,f.mi);const r=FP.filter(x=>x.divisi===d).reduce((s,x)=>s+(x.jml_approved||1),0);return p>0&&r/p<0.6;});
+  if(bl.length)hl.push({c:'info',t:'Realisasi < 60%: '+bl.map(d=>d.length>20?d.slice(0,20)+'...':d).join(', ')});
+  if(slaAvg&&slaAvg>SLA_T)hl.push({c:'warn',t:'SLA rata-rata '+slaAvg+' hr melewati target '+SLA_T+' hr'});
+  if(!hl.length)hl.push({c:'ok',t:'Semua indikator normal '+f.bLabel});
+  document.getElementById('mghl').innerHTML=hl.map(h=>`<div class="ins ${h.c}" style="margin-bottom:6px">${h.t}</div>`).join('');
+  // BB Rekap
+  document.getElementById('mgbbs').textContent='YTD 2026 · per Kategori';
+  const totPB=mppBuy(f.div,-1),totPBl=mppBuild(f.div,-1);
+  const fAll=D.fptk;
+  function bbRow(label,col,rows){
+    const buy=rows.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const bld=rows.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const tot=buy+bld;
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:10px;font-weight:600;color:${col};margin-bottom:4px">${label} (${tot})</div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;color:var(--tx2)"><span>Buy <b style="color:var(--green)">${buy}</b></span><span>Build <b style="color:var(--purple)">${bld}</b></span></div>
+      <div class="pb"><div style="display:flex;height:6px">
+        <div style="width:${pc(buy,tot||1)}%;background:var(--green);border-radius:2px 0 0 2px;min-width:${buy>0?2:0}px"></div>
+        <div style="width:${pc(bld,tot||1)}%;background:var(--purple);border-radius:0 2px 2px 0;min-width:${bld>0?2:0}px"></div>
+      </div></div></div>`;
+  }
+  document.getElementById('mgbb').innerHTML=
+    `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px"><span>MPP Plan Buy</span><span>MPP Plan Build</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:4px"><span style="color:var(--green)">${totPB}</span><span style="color:var(--purple)">${totPBl}</span></div>
+    <div class="pb"><div style="display:flex;height:6px">
+      <div style="width:${pc(totPB,totPB+totPBl||1)}%;background:var(--green);border-radius:2px 0 0 2px"></div>
+      <div style="width:${pc(totPBl,totPB+totPBl||1)}%;background:var(--purple);border-radius:0 2px 2px 0"></div>
+    </div></div></div>
+    <div style="border-top:.5px solid var(--border);padding-top:10px">
+    ${bbRow('Planned','var(--pink)',fAll.filter(r=>r.planned==='Planned'))}
+    ${bbRow('Replacement','var(--amber)',fAll.filter(r=>r.planned==='Replacement'))}
+    ${bbRow('Unplanned','var(--blue)',fAll.filter(r=>r.planned==='Unplanned'))}
+    </div>`;
+  // Match summary
+  const mr=D.match_results.filter(r=>f.bln===0||r.bulan===f.bln);
+  const mCnt={match:0,partial:0,mismatch:0,unplanned:0,replacement:0};
+  mr.forEach(r=>{if(mCnt[r.match_status]!==undefined)mCnt[r.match_status]++;});
+  document.getElementById('mgmatch').innerHTML=Object.entries(mCnt).map(([s,c])=>
+    c>0?`<div class="dist-row"><span class="dist-label"><span class="pill ${pillClass(s)}">${s}</span></span><div class="dist-bar-bg"><div class="dist-bar" style="width:${pc(c,mr.length||1)}%;background:${s==='match'?'var(--green)':s==='mismatch'?'var(--red)':'var(--amber)'}"></div></div><span class="dist-num">${c}</span></div>`:''
+  ).join('');
+}
+
+// ── SO PAGE ──
+function renderSO(){
+  const so=D.so||[];
+  const COL={'Signed All':'#1D9E75','Signed by User':'var(--pink)','Sent to User':'var(--amber)','Available':'#888'};
+  const BG={'Signed All':'#EDFAF4','Signed by User':'#FBEAF0','Sent to User':'#FAEEDA','Available':'#F5F5F5'};
+  document.getElementById('so-sub').textContent=so.length+' divisi · 2026';
+  document.getElementById('so-list').innerHTML=so.map(d=>{
+    const col=COL[d.effective_status]||'#888',bg=BG[d.effective_status]||'#F5F5F5';
+    const checks=[d.no_name&&'No Name',d.name&&'Name',d.signed&&'Signed'].filter(Boolean);
+    return `<div class="so-row">
+      <div><div style="font-size:12px;font-weight:500">${d.divisi}</div><div style="font-size:10px;color:var(--tx3)">${checks.join(' · ')||'—'}</div></div>
+      <span class="pill" style="background:${bg};color:${col}">${d.effective_status||'—'}</span>
+    </div>`;
+  }).join('');
+  const tot=so.length;
+  const counts={
+    'Signed All':so.filter(d=>d.effective_status==='Signed All').length,
+    'Signed by User':so.filter(d=>d.effective_status==='Signed by User').length,
+    'Sent to User':so.filter(d=>d.effective_status==='Sent to User').length,
+    'Available':so.filter(d=>d.effective_status==='Available').length
+  };
+  document.getElementById('so-summary').innerHTML=
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    ${Object.entries(counts).map(([l,v])=>`<div style="background:${BG[l]||'#F5F5F5'};border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:28px;font-weight:700;color:${COL[l]||'#888'}">${v}</div>
+      <div style="font-size:10px;color:${COL[l]||'#888'};font-weight:500">${l}</div>
+      <div style="font-size:10px;color:var(--tx3)">${pc(v,tot)}% dari total</div>
+    </div>`).join('')}</div>
+    <div class="ins ${counts['Signed All']===tot?'ok':'warn'}">${counts['Signed All']===tot?'Semua divisi sudah Signed All.':(tot-counts['Signed All'])+' divisi belum Signed All. Target: 100% Signed All.'}</div>`;
+}
+
+// ── JD PAGE ──
+function renderJD(){
+  const jd=D.jd||[];
+  document.getElementById('jd-sub').textContent=jd.length+' jabatan terdaftar';
+  const STATUS_ORDER=['Done','Review by User','On Progress','Not Started'];
+  document.getElementById('jd-tbody').innerHTML=jd.map((r,i)=>{
+    return `<tr style="background:${i%2===0?'#fff':'var(--bg)'}">
+      <td>${r.divisi}</td><td>${r.dept}</td><td>${r.level}</td>
+      <td style="font-weight:500">${r.jabatan}</td>
+      <td><span class="pill ${pillClass(r.status)}">${r.status||'—'}</span></td>
+    </tr>`;
+  }).join('');
+  const tot=jd.length||1;
+  const done=jd.filter(r=>r.status==='Done').length;
+  const review=jd.filter(r=>r.status==='Review by User').length;
+  const prog=jd.filter(r=>r.status==='On Progress').length;
+  const ns=jd.filter(r=>r.status==='Not Started'||!r.status).length;
+  document.getElementById('jd-completion').innerHTML=
+    `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-bottom:8px">Completion Summary</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+    ${[['Done','#1D9E75','#EDFAF4',done],['Review by User','var(--pink)','#FBEAF0',review],['On Progress','var(--amber)','#FAEEDA',prog],['Not Started','#888','#F5F5F5',ns]].map(([l,c,bg,v])=>
+      `<div style="text-align:center;background:${bg};border-radius:8px;padding:10px">
+        <div style="font-size:22px;font-weight:700;color:${c}">${v}</div>
+        <div style="font-size:9px;color:${c}">${l}</div>
+        <div style="font-size:9px;color:var(--tx3)">${pc(v,tot)}%</div>
+      </div>`).join('')}
+    </div>
+    <div class="ins ${done===tot?'ok':'info'}" style="margin-top:8px">${done===tot?'Semua JD sudah Done!':'Completion rate: '+pc(done,tot)+'%. '+ns+' jabatan belum mulai.'}</div>`;
+}
+
+// ── PERFORMANCE MANAGEMENT ──
+function renderPM(){
+  const kpi=D.kpi||[];
+  const tot=kpi.length||1;
+  const ippAppr=kpi.filter(r=>r.ipp==='Approved').length;
+  const ippWait=kpi.filter(r=>r.ipp==='Waiting Approval').length;
+  const ippNot=kpi.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise').length;
+  const ipeAppr=kpi.filter(r=>r.ipe==='Approved').length;
+  const ipeDraft=kpi.filter(r=>r.ipe==='DRAFT').length;
+  const ipeWait=kpi.filter(r=>r.ipe==='Waiting Approval').length;
+  const ipeNot=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
+  document.getElementById('pm-kpis').innerHTML=[
+    ['Total Karyawan',tot,'','var(--tx)'],
+    ['IPP Approved',ippAppr,pc(ippAppr,tot)+'%','var(--green)'],
+    ['IPP Belum',ippNot+ippWait,pc(ippNot+ippWait,tot)+'% pending','var(--amber)'],
+    ['IPE Approved',ipeAppr,pc(ipeAppr,tot)+'%','var(--blue)'],
+    ['IPE Belum',ipeNot,pc(ipeNot,tot)+'% not yet','var(--red)'],
+  ].map(([l,v,s,c])=>`<div class="kpi"><div class="kpi-label">${l}</div><div class="kpi-val" style="color:${c}">${v}</div><div class="kpi-sub">${s}</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:${parseInt(s)||0}%;background:${c}"></div></div></div>`).join('');
+
+  // IPP distribution
+  const ippStatuses=['Approved','Waiting Approval','Not Yet','Revise'];
+  const ippCols={'Approved':'var(--green)','Waiting Approval':'var(--amber)','Not Yet':'#888','Revise':'var(--red)'};
+  document.getElementById('ipp-dist').innerHTML=ippStatuses.map(s=>{
+    const c=kpi.filter(r=>r.ipp===s).length;if(!c)return'';
+    return `<div class="dist-row"><span class="dist-label"><span class="pill ${pillClass(s)}">${s}</span></span>
+      <div class="dist-bar-bg"><div class="dist-bar" style="width:${pc(c,tot)}%;background:${ippCols[s]||'#888'}"></div></div>
+      <span class="dist-num" style="color:${ippCols[s]||'#888'}">${c} (${pc(c,tot)}%)</span></div>`;
+  }).join('');
+
+  // IPE distribution
+  const ipeStatuses=['Approved','Waiting Approval','DRAFT','Not Yet','REVISE'];
+  const ipeCols={'Approved':'var(--green)','Waiting Approval':'var(--amber)','DRAFT':'var(--blue)','Not Yet':'#888','REVISE':'var(--red)'};
+  document.getElementById('ipe-dist').innerHTML=ipeStatuses.map(s=>{
+    const c=kpi.filter(r=>r.ipe===s).length;if(!c)return'';
+    return `<div class="dist-row"><span class="dist-label"><span class="pill ${pillClass(s)}">${s}</span></span>
+      <div class="dist-bar-bg"><div class="dist-bar" style="width:${pc(c,tot)}%;background:${ipeCols[s]||'#888'}"></div></div>
+      <span class="dist-num" style="color:${ipeCols[s]||'#888'}">${c} (${pc(c,tot)}%)</span></div>`;
+  }).join('');
+
+  // Per level
+  const levels=[...new Set(kpi.map(r=>r.level).filter(Boolean))];
+  ['ipp','ipe'].forEach(type=>{
+    const elId=type==='ipp'?'ipp-level':'ipe-level';
+    const statusKey=type==='ipp'?'ipp':'ipe';
+    document.getElementById(elId).innerHTML=levels.map(l=>{
+      const gr=kpi.filter(r=>r.level===l);
+      const appr=gr.filter(r=>r[statusKey]==='Approved').length;
+      const tot2=gr.length||1;
+      const col=pc(appr,tot2)>=80?'var(--green)':pc(appr,tot2)>=50?'var(--amber)':'var(--red)';
+      return `<div class="dist-row">
+        <span class="dist-label">${l}</span>
+        <div class="dist-bar-bg"><div class="dist-bar" style="width:${pc(appr,tot2)}%;background:${col}"></div></div>
+        <span class="dist-num" style="color:${col}">${appr}/${tot2}</span>
+      </div>`;
+    }).join('');
+  });
+
+  renderReminder();
+}
+
+function renderReminder(){
+  const kpi=D.kpi||[];
+  const filter=document.getElementById('remind-filter').value;
+  let belum=[];
+  if(filter==='all'||filter==='ipp'){
+    belum=[...belum,...kpi.filter(r=>r.ipp!=='Approved').map(r=>{return{...r,flag:'IPP',status:r.ipp};})]
+  }
+  if(filter==='all'||filter==='ipe'){
+    const ipeNot=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE');
+    belum=[...belum,...ipeNot.map(r=>{return{...r,flag:'IPE',status:r.ipe};})]
+  }
+  // Deduplicate by NIK if both
+  if(filter==='all'){
+    const seen={};
+    belum=belum.filter(r=>{const key=r.nik+r.flag;if(seen[key])return false;seen[key]=true;return true;})
+  }
+  document.getElementById('remind-sub').textContent=belum.length+' karyawan perlu reminder';
+  document.getElementById('remind-list').innerHTML=belum.slice(0,50).map((r,i)=>
+    `<div class="remind-row">
+      <div style="width:30px;font-size:10px;color:var(--tx3)">${i+1}</div>
+      <div style="flex:1"><div style="font-weight:500">${r.nama}</div><div style="font-size:10px;color:var(--tx3)">${r.email} · ${r.level}${r.divisi?' · '+r.divisi:''}</div></div>
+      <span class="pill ${pillClass(r.flag)}" style="margin-right:6px">${r.flag}</span>
+      <span class="pill ${pillClass(r.status)}">${r.status}</span>
+      <a href="mailto:${r.email}?subject=Reminder%20Pengisian%20${r.flag}%20Anteraja&body=Halo%20${r.nama},%0A%0AMohon%20segera%20melengkapi%20pengisian%20${r.flag}%20Anda.%0A%0ATerima%20kasih,%0ATim%20OD%20Anteraja" style="margin-left:8px;font-size:10px;color:var(--pink);text-decoration:none">✉</a>
+    </div>`
+  ).join('')+(belum.length>50?`<div style="text-align:center;padding:10px;font-size:11px;color:var(--tx3)">+${belum.length-50} lainnya</div>`:'');
+}
+
+function sendBulkReminder(){
+  const kpi=D.kpi||[];
+  const filter=document.getElementById('remind-filter').value;
+  let emails=[];
+  if(filter==='all'||filter==='ipp') emails=[...emails,...kpi.filter(r=>r.ipp!=='Approved'&&r.email).map(r=>r.email)];
+  if(filter==='all'||filter==='ipe') emails=[...emails,...kpi.filter(r=>(r.ipe==='Not Yet'||r.ipe==='REVISE')&&r.email).map(r=>r.email)];
+  emails=[...new Set(emails)];
+  if(!emails.length){alert('Tidak ada karyawan yang perlu reminder.');return;}
+  const subject=encodeURIComponent('Reminder Pengisian KPI Anteraja');
+  const body=encodeURIComponent('Halo,\n\nMohon segera melengkapi pengisian IPP/IPE Anda.\n\nTerima kasih,\nTim OD Anteraja');
+  window.open(`mailto:?bcc=${emails.join(',')}&subject=${subject}&body=${body}`);
+}
+
+// ── EXPORT ──
+function toggleExportMenu(){
+  const m=document.getElementById('export-menu');
+  m.style.display=m.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',function(e){
+  if(!(e.target instanceof Element))return;
+  if(!e.target.closest('#export-btn')&&!e.target.closest('#export-menu')){
+    const m=document.getElementById('export-menu');if(m)m.style.display='none';
+  }
+});
+
+function exportCSV(){
+  const f=getF();
+  const rows=FP.map(r=>[r.divisi,r.dept,r.posisi,r.level,r.jml_approved,r.tgl_diajukan,r.tgl_approved,r.sla,r.pic,r.planned,r.buy_build,r.status,r.note]);
+  const header='Divisi,Departement,Posisi,Level,Jml Approved,Tgl Diajukan,Tgl Approved OD,SLA,PIC,Jenis,Buy/Build,Status,Note';
+  const csv=[header,...rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`FPTK_${f.bLabel.replace(' ','_')}.csv`;a.click();
+}
+
+function exportPPT(){alert('Export PPT — coming soon');}
+
+// ── INIT ──
+window.addEventListener('resize',()=>{if(currentPage==='overview')renderMPPChart(getF());});
+window.addEventListener('DOMContentLoaded',()=>{
+  buildFilters();
+  applyFilters();
+  document.getElementById('badge').textContent='Data per '+D.generated;
+});
+</script>
+</body>
+</html>
