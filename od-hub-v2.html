@@ -473,13 +473,28 @@ canvas{display:block;width:100%}
   <div class="card">
     <div class="chdr">
       <div><div class="ct">Reminder — Karyawan Belum Mengisi</div><div class="cs" id="remind-sub"></div></div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <select class="tf" id="remind-filter" onchange="renderReminder()">
           <option value="all">IPP & IPE</option>
           <option value="ipp">IPP saja</option>
           <option value="ipe">IPE saja</option>
         </select>
-        <button class="btn btn-pink" onclick="sendBulkReminder()">✉ Kirim Reminder Bulk</button>
+        <select class="tf" id="remind-bulan">
+          <option value="">Pilih Bulan...</option>
+          <option value="Januari 2026">Januari 2026</option>
+          <option value="Februari 2026">Februari 2026</option>
+          <option value="Maret 2026">Maret 2026</option>
+          <option value="April 2026">April 2026</option>
+          <option value="Mei 2026">Mei 2026</option>
+          <option value="Juni 2026">Juni 2026</option>
+          <option value="Juli 2026">Juli 2026</option>
+          <option value="Agustus 2026">Agustus 2026</option>
+          <option value="September 2026">September 2026</option>
+          <option value="Oktober 2026">Oktober 2026</option>
+          <option value="November 2026">November 2026</option>
+          <option value="Desember 2026">Desember 2026</option>
+        </select>
+        <button class="btn btn-pink" onclick="sendBulkReminder()">✉ Kirim Reminder via PA</button>
       </div>
     </div>
     <div id="remind-list"></div>
@@ -1187,13 +1202,99 @@ function renderReminder(){
 function sendBulkReminder(){
   const kpi=D.kpi||[];
   const filter=document.getElementById('remind-filter').value;
-  let emails=[];
-  if(filter==='all'||filter==='ipp')emails=[...emails,...kpi.filter(r=>r.ipp!=='Approved'&&r.email).map(r=>r.email)];
-  if(filter==='all'||filter==='ipe')emails=[...emails,...kpi.filter(r=>(r.ipe==='Not Yet'||r.ipe==='REVISE')&&r.email).map(r=>r.email)];
-  emails=[...new Set(emails)];
-  if(!emails.length){alert('Tidak ada karyawan yang perlu reminder.');return;}
-  window.open('mailto:?bcc='+emails.join(',')+'&subject='+encodeURIComponent('Reminder Pengisian KPI Anteraja')+'&body='+encodeURIComponent('Halo,\n\nMohon segera melengkapi pengisian IPP/IPE Anda.\n\nTerima kasih,\nTim OD Anteraja'));
+  const bulan=document.getElementById('remind-bulan').value;
+
+  if(!bulan){
+    alert('Pilih bulan terlebih dahulu sebelum kirim reminder.');
+    return;
+  }
+
+  // Build list penerima
+  let penerima=[];
+  if(filter==='all'||filter==='ipp'){
+    kpi.filter(r=>r.ipp!=='Approved'&&r.email).forEach(r=>{
+      penerima.push({nama:r.nama,email:r.email,nik:r.nik,level:r.level,ipp:r.ipp,ipe:r.ipe,flag:'IPP'});
+    });
+  }
+  if(filter==='all'||filter==='ipe'){
+    kpi.filter(r=>(r.ipe==='Not Yet'||r.ipe==='REVISE')&&r.email).forEach(r=>{
+      if(!penerima.find(p=>p.email===r.email&&p.flag==='IPE')){
+        penerima.push({nama:r.nama,email:r.email,nik:r.nik,level:r.level,ipp:r.ipp,ipe:r.ipe,flag:'IPE'});
+      }
+    });
+  }
+  // Deduplicate kalau all
+  if(filter==='all'){
+    const seen={};
+    penerima=penerima.filter(r=>{const k=r.email+r.flag;if(seen[k])return false;seen[k]=true;return true;});
+  }
+
+  if(!penerima.length){
+    alert('Tidak ada karyawan yang perlu reminder.');
+    return;
+  }
+
+  // Check apakah PA webhook sudah dikonfigurasi
+  const PA_URL = window.PA_WEBHOOK_URL || '';
+  if(!PA_URL){
+    // Belum ada webhook - tampilkan modal konfirmasi dengan info
+    const conf=confirm(
+      'Power Automate webhook belum dikonfigurasi.\n\n'+
+      'Total penerima: '+penerima.length+' karyawan\n'+
+      'Bulan: '+bulan+'\n'+
+      'Tipe: '+filter.toUpperCase()+'\n\n'+
+      'Untuk mengaktifkan PA reminder, masukkan webhook URL setelah flow Power Automate dibuat.\n\n'+
+      'Klik OK untuk kirim via mailto sebagai alternatif sementara.'
+    );
+    if(conf){
+      const emails=penerima.map(r=>r.email);
+      window.open('mailto:?bcc='+emails.join(',')+'&subject='+encodeURIComponent('[Reminder] Pengisian KPI '+bulan+' — Anteraja')+'&body='+encodeURIComponent('Halo,\n\nMohon segera melengkapi pengisian KPI '+bulan+' Anda.\n\nTerima kasih,\nTim OD Anteraja'));
+    }
+    return;
+  }
+
+  // Kirim ke Power Automate
+  const btn=document.querySelector('[onclick="sendBulkReminder()"]');
+  if(btn){btn.textContent='Mengirim...';btn.disabled=true;}
+
+  fetch(PA_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      bulan: bulan,
+      tipe: filter,
+      penerima: penerima,
+      total: penerima.length,
+      pengirim: 'arya.putra1208@anteraja.id'
+    })
+  })
+  .then(r=>{
+    if(r.ok||r.status===202){
+      alert('✅ Reminder berhasil dikirim ke '+penerima.length+' karyawan via Power Automate!\nBulan: '+bulan);
+    } else {
+      alert('❌ Gagal kirim ke Power Automate. Status: '+r.status);
+    }
+  })
+  .catch(e=>{
+    alert('❌ Error: '+e.message);
+  })
+  .finally(()=>{
+    if(btn){btn.textContent='✉ Kirim Reminder via PA';btn.disabled=false;}
+  });
 }
+
+// Setter untuk webhook URL - dipanggil setelah PA dikonfigurasi
+function setPAWebhook(url){
+  window.PA_WEBHOOK_URL=url;
+  localStorage.setItem('pa_webhook_url',url);
+  alert('Webhook PA tersimpan!');
+}
+
+// Load webhook URL dari localStorage kalau ada
+(function(){
+  const saved=localStorage.getItem('pa_webhook_url');
+  if(saved)window.PA_WEBHOOK_URL=saved;
+})();
 
 // ── REFRESH ──
 async function refreshData(){
