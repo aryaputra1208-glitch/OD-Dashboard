@@ -406,6 +406,45 @@ canvas{display:block;width:100%}
   <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
   <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking status Job Description per jabatan · 2026</div>
   <div class="r3" style="margin-bottom:12px" id="jd-kpi-row"></div>
+  <!-- JD Weekly Report -->
+  <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:16px">
+    <div class="chdr">
+      <div><div class="ct">Weekly Progress Report</div><div class="cs">Progres kumulatif Job Description per minggu</div></div>
+      <button class="btn btn-pink" onclick="showAddWeeklyJD()">+ Catat Minggu Ini</button>
+    </div>
+    <!-- KPI row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px" id="jd-weekly-kpis"></div>
+    <!-- Chart -->
+    <canvas id="jd-weekly-chart" style="display:block;width:100%;height:160px;margin-bottom:14px"></canvas>
+    <!-- Table -->
+    <table class="tbl" id="jd-weekly-tbl">
+      <thead><tr>
+        <th>Minggu</th>
+        <th style="text-align:right">Ditambahkan</th>
+        <th style="text-align:right">Kumulatif</th>
+        <th style="text-align:right">% Dari Target</th>
+      </tr></thead>
+      <tbody id="jd-weekly-tbody"></tbody>
+    </table>
+    <!-- Input form (hidden) -->
+    <div id="jd-weekly-form" style="display:none;margin-top:14px;background:var(--bg);border-radius:var(--rs);padding:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:10px">Catat Penambahan JD Minggu Ini</div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Minggu</div>
+          <input type="text" id="jd-week-label" placeholder="Contoh: W3 Juli 2026" class="tf" style="width:160px;padding:6px 10px;border-radius:var(--rs);border:.5px solid var(--border);font-family:var(--f);font-size:11px;background:var(--surface)">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Jumlah Ditambahkan</div>
+          <input type="number" id="jd-week-count" placeholder="10" min="0" class="tf" style="width:120px;padding:6px 10px;border-radius:var(--rs);border:.5px solid var(--border);font-family:var(--f);font-size:11px;background:var(--surface)">
+        </div>
+        <button class="btn btn-pink" onclick="saveWeeklyJD()">Simpan</button>
+        <button class="btn" onclick="hideAddWeeklyJD()">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <div class="r2" style="margin-bottom:12px">
     <div class="card" style="overflow-y:auto;max-height:600px" id="jd-breakdown"></div>
     <div style="display:flex;flex-direction:column;gap:8px">
@@ -424,7 +463,7 @@ canvas{display:block;width:100%}
     <div class="chdr">
       <div><div class="ct">Daftar Jabatan & Status JD</div><div class="cs" id="jd-sub"></div></div>
       <div class="filter-bar" style="margin:0">
-        <select class="tf" id="jd-filter-status" onchange="renderJD()"><option value="">Semua Status</option><option>Done</option><option>Review by User</option><option>On Progress</option><option>Not Started</option></select>
+        <select class="tf" id="jd-filter-status" onchange="renderJD()"><option value="">Semua Status</option><option>Completed</option><option>Done</option><option>Review by User</option><option>On Progress</option><option>Not Started</option></select>
         <select class="tf" id="jd-filter-divisi" onchange="renderJD()"><option value="">Semua Divisi</option></select>
       </div>
     </div>
@@ -433,7 +472,9 @@ canvas{display:block;width:100%}
       <tbody id="jd-tbody"></tbody>
     </table></div>
   </div>
-</div>
+
+
+
 
 <!-- ══ PM ══ -->
 <div class="page" id="page-pm">
@@ -539,7 +580,7 @@ function goTo(page){
   if(page==='landing')renderLanding();
   if(page==='mpp'){switchMPPTab(currentMPPTab);}
   if(page==='so')renderSO();
-  if(page==='jd')renderJD();
+  if(page==='jd'){renderJD();renderJDWeekly();}
   if(page==='pm'){renderPM();renderReminder();}
 }
 
@@ -1002,6 +1043,7 @@ function renderJD(){
   const divF=document.getElementById('jd-filter-divisi').value;
   const filtered=jd.filter(r=>(!stF||r.status===stF)&&(!divF||r.divisi===divF));
   const tot=jd.length;
+  const completed=jd.filter(r=>r.status==='Completed').length;
   const done=jd.filter(r=>r.status==='Done').length;
   const review=jd.filter(r=>r.status==='Review by User').length;
   const prog=jd.filter(r=>r.status==='On Progress').length;
@@ -1010,6 +1052,7 @@ function renderJD(){
   // KPI row
   document.getElementById('jd-kpi-row').innerHTML=
     '<div class="card" style="text-align:center"><div style="font-size:10px;color:var(--tx3);margin-bottom:4px">Total Jabatan</div><div style="font-size:28px;font-weight:700">'+tot+'</div><div style="font-size:10px;color:var(--tx3)">'+([...new Set(jd.map(r=>r.divisi).filter(Boolean))].length)+' divisi</div></div>'+
+    '<div class="card" style="text-align:center"><div style="font-size:10px;color:var(--tx3);margin-bottom:4px">Completed</div><div style="font-size:28px;font-weight:700;color:#0ea5e9">'+completed+'</div><div style="font-size:10px;color:var(--tx3)">'+pc(completed,tot)+'%</div></div>'+
     '<div class="card" style="text-align:center"><div style="font-size:10px;color:var(--tx3);margin-bottom:4px">Done</div><div style="font-size:28px;font-weight:700;color:var(--green)">'+done+'</div><div style="font-size:10px;color:var(--tx3)">'+pc(done,tot)+'%</div></div>'+
     '<div class="card" style="text-align:center"><div style="font-size:10px;color:var(--tx3);margin-bottom:4px">Review by User</div><div style="font-size:28px;font-weight:700;color:var(--pink)">'+review+'</div><div style="font-size:10px;color:var(--tx3)">'+pc(review,tot)+'%</div></div>'+
     '<div class="card" style="text-align:center"><div style="font-size:10px;color:var(--tx3);margin-bottom:4px">On Progress</div><div style="font-size:28px;font-weight:700;color:var(--amber)">'+prog+'</div><div style="font-size:10px;color:var(--tx3)">'+pc(prog,tot)+'%</div></div>'+
@@ -1022,6 +1065,7 @@ function renderJD(){
     jdBreakdown.innerHTML='<div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:10px">Progress per Divisi</div>'+
       divs.map(d=>{
         const dr=jd.filter(r=>r.divisi===d);
+        const dComp=dr.filter(r=>r.status==='Completed').length;
         const dDone=dr.filter(r=>r.status==='Done').length;
         const dRev=dr.filter(r=>r.status==='Review by User').length;
         const dProg=dr.filter(r=>r.status==='On Progress').length;
@@ -1034,13 +1078,14 @@ function renderJD(){
           '<span style="color:var(--tx3)">'+dTot+' jabatan · <span style="color:'+(dDone===dTot?'var(--green)':dPct>50?'var(--amber)':'var(--red)')+'">'+dPct+'%</span></span>'+
           '</div>'+
           '<div class="pb" style="height:8px"><div style="display:flex;height:8px">'+
+          '<div style="width:'+pc(dComp,dTot)+'%;background:#0ea5e9"></div>'+
           '<div style="width:'+pc(dDone,dTot)+'%;background:var(--green)"></div>'+
           '<div style="width:'+pc(dRev,dTot)+'%;background:var(--pink)"></div>'+
           '<div style="width:'+pc(dProg,dTot)+'%;background:var(--amber)"></div>'+
           '<div style="width:'+pc(dNS,dTot)+'%;background:var(--border)"></div>'+
           '</div></div>'+
           '<div style="display:flex;gap:8px;font-size:9px;color:var(--tx3);margin-top:3px">'+
-          (dDone>0?'<span style="color:var(--green)">Done: '+dDone+'</span>':'')+
+          (dComp>0?'<span style="color:#0ea5e9">Completed: '+dComp+'</span>':'')+(dDone>0?'<span style="color:var(--green)">Done: '+dDone+'</span>':'')+
           (dRev>0?'<span style="color:var(--pink)">Review: '+dRev+'</span>':'')+
           (dProg>0?'<span style="color:var(--amber)">Progress: '+dProg+'</span>':'')+
           (dNS>0?'<span>Not Started: '+dNS+'</span>':'')+
@@ -1345,6 +1390,179 @@ function exportCSV(){
   const csv=['Divisi,Departement,Posisi,Level,Jml Approved,Tgl Diajukan,Tgl Approved OD,SLA,PIC,Jenis,Buy/Build,Status,Note',...rows.map(r=>r.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(','))].join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='FPTK_'+f.bLabel.replace(' ','_')+'.csv';a.click();
 }
+
+
+// ── JD WEEKLY REPORT ──
+const JD_TOTAL_TARGET = 433;
+
+function loadJDWeeklyLog(){
+  try{
+    const saved = localStorage.getItem('jd_weekly_log');
+    return saved ? JSON.parse(saved) : [];
+  }catch(e){ return []; }
+}
+
+function saveJDWeeklyLog(log){
+  localStorage.setItem('jd_weekly_log', JSON.stringify(log));
+}
+
+function showAddWeeklyJD(){
+  document.getElementById('jd-weekly-form').style.display='block';
+  // Auto-fill minggu label
+  const now = new Date();
+  const weekNum = Math.ceil(now.getDate()/7);
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('jd-week-label').value = 'W'+weekNum+' '+months[now.getMonth()]+' '+now.getFullYear();
+}
+
+function hideAddWeeklyJD(){
+  document.getElementById('jd-weekly-form').style.display='none';
+}
+
+function saveWeeklyJD(){
+  const label = document.getElementById('jd-week-label').value.trim();
+  const count = parseInt(document.getElementById('jd-week-count').value)||0;
+  if(!label){ alert('Isi nama minggu terlebih dahulu.'); return; }
+  if(count < 0){ alert('Jumlah tidak boleh negatif.'); return; }
+  const log = loadJDWeeklyLog();
+  // Check duplicate
+  const existing = log.findIndex(r=>r.label===label);
+  if(existing >= 0){
+    if(!confirm('Data minggu "'+label+'" sudah ada. Timpa?')) return;
+    log[existing].count = count;
+  } else {
+    log.push({label, count, date: new Date().toISOString()});
+  }
+  saveJDWeeklyLog(log);
+  hideAddWeeklyJD();
+  renderJDWeekly();
+}
+
+function renderJDWeekly(){
+  const log = loadJDWeeklyLog();
+  // Build cumulative
+  let cum = 0;
+  const rows = log.map(r=>{ cum+=r.count; return{...r, cum}; });
+  const thisWeek = rows[rows.length-1];
+  const lastWeek = rows[rows.length-2];
+  const totalCum = thisWeek ? thisWeek.cum : 0;
+  const thisCount = thisWeek ? thisWeek.count : 0;
+  const lastCount = lastWeek ? lastWeek.count : 0;
+  const pct = Math.round(totalCum/JD_TOTAL_TARGET*100);
+  const diff = thisCount - lastCount;
+
+  // KPI cards
+  const kpiEl = document.getElementById('jd-weekly-kpis');
+  if(kpiEl){
+    kpiEl.innerHTML =
+      '<div style="background:var(--bg);border-radius:8px;padding:12px">'+
+        '<div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Total Jabatan Target</div>'+
+        '<div style="font-size:30px;font-weight:700;color:var(--tx)">'+JD_TOTAL_TARGET+'</div>'+
+        '<div style="font-size:10px;color:var(--tx3);margin-top:4px">Target Keseluruhan Project JD</div>'+
+      '</div>'+
+      '<div style="background:var(--bg);border-radius:8px;padding:12px">'+
+        '<div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Kumulatif Ditambahkan</div>'+
+        '<div style="font-size:30px;font-weight:700;color:var(--green)">'+totalCum+'</div>'+
+        '<div class="pb" style="margin:6px 0"><div class="pb-fill" style="width:'+pct+'%;background:var(--green)"></div></div>'+
+        '<div style="font-size:10px;color:var(--tx3)">'+pct+'% Dari Total Target</div>'+
+      '</div>'+
+      '<div style="background:var(--bg);border-radius:8px;padding:12px">'+
+        '<div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Ditambahkan Minggu Ini</div>'+
+        '<div style="display:flex;align-items:baseline;gap:8px">'+
+          '<div style="font-size:30px;font-weight:700;color:var(--blue)">'+thisCount+'</div>'+
+          (diff!==0?'<div style="font-size:12px;font-weight:600;color:'+(diff>0?'var(--green)':'var(--red)')+'">'+
+            (diff>0?'↑':'↓')+Math.abs(diff)+' Vs Minggu Lalu</div>':'<div style="font-size:12px;color:var(--tx3)">= Minggu Lalu</div>')+
+        '</div>'+
+        '<div style="font-size:10px;color:var(--tx3);margin-top:4px">'+(lastWeek?'Minggu Lalu: '+lastCount:'Belum Ada Data Sebelumnya')+'</div>'+
+      '</div>';
+  }
+
+  // Chart
+  const canvas = document.getElementById('jd-weekly-chart');
+  if(canvas && rows.length > 0){
+    const dpr = window.devicePixelRatio||1;
+    const W = Math.max(canvas.parentElement?canvas.parentElement.offsetWidth:0, 400);
+    const H = 160;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const PAD = {t:12, r:20, b:32, l:40};
+    const CW = W-PAD.l-PAD.r, CH = H-PAD.t-PAD.b;
+    const maxV = Math.max(totalCum, 10);
+    const yPx = v => PAD.t+CH-(v/maxV*CH);
+    // Grid
+    ctx.strokeStyle='rgba(0,0,0,.06)'; ctx.lineWidth=.5;
+    [Math.round(maxV/4),Math.round(maxV/2),Math.round(maxV*3/4),maxV].forEach(v=>{
+      const y=yPx(v);
+      ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(W-PAD.r,y);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='10px system-ui';ctx.textAlign='right';
+      ctx.fillText(v,PAD.l-4,y+3.5);
+    });
+    // Y axis
+    ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.moveTo(PAD.l,PAD.t);ctx.lineTo(PAD.l,PAD.t+CH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(PAD.l,PAD.t+CH);ctx.lineTo(W-PAD.r,PAD.t+CH);ctx.stroke();
+    // Points
+    const slotW = CW/(Math.max(rows.length-1,1));
+    const pts = rows.map((r,i)=>({x:PAD.l+i*slotW, y:yPx(r.cum)}));
+    // Area fill
+    if(pts.length>1){
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, PAD.t+CH);
+      pts.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.lineTo(pts[pts.length-1].x, PAD.t+CH);
+      ctx.closePath();
+      ctx.fillStyle='rgba(29,158,117,.08)';ctx.fill();
+    }
+    // Line
+    if(pts.length>1){
+      ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+      pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle='#1D9E75';ctx.lineWidth=2;ctx.setLineDash([]);ctx.stroke();
+    }
+    // Dots + labels + x labels
+    pts.forEach((p,i)=>{
+      const isLast=i===pts.length-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,isLast?5:3.5,'#fff');
+      ctx.fillStyle='#1D9E75';ctx.fill();
+      if(isLast){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+      ctx.fillStyle=isLast?'#1D9E75':'rgba(0,0,0,.5)';
+      ctx.font=(isLast?'bold ':'')+' 10px system-ui';ctx.textAlign='center';
+      ctx.fillText(rows[i].cum,p.x,p.y-8);
+      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='10px system-ui';
+      ctx.fillText(rows[i].label,p.x,H-PAD.b+14);
+    });
+  } else if(canvas){
+    const ctx=canvas.getContext('2d');
+    canvas.width=400;canvas.height=160;
+    ctx.fillStyle='rgba(0,0,0,.3)';ctx.font='12px system-ui';ctx.textAlign='center';
+    ctx.fillText('Belum ada data — klik "+ Catat Minggu Ini" untuk mulai',200,80);
+  }
+
+  // Table
+  const tbody = document.getElementById('jd-weekly-tbody');
+  if(tbody){
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:20px">Belum ada data mingguan</td></tr>';
+    } else {
+      tbody.innerHTML=rows.map((r,i)=>{
+        const isLast=i===rows.length-1;
+        const bg=isLast?'background:#EDFAF4':'';
+        const col=isLast?'color:#085041':'';
+        return '<tr style="'+bg+'">'+
+          '<td style="'+col+(isLast?';font-weight:600':'')+'">'+r.label+(isLast?' ← Minggu Ini':'')+'</td>'+
+          '<td style="text-align:right;'+col+'">'+r.count+'</td>'+
+          '<td style="text-align:right;'+col+(isLast?';font-weight:600':'')+'">'+r.cum+'</td>'+
+          '<td style="text-align:right;'+col+'">'+Math.round(r.cum/JD_TOTAL_TARGET*100)+'%</td>'+
+        '</tr>';
+      }).join('');
+    }
+  }
+}
+
 
 // ── INIT ──
 window.addEventListener('resize',()=>{if(currentPage==='mpp'&&currentMPPTab==='overview')renderMPPChart(getF());});
