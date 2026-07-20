@@ -1542,6 +1542,25 @@ async function renderJDWeekly(){
     // Points
     const slotW = CW/(Math.max(rows.length-1,1));
     const pts = rows.map((r,i)=>({x:PAD.l+i*slotW, y:yPx(r.cum)}));
+    // Per-week bars (behind line)
+    const maxCount = Math.max(...rows.map(r=>r.count), 1);
+    const barW = Math.max(8, slotW * 0.4);
+    rows.forEach((r,i)=>{
+      const x = pts[i].x;
+      const barH = (r.count/maxV*CH);
+      const barY = PAD.t+CH-barH;
+      const isLast = i===pts.length-1;
+      ctx.fillStyle = isLast ? 'rgba(61,155,233,0.7)' : 'rgba(61,155,233,0.35)';
+      ctx.beginPath();
+      ctx.roundRect(x-barW/2, barY, barW, barH, [3,3,0,0]);
+      ctx.fill();
+      // Per-week count label inside/above bar
+      if(r.count > 0){
+        ctx.fillStyle = isLast ? '#0C447C' : 'rgba(61,155,233,0.9)';
+        ctx.font = '9px system-ui';ctx.textAlign='center';
+        ctx.fillText('+'+r.count, x, barY-3);
+      }
+    });
     // Area fill
     if(pts.length>1){
       ctx.beginPath();
@@ -1549,7 +1568,7 @@ async function renderJDWeekly(){
       pts.forEach(p=>ctx.lineTo(p.x,p.y));
       ctx.lineTo(pts[pts.length-1].x, PAD.t+CH);
       ctx.closePath();
-      ctx.fillStyle='rgba(29,158,117,.08)';ctx.fill();
+      ctx.fillStyle='rgba(29,158,117,.06)';ctx.fill();
     }
     // Line
     if(pts.length>1){
@@ -1557,18 +1576,31 @@ async function renderJDWeekly(){
       pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
       ctx.strokeStyle='#1D9E75';ctx.lineWidth=2;ctx.setLineDash([]);ctx.stroke();
     }
-    // Dots + labels + x labels
+    // Dots + cumulative labels + x labels
     pts.forEach((p,i)=>{
       const isLast=i===pts.length-1;
-      ctx.beginPath();ctx.arc(p.x,p.y,isLast?5:3.5,'#fff');
+      ctx.beginPath();ctx.arc(p.x,p.y,isLast?5:3.5,0,Math.PI*2);
       ctx.fillStyle='#1D9E75';ctx.fill();
       if(isLast){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
-      ctx.fillStyle=isLast?'#1D9E75':'rgba(0,0,0,.5)';
-      ctx.font=(isLast?'bold ':'')+' 10px system-ui';ctx.textAlign='center';
-      ctx.fillText(rows[i].cum,p.x,p.y-8);
-      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='10px system-ui';
-      ctx.fillText(rows[i].label,p.x,H-PAD.b+14);
+      // Cumulative label above dot
+      ctx.fillStyle=isLast?'#1D9E75':'rgba(0,0,0,.55)';
+      ctx.font=(isLast?'bold ':'')+'10px system-ui';ctx.textAlign='center';
+      ctx.fillText(rows[i].cum, p.x, p.y-10);
+      // X label
+      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='9px system-ui';
+      const lbl = rows[i].label.length>10 ? rows[i].label.slice(0,10) : rows[i].label;
+      ctx.fillText(lbl, p.x, H-PAD.b+14);
     });
+    // Legend
+    ctx.font='10px system-ui';ctx.textAlign='left';
+    ctx.fillStyle='rgba(29,158,117,0.8)';
+    ctx.fillRect(PAD.l, PAD.t-2, 10, 4);
+    ctx.fillStyle='rgba(0,0,0,.5)';
+    ctx.fillText('Kumulatif', PAD.l+13, PAD.t+2);
+    ctx.fillStyle='rgba(61,155,233,0.6)';
+    ctx.fillRect(PAD.l+80, PAD.t-6, 8, 8);
+    ctx.fillStyle='rgba(0,0,0,.5)';
+    ctx.fillText('Per minggu', PAD.l+91, PAD.t+2);
   } else if(canvas){
     const ctx=canvas.getContext('2d');
     canvas.width=400;canvas.height=160;
