@@ -1542,25 +1542,7 @@ async function renderJDWeekly(){
     // Points
     const slotW = CW/(Math.max(rows.length-1,1));
     const pts = rows.map((r,i)=>({x:PAD.l+i*slotW, y:yPx(r.cum)}));
-    // Per-week bars (behind line)
-    const maxCount = Math.max(...rows.map(r=>r.count), 1);
-    const barW = Math.max(8, slotW * 0.4);
-    rows.forEach((r,i)=>{
-      const x = pts[i].x;
-      const barH = (r.count/maxV*CH);
-      const barY = PAD.t+CH-barH;
-      const isLast = i===pts.length-1;
-      ctx.fillStyle = isLast ? 'rgba(61,155,233,0.7)' : 'rgba(61,155,233,0.35)';
-      ctx.beginPath();
-      ctx.roundRect(x-barW/2, barY, barW, barH, [3,3,0,0]);
-      ctx.fill();
-      // Per-week count label inside/above bar
-      if(r.count > 0){
-        ctx.fillStyle = isLast ? '#0C447C' : 'rgba(61,155,233,0.9)';
-        ctx.font = '9px system-ui';ctx.textAlign='center';
-        ctx.fillText('+'+r.count, x, barY-3);
-      }
-    });
+    // Per-week count shown in table only
     // Area fill
     if(pts.length>1){
       ctx.beginPath();
@@ -1591,16 +1573,7 @@ async function renderJDWeekly(){
       const lbl = rows[i].label.length>10 ? rows[i].label.slice(0,10) : rows[i].label;
       ctx.fillText(lbl, p.x, H-PAD.b+14);
     });
-    // Legend
-    ctx.font='10px system-ui';ctx.textAlign='left';
-    ctx.fillStyle='rgba(29,158,117,0.8)';
-    ctx.fillRect(PAD.l, PAD.t-2, 10, 4);
-    ctx.fillStyle='rgba(0,0,0,.5)';
-    ctx.fillText('Kumulatif', PAD.l+13, PAD.t+2);
-    ctx.fillStyle='rgba(61,155,233,0.6)';
-    ctx.fillRect(PAD.l+80, PAD.t-6, 8, 8);
-    ctx.fillStyle='rgba(0,0,0,.5)';
-    ctx.fillText('Per minggu', PAD.l+91, PAD.t+2);
+
   } else if(canvas){
     const ctx=canvas.getContext('2d');
     canvas.width=400;canvas.height=160;
