@@ -1557,12 +1557,15 @@ async function renderJDWeekly(){
     ctx.beginPath();ctx.moveTo(PAD.l,PAD.t);ctx.lineTo(PAD.l,PAD.t+CH);ctx.stroke();
     ctx.beginPath();ctx.moveTo(PAD.l,PAD.t+CH);ctx.lineTo(W-PAD.r,PAD.t+CH);ctx.stroke();
     // Points
-    // Add padding so first/last points don't hit axis
+    // Points spread across inner chart area with margin
     const nPts = rows.length;
-    const slotW = nPts > 1 ? CW/(nPts-1) : CW;
-    const xOffset = nPts > 1 ? 0 : CW/2;
-    const halfSlot = nPts>1 ? slotW*0.5 : 0;
-    const pts = rows.map((r,i)=>({x:PAD.l+halfSlot+i*(nPts>1?slotW:0), y:yPx(r.cum)}));
+    const INNER_PAD = 20; // extra inner margin so first/last dots don't touch axis
+    const innerW = CW - INNER_PAD*2;
+    const slotW = nPts > 1 ? innerW/(nPts-1) : innerW;
+    const pts = rows.map((r,i)=>({
+      x: PAD.l + INNER_PAD + (nPts>1 ? i*slotW : innerW/2),
+      y: yPx(r.cum)
+    }));
     // Per-week count shown in table only
     // Area fill
     if(pts.length>1){
