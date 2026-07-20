@@ -403,7 +403,7 @@ canvas{display:block;width:100%}
 
 <!-- ══ JD ══ -->
 <div class="page" id="page-jd">
-  <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
+  <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description
   <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking status Job Description per jabatan · 2026</div>
   <div class="r3" style="margin-bottom:12px" id="jd-kpi-row"></div>
   <!-- JD Weekly Report -->
@@ -431,16 +431,48 @@ canvas{display:block;width:100%}
       <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:10px">Catat Penambahan JD Minggu Ini</div>
       <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
         <div>
-          <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Minggu</div>
-          <input type="text" id="jd-week-label" placeholder="Contoh: W3 Juli 2026" class="tf" style="width:160px;padding:6px 10px;border-radius:var(--rs);border:.5px solid var(--border);font-family:var(--f);font-size:11px;background:var(--surface)">
+          <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Week</div>
+          <select id="jd-week-num" class="tf">
+            <option value="W1">W1</option>
+            <option value="W2">W2</option>
+            <option value="W3">W3</option>
+            <option value="W4">W4</option>
+            <option value="W5">W5</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Bulan</div>
+          <select id="jd-week-bulan" class="tf">
+            <option value="Januari">Januari</option>
+            <option value="Februari">Februari</option>
+            <option value="Maret">Maret</option>
+            <option value="April">April</option>
+            <option value="Mei">Mei</option>
+            <option value="Juni">Juni</option>
+            <option value="Juli">Juli</option>
+            <option value="Agustus">Agustus</option>
+            <option value="September">September</option>
+            <option value="Oktober">Oktober</option>
+            <option value="November">November</option>
+            <option value="Desember">Desember</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Tahun</div>
+          <select id="jd-week-tahun" class="tf">
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+          </select>
         </div>
         <div>
           <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Jumlah Ditambahkan</div>
-          <input type="number" id="jd-week-count" placeholder="10" min="0" class="tf" style="width:120px;padding:6px 10px;border-radius:var(--rs);border:.5px solid var(--border);font-family:var(--f);font-size:11px;background:var(--surface)">
+          <input type="number" id="jd-week-count" placeholder="0" min="0" class="tf" style="width:100px;padding:6px 10px;border-radius:var(--rs);border:.5px solid var(--border);font-family:var(--f);font-size:11px;background:var(--surface)">
         </div>
-        <button class="btn btn-pink" onclick="saveWeeklyJD()">Simpan</button>
+        <button class="btn btn-pink" id="jd-save-btn" onclick="saveWeeklyJD()">Simpan</button>
         <button class="btn" onclick="hideAddWeeklyJD()">Batal</button>
       </div>
+      <div id="jd-save-status" style="margin-top:8px;font-size:11px;display:none"></div>
     </div>
   </div>
 </div>
@@ -459,9 +491,7 @@ canvas{display:block;width:100%}
       <tbody id="jd-tbody"></tbody>
     </table></div>
   </div>
-
-
-
+</div>
 
 <!-- ══ PM ══ -->
 <div class="page" id="page-pm">
@@ -527,7 +557,6 @@ canvas{display:block;width:100%}
     </div>
     <div id="remind-list"></div>
   </div>
-</div>
 
 </div><!-- content-inner -->
 </div><!-- main -->
@@ -567,7 +596,7 @@ function goTo(page){
   if(page==='landing')renderLanding();
   if(page==='mpp'){switchMPPTab(currentMPPTab);}
   if(page==='so')renderSO();
-  if(page==='jd'){renderJD();renderJDWeekly();}
+  if(page==='jd'){renderJD();renderJDWeekly().catch(console.error);}
   if(page==='pm'){renderPM();renderReminder();}
 }
 
@@ -1343,52 +1372,108 @@ function exportCSV(){
 
 // ── JD WEEKLY REPORT ──
 const JD_TOTAL_TARGET = 433;
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1IZ-_WghcQU0ZPMHQt3dcbN7SGencFrb4rPj18YJuoos_CwHF4CR-lfGPd6Xa5zc2/exec';
 
-function loadJDWeeklyLog(){
+async function loadJDWeeklyLog(){
   try{
-    const saved = localStorage.getItem('jd_weekly_log');
-    return saved ? JSON.parse(saved) : [];
-  }catch(e){ return []; }
-}
-
-function saveJDWeeklyLog(log){
-  localStorage.setItem('jd_weekly_log', JSON.stringify(log));
+    const url = APPS_SCRIPT_URL + '?sheet=JD%20Weekly%20Log';
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('fetch failed');
+    const rows = await r.json();
+    if(!rows || rows.length < 2) return [];
+    // rows[0] = header, rows[1+] = data
+    // Cols: Minggu(0), Bulan(1), Tahun(2), Label(3), Ditambahkan(4), Timestamp(5)
+    return rows.slice(1).map(r=>({
+      week: r[0]||'',
+      bulan: r[1]||'',
+      tahun: r[2]||'',
+      label: r[3]||'',
+      count: parseInt(r[4])||0,
+      date: r[5]||''
+    })).filter(r=>r.label);
+  }catch(e){
+    console.warn('Gagal load dari Sheets, fallback localStorage:', e);
+    try{
+      const saved = localStorage.getItem('jd_weekly_log');
+      return saved ? JSON.parse(saved) : [];
+    }catch(e2){ return []; }
+  }
 }
 
 function showAddWeeklyJD(){
   document.getElementById('jd-weekly-form').style.display='block';
-  // Auto-fill minggu label
+  document.getElementById('jd-save-status').style.display='none';
+  // Auto-set dropdowns to current date
   const now = new Date();
-  const weekNum = Math.ceil(now.getDate()/7);
+  const weekNum = Math.min(5, Math.ceil(now.getDate()/7));
   const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  document.getElementById('jd-week-label').value = 'W'+weekNum+' '+months[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('jd-week-num').value = 'W'+weekNum;
+  document.getElementById('jd-week-bulan').value = months[now.getMonth()];
+  document.getElementById('jd-week-tahun').value = now.getFullYear().toString();
+  document.getElementById('jd-week-count').value = '';
 }
 
 function hideAddWeeklyJD(){
   document.getElementById('jd-weekly-form').style.display='none';
 }
 
-function saveWeeklyJD(){
-  const label = document.getElementById('jd-week-label').value.trim();
+async function saveWeeklyJD(){
+  const week = document.getElementById('jd-week-num').value;
+  const bulan = document.getElementById('jd-week-bulan').value;
+  const tahun = document.getElementById('jd-week-tahun').value;
   const count = parseInt(document.getElementById('jd-week-count').value)||0;
-  if(!label){ alert('Isi nama minggu terlebih dahulu.'); return; }
+  const label = week+' '+bulan+' '+tahun;
+
   if(count < 0){ alert('Jumlah tidak boleh negatif.'); return; }
-  const log = loadJDWeeklyLog();
-  // Check duplicate
-  const existing = log.findIndex(r=>r.label===label);
-  if(existing >= 0){
-    if(!confirm('Data minggu "'+label+'" sudah ada. Timpa?')) return;
-    log[existing].count = count;
-  } else {
-    log.push({label, count, date: new Date().toISOString()});
+
+  const btn = document.getElementById('jd-save-btn');
+  const status = document.getElementById('jd-save-status');
+  btn.textContent='Menyimpan...'; btn.disabled=true;
+  status.style.display='block'; status.style.color='var(--tx3)'; status.textContent='Menyimpan ke Google Sheets...';
+
+  try{
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'addWeeklyJD',
+        week: week,
+        bulan: bulan,
+        tahun: tahun,
+        label: label,
+        count: count
+      })
+    });
+    const result = await resp.json();
+    if(result.success){
+      status.style.color='var(--green)';
+      status.textContent='✓ Tersimpan ke Google Sheets!';
+      setTimeout(()=>{ hideAddWeeklyJD(); renderJDWeekly(); }, 1000);
+    } else {
+      throw new Error(result.error||'Unknown error');
+    }
+  }catch(e){
+    console.error(e);
+    // Fallback to localStorage
+    try{
+      const saved = localStorage.getItem('jd_weekly_log');
+      const log = saved ? JSON.parse(saved) : [];
+      const existing = log.findIndex(r=>r.label===label);
+      if(existing>=0){ log[existing].count=count; } else { log.push({week,bulan,tahun,label,count,date:new Date().toISOString()}); }
+      localStorage.setItem('jd_weekly_log', JSON.stringify(log));
+      status.style.color='var(--amber)';
+      status.textContent='⚠ Sheets gagal, tersimpan lokal. Error: '+e.message;
+      setTimeout(()=>{ hideAddWeeklyJD(); renderJDWeekly(); }, 2000);
+    }catch(e2){
+      status.style.color='var(--red)';
+      status.textContent='✗ Gagal menyimpan: '+e.message;
+    }
+  }finally{
+    btn.textContent='Simpan'; btn.disabled=false;
   }
-  saveJDWeeklyLog(log);
-  hideAddWeeklyJD();
-  renderJDWeekly();
 }
 
-function renderJDWeekly(){
-  const log = loadJDWeeklyLog();
+async function renderJDWeekly(){
+  const log = await loadJDWeeklyLog();
   // Build cumulative
   let cum = 0;
   const rows = log.map(r=>{ cum+=r.count; return{...r, cum}; });
@@ -1524,4 +1609,5 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 </body>
-</html>
+</html
+</div>>
