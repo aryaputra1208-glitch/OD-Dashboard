@@ -410,7 +410,15 @@ canvas{display:block;width:100%}
   <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:16px">
     <div class="chdr">
       <div><div class="ct">Weekly Progress Report</div><div class="cs">Progres kumulatif Job Description per minggu</div></div>
-      <button class="btn btn-pink" onclick="showAddWeeklyJD()">+ Catat Minggu Ini</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="tf" id="jd-weekly-filter" onchange="renderJDWeekly()">
+          <option value="8">8 Minggu Terakhir</option>
+          <option value="12">12 Minggu Terakhir</option>
+          <option value="24">24 Minggu Terakhir</option>
+          <option value="0">Semua Data</option>
+        </select>
+        <button class="btn btn-pink" onclick="showAddWeeklyJD()">+ Catat Minggu Ini</button>
+      </div>
     </div>
     <!-- KPI row -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px" id="jd-weekly-kpis"></div>
@@ -1199,6 +1207,11 @@ function renderPM(){
           (ny?'<span style="color:var(--red)">Not Yet: '+ny+'</span>':'')+
           '</div></div>';
       }).join('');
+      if(filterN > 0 && allRows.length > filterN){
+        const hidden = allRows.length - filterN;
+        const firstCum = allRows[allRows.length-filterN-1]?.cum || 0;
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:8px;font-size:10px">... '+hidden+' minggu sebelumnya (kumulatif awal: '+firstCum+')</td></tr>' + tbody.innerHTML;
+      }
     }
   }
 }
@@ -1474,10 +1487,14 @@ async function saveWeeklyJD(){
 
 async function renderJDWeekly(){
   const log = await loadJDWeeklyLog();
-  // Build cumulative
+  // Build cumulative (all data)
   let cum = 0;
-  const rows = log.map(r=>{ cum+=r.count; return{...r, cum}; });
-  const thisWeek = rows[rows.length-1];
+  const allRows = log.map(r=>{ cum+=r.count; return{...r, cum}; });
+  const thisWeek = allRows[allRows.length-1];
+  // Filter for chart display
+  const filterEl = document.getElementById('jd-weekly-filter');
+  const filterN = filterEl ? parseInt(filterEl.value)||0 : 8;
+  const rows = filterN > 0 ? allRows.slice(-filterN) : allRows;
   const lastWeek = rows[rows.length-2];
   const totalCum = thisWeek ? thisWeek.cum : 0;
   const thisCount = thisWeek ? thisWeek.count : 0;
@@ -1521,7 +1538,7 @@ async function renderJDWeekly(){
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
-    const PAD = {t:20, r:40, b:36, l:44};
+    const PAD = {t:20, r:50, b:36, l:60};
     const CW = W-PAD.l-PAD.r, CH = H-PAD.t-PAD.b;
     const maxV = Math.max(totalCum, 10);
     const yPx = v => PAD.t+CH-(v/maxV*CH);
@@ -1544,7 +1561,8 @@ async function renderJDWeekly(){
     const nPts = rows.length;
     const slotW = nPts > 1 ? CW/(nPts-1) : CW;
     const xOffset = nPts > 1 ? 0 : CW/2;
-    const pts = rows.map((r,i)=>({x:PAD.l+xOffset+i*(nPts>1?slotW:0), y:yPx(r.cum)}));
+    const halfSlot = nPts>1 ? slotW*0.5 : 0;
+    const pts = rows.map((r,i)=>({x:PAD.l+halfSlot+i*(nPts>1?slotW:0), y:yPx(r.cum)}));
     // Per-week count shown in table only
     // Area fill
     if(pts.length>1){
@@ -1584,14 +1602,14 @@ async function renderJDWeekly(){
     ctx.fillText('Belum ada data — klik "+ Catat Minggu Ini" untuk mulai',200,80);
   }
 
-  // Table
+  // Table - always show ALL rows
   const tbody = document.getElementById('jd-weekly-tbody');
   if(tbody){
-    if(!rows.length){
+    if(!allRows.length){
       tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:20px">Belum ada data mingguan</td></tr>';
     } else {
-      tbody.innerHTML=rows.map((r,i)=>{
-        const isLast=i===rows.length-1;
+      tbody.innerHTML=allRows.map((r,i)=>{
+        const isLast=i===allRows.length-1;
         const bg=isLast?'background:#EDFAF4':'';
         const col=isLast?'color:#085041':'';
         return '<tr style="'+bg+'">'+
@@ -1601,6 +1619,11 @@ async function renderJDWeekly(){
           '<td style="text-align:right;'+col+'">'+Math.round(r.cum/JD_TOTAL_TARGET*100)+'%</td>'+
         '</tr>';
       }).join('');
+      if(filterN > 0 && allRows.length > filterN){
+        const hidden = allRows.length - filterN;
+        const firstCum = allRows[allRows.length-filterN-1]?.cum || 0;
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:8px;font-size:10px">... '+hidden+' minggu sebelumnya (kumulatif awal: '+firstCum+')</td></tr>' + tbody.innerHTML;
+      }
     }
   }
 }
