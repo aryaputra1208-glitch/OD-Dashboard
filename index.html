@@ -406,34 +406,6 @@ canvas{display:block;width:100%}
   <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
   <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking status Job Description per jabatan · 2026</div>
   <div class="r3" style="margin-bottom:12px" id="jd-kpi-row"></div>
-  <div class="r2" style="margin-bottom:12px">
-    <div class="card" style="overflow-y:auto;max-height:600px" id="jd-breakdown"></div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div class="card" style="padding:12px">
-        <div style="font-size:11px;font-weight:600;margin-bottom:8px">Legend</div>
-        <div style="display:flex;flex-direction:column;gap:6px;font-size:11px">
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);margin-right:6px"></span>Done</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--pink);margin-right:6px"></span>Review by User</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--amber);margin-right:6px"></span>On Progress</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--border);margin-right:6px"></span>Not Started</span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="chdr">
-      <div><div class="ct">Daftar Jabatan & Status JD</div><div class="cs" id="jd-sub"></div></div>
-      <div class="filter-bar" style="margin:0">
-        <select class="tf" id="jd-filter-status" onchange="renderJD()"><option value="">Semua Status</option><option>Completed</option><option>Done</option><option>Review by User</option><option>On Progress</option><option>Not Started</option></select>
-        <select class="tf" id="jd-filter-divisi" onchange="renderJD()"><option value="">Semua Divisi</option></select>
-      </div>
-    </div>
-    <div style="overflow-x:auto"><table class="tbl">
-      <thead><tr><th>Divisi</th><th>Sub Divisi</th><th>Department</th><th>Level</th><th>Jabatan</th><th>Status</th></tr></thead>
-      <tbody id="jd-tbody"></tbody>
-    </table></div>
-  </div>
-
   <!-- JD Weekly Report -->
   <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:16px">
     <div class="chdr">
@@ -472,6 +444,37 @@ canvas{display:block;width:100%}
     </div>
   </div>
 </div>
+
+  <div class="r2" style="margin-bottom:12px">
+    <div class="card" style="overflow-y:auto;max-height:600px" id="jd-breakdown"></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="card" style="padding:12px">
+        <div style="font-size:11px;font-weight:600;margin-bottom:8px">Legend</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:11px">
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);margin-right:6px"></span>Done</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--pink);margin-right:6px"></span>Review by User</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--amber);margin-right:6px"></span>On Progress</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--border);margin-right:6px"></span>Not Started</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="chdr">
+      <div><div class="ct">Daftar Jabatan & Status JD</div><div class="cs" id="jd-sub"></div></div>
+      <div class="filter-bar" style="margin:0">
+        <select class="tf" id="jd-filter-status" onchange="renderJD()"><option value="">Semua Status</option><option>Completed</option><option>Done</option><option>Review by User</option><option>On Progress</option><option>Not Started</option></select>
+        <select class="tf" id="jd-filter-divisi" onchange="renderJD()"><option value="">Semua Divisi</option></select>
+      </div>
+    </div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>Divisi</th><th>Sub Divisi</th><th>Department</th><th>Level</th><th>Jabatan</th><th>Status</th></tr></thead>
+      <tbody id="jd-tbody"></tbody>
+    </table></div>
+  </div>
+
+
+
 
 <!-- ══ PM ══ -->
 <div class="page" id="page-pm">
