@@ -679,14 +679,15 @@ function renderLanding(){
      <div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">${soAvail}</div><div class="sc-stat-lbl">Available</div></div>`;
   // JD card
   const jd=D.jd||[];
+  const jdComp=jd.filter(r=>r.status==='Completed').length;
   const jdDone=jd.filter(r=>r.status==='Done').length;
   const jdRev=jd.filter(r=>r.status==='Review by User').length;
   const jdProg=jd.filter(r=>r.status==='On Progress').length;
   const jdNS=jd.filter(r=>!r.status||r.status==='Not Started').length;
-  const jdPct=pc(jdDone,jd.length);
+  const jdPct=pc(jdComp+jdDone,JD_TOTAL_TARGET);
   document.getElementById('sc-jd-val').textContent=jdPct+'%';
-  document.getElementById('sc-jd-sub').textContent='JD completion rate';
-  document.getElementById('sc-jd-bar').style.width=jdPct+'%';
+  document.getElementById('sc-jd-sub').textContent='Completion rate dari '+JD_TOTAL_TARGET+' jabatan';
+  document.getElementById('sc-jd-bar').style.width=Math.min(100,jdPct)+'%';
   document.getElementById('sc-jd-stats').innerHTML=
     `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">${jdDone}</div><div class="sc-stat-lbl">Done</div></div>
      <div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">${jdRev}</div><div class="sc-stat-lbl">Review</div></div>
