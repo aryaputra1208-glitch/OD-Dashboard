@@ -263,37 +263,111 @@ canvas{display:block;width:100%}
     <button class="sub-nav-btn" id="mpp-tab-management" onclick="switchMPPTab('management')">Management View</button>
   </div>
   <div id="mpp-overview">
-    <div class="kpi-row" id="kpi-row"></div>
-    <div class="r2b" style="margin-top:12px">
-      <div class="card">
-        <div class="chdr"><div><div class="ct">MPP vs Realisasi per Bulan</div><div class="cs" id="c1s"></div></div></div>
-        <canvas id="mchart" style="height:190px"></canvas>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-          <div style="display:flex;gap:12px;font-size:11px;color:var(--tx3);flex-wrap:wrap">
+    <!-- MPP CARD -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></div>
+        <div class="ct">MPP Plan 2026</div>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:20px">
+        <!-- Left: numbers -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--tx)" id="mpp-total-plan">—</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Total Plan</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--amber)" id="mpp-gap-plan">—</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Gap Planned</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--green)" id="mpp-buy-plan">—</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Plan Buy</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--blue)" id="mpp-build-plan">—</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Plan Build</div>
+            </div>
+          </div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex" id="mpp-bb-bar">
+            <div style="width:82%;height:100%;background:var(--green);border-radius:3px 0 0 3px" id="mpp-bb-buy"></div>
+            <div style="width:18%;height:100%;background:var(--blue)" id="mpp-bb-build"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px">
+            <span style="color:var(--green)" id="mpp-bb-buy-pct">Buy —%</span>
+            <span style="color:var(--blue)" id="mpp-bb-build-pct">Build —%</span>
+          </div>
+          <div class="ins info" id="impp" style="margin-top:4px"></div>
+        </div>
+        <!-- Right: chart -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--tx)">MPP vs Realisasi per Bulan</div>
+              <div style="font-size:10px;color:var(--tx3)" id="c1s"></div>
+            </div>
+            <span id="glbl" style="font-size:10px;color:var(--tx3)"></span>
+          </div>
+          <canvas id="mchart" style="height:160px"></canvas>
+          <div style="display:flex;gap:12px;font-size:10px;color:var(--tx3);margin-top:8px;flex-wrap:wrap">
             <span><span style="width:8px;height:8px;border-radius:2px;background:#D3D1C7;display:inline-block;margin-right:4px"></span>MPP Plan</span>
             <span><span style="width:8px;height:8px;border-radius:2px;background:var(--pink);display:inline-block;margin-right:4px"></span>Planned</span>
             <span><span style="width:8px;height:8px;border-radius:2px;background:var(--amber);display:inline-block;margin-right:4px"></span>Replacement</span>
             <span><span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block;margin-right:4px"></span>Unplanned</span>
           </div>
-          <span id="glbl" style="font-size:10px;color:var(--tx3)"></span>
-        </div>
-        <div class="ins info" id="impp"></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="card">
-          <div class="chdr"><div><div class="ct">Headcount Trend</div><div class="cs" id="hcs"></div></div></div>
-          <div id="hspk" style="display:flex;gap:2px;align-items:flex-end;height:50px;margin-bottom:4px"></div>
-          <div id="hlbl" style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3)"></div>
-          <div id="hnum" style="font-size:22px;font-weight:700;color:var(--tx);margin-top:6px"></div>
-          <div class="ins ok" id="ihc"></div>
-        </div>
-        <div class="card">
-          <div class="chdr"><div><div class="ct">Ringkasan YTD</div><div class="cs" id="ytd-sub"></div></div></div>
-          <div id="ytd-stats"></div>
         </div>
       </div>
     </div>
-    <div class="r3" style="margin-top:12px">
+
+    <!-- FPTK CARD -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
+        <div class="ct">FPTK Realisasi YTD</div>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:20px">
+        <!-- Left: numbers -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--blue)" id="fptk-total">—</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Total FPTK</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--green)" id="fptk-hc">—</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">HC Approved</div>
+            </div>
+            <div style="background:#EDFAF4;border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--green)" id="fptk-completed">—</div>
+              <div style="font-size:10px;color:#085041;margin-top:2px">Completed</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--amber)" id="fptk-sla">—</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Rata SLA</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--tx3);margin-top:4px">Komposisi FPTK</div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex" id="fptk-comp-bar"></div>
+          <div style="display:flex;gap:10px;font-size:10px" id="fptk-comp-legend"></div>
+          <div style="margin-top:4px;font-size:10px;color:var(--tx3)" id="fptk-sla-info"></div>
+        </div>
+        <!-- Right: headcount sparkline -->
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:4px">Headcount Masuk per Bulan</div>
+          <div style="font-size:10px;color:var(--tx3);margin-bottom:10px" id="hcs">Jumlah orang approved per bulan</div>
+          <div id="hspk" style="display:flex;gap:3px;align-items:flex-end;height:80px;margin-bottom:4px"></div>
+          <div id="hlbl" style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3)"></div>
+          <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px">
+            <div style="font-size:22px;font-weight:700;color:var(--green)" id="hnum"></div>
+            <div style="font-size:11px;color:var(--tx3)">orang masuk YTD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom row: Status + Planned/Unplanned + SLA -->
+    <div class="r3">
       <div class="card"><div class="chdr"><div><div class="ct">Status FPTK</div><div class="cs" id="sfptks"></div></div></div><div id="sfptk-body"></div></div>
       <div class="card"><div class="chdr"><div><div class="ct">Planned vs Unplanned</div><div class="cs" id="pvus"></div></div></div><div id="pvu-body"></div></div>
       <div class="card"><div class="chdr"><div><div class="ct">SLA per Divisi</div><div class="cs" id="sla-div-sub"></div></div></div><div id="sla-div-body"></div></div>
@@ -584,7 +658,56 @@ function renderLanding(){
 }
 
 // MPP OVERVIEW
-function renderMPPOverview(f){renderKPIs(f);renderMPPChart(f);renderHC(f);renderStatusFPTK(f);renderPVU(f);renderSLADivisi(f);}
+function renderMPPCard(f){
+  const mT=mppPlan(f.div,f.mi);
+  const mBuy=mppBuy(f.div,f.mi);
+  const mBuild=mppBuild(f.div,f.mi);
+  const plannedAppr=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+  const gap=Math.max(0,mT-plannedAppr);
+  const buyPct=mT>0?Math.round(mBuy/mT*100):0;
+  const buildPct=mT>0?Math.round(mBuild/mT*100):0;
+  const el=id=>document.getElementById(id);
+  if(el('mpp-total-plan'))el('mpp-total-plan').textContent=fmt(mT);
+  if(el('mpp-gap-plan'))el('mpp-gap-plan').textContent=fmt(gap);
+  if(el('mpp-buy-plan'))el('mpp-buy-plan').textContent=fmt(mBuy);
+  if(el('mpp-build-plan'))el('mpp-build-plan').textContent=fmt(mBuild);
+  if(el('mpp-bb-buy'))el('mpp-bb-buy').style.width=buyPct+'%';
+  if(el('mpp-bb-build'))el('mpp-bb-build').style.width=buildPct+'%';
+  if(el('mpp-bb-buy-pct'))el('mpp-bb-buy-pct').textContent='Buy '+buyPct+'%';
+  if(el('mpp-bb-build-pct'))el('mpp-bb-build-pct').textContent='Build '+buildPct+'%';
+  const ins=el('impp');if(ins){ins.className='ins '+(gap>5?'warn':'ok');ins.textContent=f.bLabel+': Planned '+plannedAppr+' dari '+mT+' MPP Plan. '+(gap>0?'Gap '+gap+' posisi belum terpenuhi.':'Target terpenuhi.');}
+}
+function renderFPTKCard(f){
+  const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
+  const filtered=f.bln===0?all:all.filter(r=>r.bulan===f.bln);
+  const totalFPTK=filtered.length;
+  const hcApproved=filtered.reduce((s,r)=>s+(r.jml_approved||0),0);
+  const completed=filtered.filter(r=>r.status==='Completed').length;
+  const slaA=filtered.filter(r=>r.sla!=null);
+  const slaAvg=slaA.length?Math.round(slaA.reduce((s,r)=>s+r.sla,0)/slaA.length):null;
+  const planned=filtered.filter(r=>r.planned==='Planned').length;
+  const repl=filtered.filter(r=>r.planned==='Replacement').length;
+  const unpl=filtered.filter(r=>r.planned==='Unplanned').length;
+  const tot=planned+repl+unpl||1;
+  const el=id=>document.getElementById(id);
+  if(el('fptk-total'))el('fptk-total').textContent=totalFPTK;
+  if(el('fptk-hc'))el('fptk-hc').textContent=hcApproved;
+  if(el('fptk-completed'))el('fptk-completed').textContent=completed;
+  if(el('fptk-sla'))el('fptk-sla').textContent=slaAvg!=null?slaAvg+' hr':'—';
+  if(el('fptk-comp-bar'))el('fptk-comp-bar').innerHTML=
+    '<div style="width:'+pc(planned,tot)+'%;height:100%;background:var(--pink);border-radius:3px 0 0 3px"></div>'+
+    '<div style="width:'+pc(repl,tot)+'%;height:100%;background:var(--amber)"></div>'+
+    '<div style="width:'+pc(unpl,tot)+'%;height:100%;background:var(--blue);border-radius:0 3px 3px 0"></div>';
+  if(el('fptk-comp-legend'))el('fptk-comp-legend').innerHTML=
+    '<span style="color:var(--pink)">Planned '+planned+'</span>'+
+    '<span style="color:var(--amber)">Repl '+repl+'</span>'+
+    '<span style="color:var(--blue)">Unpl '+unpl+'</span>';
+  const byDiv=[...new Set(all.map(r=>r.divisi))].map(d=>{const dr=all.filter(r=>r.divisi===d&&r.sla!=null);return{d,avg:dr.length?Math.round(dr.reduce((s,r)=>s+r.sla,0)/dr.length):null};}).filter(r=>r.avg!=null);
+  byDiv.sort((a,b)=>a.avg-b.avg);
+  if(el('fptk-sla-info')&&byDiv.length){const best=byDiv[0];const worst=byDiv[byDiv.length-1];el('fptk-sla-info').innerHTML='<span style="color:var(--green)">Terbaik: '+best.d.split(' ')[0]+' ('+best.avg+' hr)</span> &nbsp;<span style="color:var(--amber)">Terlambat: '+worst.d.split(' ')[0]+' ('+worst.avg+' hr)</span>';}
+}
+function renderKPIs(f){}
+function renderMPPOverview(f){renderMPPCard(f);renderFPTKCard(f);renderMPPChart(f);renderHC(f);renderStatusFPTK(f);renderPVU(f);renderSLADivisi(f);}
 function renderKPIs(f){
   const mT=mppPlan(f.div,f.mi);
   const plannedAppr=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
@@ -673,10 +796,12 @@ function renderHC(f){
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
   const byMonth=MF.map((_,i)=>all.filter(r=>r.bulan===i+1).reduce((s,r)=>s+(r.jml_approved||1),0));
   const maxHC=Math.max(...byMonth,1);
-  document.getElementById('hspk').innerHTML=byMonth.map((v,i)=>'<div style="flex:1;background:'+(v>0?'var(--pink)':'var(--border)')+';height:'+Math.max(4,Math.round(v/maxHC*50))+'px;border-radius:2px 2px 0 0;opacity:'+(f.mi>=0&&i===f.mi?1:.6)+'"></div>').join('');
+  const spkEl=document.getElementById('hspk');
+  if(spkEl)spkEl.innerHTML=byMonth.map((v,i)=>'<div style="flex:1;background:'+(v>0?'var(--green)':'var(--border)')+';height:'+Math.max(4,Math.round(v/maxHC*100))+'px;border-radius:2px 2px 0 0;opacity:'+(f.mi>=0&&i===f.mi?1:.65)+'"></div>').join('');
   document.getElementById('hlbl').innerHTML=MF.map(m=>'<span>'+m+'</span>').join('');
   const total=byMonth.reduce((a,b)=>a+b,0);
-  document.getElementById('hnum').innerHTML='<span style="color:var(--pink)">'+total+'</span> <span style="font-size:11px;color:var(--tx3)">total approved YTD</span>';
+  const hnumEl=document.getElementById('hnum');
+  if(hnumEl)hnumEl.textContent=total;
   document.getElementById('hcs').textContent='Realisasi per bulan · '+(f.div||'Semua Divisi');
   document.getElementById('ihc').textContent='Total FPTK approved YTD: '+total+' posisi.';
 }
