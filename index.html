@@ -390,13 +390,7 @@ canvas{display:block;width:100%}
   </div>
   <div id="mpp-tracker" style="display:none">
     <div class="card">
-      <div class="filter-bar">
-        <select class="tf" id="ff-status" onchange="renderFPTKFull()"><option value="">Semua Status</option><option>Completed</option><option>On Process</option><option>Pending</option></select>
-        <select class="tf" id="ff-jenis" onchange="renderFPTKFull()"><option value="">Semua Jenis</option><option>Planned</option><option>Replacement</option><option>Unplanned</option></select>
-        <select class="tf" id="ff-bb" onchange="renderFPTKFull()"><option value="">Buy & Build</option><option>Buy</option><option>Build</option></select>
-        <select class="tf" id="ff-pic" onchange="renderFPTKFull()"><option value="">Semua PIC</option></select>
-      </div>
-      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>No</th><th>Posisi</th><th>Divisi</th><th>Level</th><th>Jml</th><th>Tgl Diajukan</th><th>Tgl Approved OD</th><th>SLA</th><th>PIC</th><th>Jenis</th><th>Buy/Build</th><th>Note</th></tr></thead><tbody id="ftbody"></tbody></table></div>
+      <div class="ins info">Detail FPTK tersedia di tab Overview → "Detail FPTK" di bawah.</div>
     </div>
   </div>
   <div id="mpp-buybuild" style="display:none">
@@ -766,7 +760,7 @@ function renderKPIs(f){
     var c=col||'var(--tx)';
     return '<div class="kpi"><div class="kpi-label">'+label+'</div><div class="kpi-val" style="color:'+c+'">'+val+'</div><div class="kpi-sub">'+sub+'</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Math.min(100,pct)+'%;background:'+c+'"></div></div></div>';
   }
-  document.getElementById('kpi-row').innerHTML=
+  const _kpirow=document.getElementById('kpi-row');if(_kpirow)_kpirow.innerHTML=
     kpi('MPP Plan '+f.bLabel,fmt(mT),'Buy '+mppBuy(f.div,f.mi)+' / Build '+mppBuild(f.div,f.mi),100,'rgba(0,0,0,.7)')+
     kpi('Planned FPTK',fmt(plannedAppr),pc(plannedAppr,mT)+'% dari MPP',pc(plannedAppr,mT),'var(--pink)')+
     kpi('Gap vs MPP',fmt(gap),gap>0?'Posisi belum tercapai':'Terpenuhi',Math.max(0,100-pc(plannedAppr,mT)),gap>0?'var(--amber)':'var(--green)')+
@@ -844,32 +838,38 @@ function renderHC(f){
   const maxHC=Math.max(...byMonth,1);
   const spkEl=document.getElementById('hspk');
   if(spkEl)spkEl.innerHTML=byMonth.map((v,i)=>'<div style="flex:1;background:'+(v>0?'var(--green)':'var(--border)')+';height:'+Math.max(4,Math.round(v/maxHC*120))+'px;border-radius:2px 2px 0 0;opacity:'+(f.mi>=0&&i===f.mi?1:.65)+'"></div>').join('');
-  document.getElementById('hlbl').innerHTML=MF.map(m=>'<span>'+m+'</span>').join('');
+  const hlblEl=document.getElementById('hlbl');if(hlblEl)hlblEl.innerHTML=MF.map(m=>'<span>'+m+'</span>').join('');
   const total=byMonth.reduce((a,b)=>a+b,0);
   const hnumEl=document.getElementById('hnum');
   if(hnumEl)hnumEl.textContent=total;
-  document.getElementById('hcs').textContent='Realisasi per bulan · '+(f.div||'Semua Divisi');
-  document.getElementById('ihc').textContent='Total FPTK approved YTD: '+total+' posisi.';
+  const hcsEl=document.getElementById('hcs');if(hcsEl)hcsEl.textContent='Realisasi per bulan · '+(f.div||'Semua Divisi');
+  const _ihc=document.getElementById('ihc');if(_ihc)_ihc.textContent='Total FPTK approved YTD: '+total+' posisi.';
 }
 function renderStatusFPTK(f){
-  const comp=FP.filter(r=>r.status==='Completed').length;const proc=FP.filter(r=>r.status==='On Process').length;const pend=FP.filter(r=>r.status==='Pending').length;const tot=FP.length;
-  document.getElementById('sfptks').textContent=tot+' FPTK · '+f.bLabel;
-  document.getElementById('sfptk-body').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'+
+  const comp=FP.filter(r=>r.status==='Completed').length;
+  const proc=FP.filter(r=>r.status==='On Process').length;
+  const pend=FP.filter(r=>r.status==='Pending').length;
+  const tot=FP.length;
+  const sfptks=document.getElementById('sfptks');
+  const sfbody=document.getElementById('sfptk-body');
+  if(sfptks)sfptks.textContent=tot+' FPTK · '+f.bLabel;
+  if(sfbody)sfbody.innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'+
     '<div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--green)">'+comp+'</div><div style="font-size:10px;color:var(--tx3)">Completed</div></div>'+
     '<div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--blue)">'+proc+'</div><div style="font-size:10px;color:var(--tx3)">On Process</div></div>'+
     '<div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:700;color:var(--amber)">'+pend+'</div><div style="font-size:10px;color:var(--tx3)">Pending</div></div>'+
     '</div>'+
-    '<div style="font-size:10px;color:var(--tx3);margin-bottom:4px">Completion Rate</div>'+
     '<div class="pb"><div class="pb-fill" style="width:'+pc(comp,tot||1)+'%;background:var(--green)"></div></div>'+
     '<div style="font-size:10px;color:var(--tx3);margin-top:4px">'+pc(comp,tot||1)+'% completed</div>';
 }
+
 function renderPVU(f){
   const pl=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
   const rp=FP.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||1),0);
   const un=FP.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
   const tot=pl+rp+un||1;
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
-  document.getElementById('pvus').textContent=f.bLabel+' · '+(f.div||'Semua Divisi');
+  const pvusEl=document.getElementById('pvus');if(pvusEl)pvusEl.textContent=f.bLabel+' · '+(f.div||'Semua Divisi');
   const divs=[...new Set(all.map(r=>r.divisi))].sort();
   let rows='';
   divs.forEach(d=>{
@@ -880,7 +880,7 @@ function renderPVU(f){
     const t=p+r2+u;if(!t)return;
     rows+='<div style="margin-bottom:6px"><div style="font-size:10px;color:var(--tx2);margin-bottom:2px">'+(d.length>30?d.slice(0,30)+'...':d)+'</div><div class="pb"><div style="height:6px;display:flex"><div style="width:'+pc(p,t)+'%;background:var(--pink);border-radius:4px 0 0 4px"></div><div style="width:'+pc(r2,t)+'%;background:var(--amber)"></div><div style="width:'+pc(u,t)+'%;background:var(--blue);border-radius:0 4px 4px 0"></div></div></div></div>';
   });
-  document.getElementById('pvu-body').innerHTML='<div style="display:flex;gap:12px;font-size:11px;color:var(--tx3);margin-bottom:10px;flex-wrap:wrap">'+
+  const pvuEl=document.getElementById('pvu-body');if(pvuEl)pvuEl.innerHTML='<div style="display:flex;gap:12px;font-size:11px;color:var(--tx3);margin-bottom:10px;flex-wrap:wrap">'+
     '<span><span style="width:8px;height:8px;border-radius:2px;background:var(--pink);display:inline-block;margin-right:3px"></span>Planned '+pl+' ('+pc(pl,tot)+'%)</span>'+
     '<span><span style="width:8px;height:8px;border-radius:2px;background:var(--amber);display:inline-block;margin-right:3px"></span>Repl '+rp+' ('+pc(rp,tot)+'%)</span>'+
     '<span><span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block;margin-right:3px"></span>Unpl '+un+' ('+pc(un,tot)+'%)</span>'+
@@ -889,9 +889,9 @@ function renderPVU(f){
 function renderSLADivisi(f){
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
   const divs=[...new Set(all.map(r=>r.divisi))].sort();
-  document.getElementById('sla-div-sub').textContent=f.bLabel;
+  const slaSub=document.getElementById('sla-div-sub');if(slaSub)slaSub.textContent=f.bLabel;
   const maxSLA=Math.max(...divs.map(d=>{const s=all.filter(r=>r.divisi===d&&r.sla!=null);return s.length?Math.round(s.reduce((a,b)=>a+b.sla,0)/s.length):0;}),SLA_T+1);
-  document.getElementById('sla-div-body').innerHTML=divs.map(d=>{
+  const slaBody=document.getElementById('sla-div-body');if(slaBody)slaBody.innerHTML=divs.map(d=>{
     const s=all.filter(r=>r.divisi===d&&r.sla!=null&&(f.bln===0||r.bulan===f.bln));
     const avg=s.length?Math.round(s.reduce((a,b)=>a+b.sla,0)/s.length):null;
     const col=avg==null?'var(--border)':avg>SLA_T?'var(--amber)':'var(--green)';
