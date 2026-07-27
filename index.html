@@ -563,10 +563,10 @@ function renderLanding(){
   document.getElementById('sc-jd-sub').textContent='Completion rate dari '+JD_TOTAL_TARGET+' jabatan';
   document.getElementById('sc-jd-bar').style.width=Math.min(100,jdPct)+'%';
   document.getElementById('sc-jd-stats').innerHTML=
-    '<div class="sc-stat"><div class="sc-stat-val" style="color:#3D9BE9">'+(jdComp+jdDone)+'</div><div class="sc-stat-lbl">Selesai</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:#3D9BE9">'+jdComp+'</div><div class="sc-stat-lbl">Selesai</div></div>'+
     '<div class="sc-stat"><div class="sc-stat-val" style="color:#E8197D">'+jdRev+'</div><div class="sc-stat-lbl">Review</div></div>'+
     '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+jdProg+'</div><div class="sc-stat-lbl">On Progress</div></div>'+
-    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+(JD_TOTAL_TARGET-(jdComp+jdDone+jdRev+jdProg))+'</div><div class="sc-stat-lbl">Belum Mulai</div></div>';
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+(JD_TOTAL_TARGET-(jdComp+jdRev+jdProg))+'</div><div class="sc-stat-lbl">Belum Mulai</div></div>';
   const kpi=D.kpi||[];
   const ippA=kpi.filter(r=>r.ipp==='Approved').length;
   const ipeA=kpi.filter(r=>r.ipe==='Approved').length;
