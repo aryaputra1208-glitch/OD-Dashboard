@@ -681,10 +681,10 @@ function renderLanding(){
   document.getElementById('sc-mpp-sub').textContent='Achievement Rate YTD';
   document.getElementById('sc-mpp-bar').style.width=ach+'%';
   document.getElementById('sc-mpp-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">${mT}</div><div class="sc-stat-lbl">MPP Plan</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">${planned}</div><div class="sc-stat-lbl">Planned FPTK</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${gap}</div><div class="sc-stat-lbl">Gap</div></div>
-     <div class="sc-stat"><div class="sc-stat-val">${D.fptk.length}</div><div class="sc-stat-lbl">Total FPTK</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">'+mT+'</div><div class="sc-stat-lbl">MPP Plan</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">'+planned+'</div><div class="sc-stat-lbl">Planned FPTK</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+gap+'</div><div class="sc-stat-lbl">Gap</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val">'+D.fptk.length+'</div><div class="sc-stat-lbl">Total FPTK</div></div>';
   // SO card
   const so=D.so||[];
   const soSA=so.filter(d=>d.effective_status==='Signed All').length;
@@ -696,10 +696,10 @@ function renderLanding(){
   document.getElementById('sc-so-sub').textContent='Divisi sudah signed';
   document.getElementById('sc-so-bar').style.width=soSignedPct+'%';
   document.getElementById('sc-so-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">${soSA}</div><div class="sc-stat-lbl">Signed All</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">${soSU}</div><div class="sc-stat-lbl">Signed by User</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${soSent}</div><div class="sc-stat-lbl">Sent to User</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">${soAvail}</div><div class="sc-stat-lbl">Available</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">'+soSA+'</div><div class="sc-stat-lbl">Signed All</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">'+soSU+'</div><div class="sc-stat-lbl">Signed by User</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+soSent+'</div><div class="sc-stat-lbl">Sent to User</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+soAvail+'</div><div class="sc-stat-lbl">Available</div></div>';
   // JD card
   const jd=D.jd||[];
   const jdComp=jd.filter(r=>r.status==='Completed').length;
@@ -712,10 +712,10 @@ function renderLanding(){
   document.getElementById('sc-jd-sub').textContent='Completion rate dari '+JD_TOTAL_TARGET+' jabatan';
   document.getElementById('sc-jd-bar').style.width=Math.min(100,jdPct)+'%';
   document.getElementById('sc-jd-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">${jdDone}</div><div class="sc-stat-lbl">Done</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">${jdRev}</div><div class="sc-stat-lbl">Review</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${jdProg}</div><div class="sc-stat-lbl">On Progress</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">${jdNS}</div><div class="sc-stat-lbl">Not Started</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:#0ea5e9">'+(jdComp+jdDone)+'</div><div class="sc-stat-lbl">Selesai</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">'+jdRev+'</div><div class="sc-stat-lbl">Review</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+jdProg+'</div><div class="sc-stat-lbl">On Progress</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+(JD_TOTAL_TARGET-(jdComp+jdDone+jdRev+jdProg))+'</div><div class="sc-stat-lbl">Belum Mulai</div></div>';
   // PM card
   const kpi=D.kpi||[];
   const ippA=kpi.filter(r=>r.ipp==='Approved').length;
@@ -728,10 +728,10 @@ function renderLanding(){
   const ippNot=kpi.filter(r=>r.ipp!=='Approved').length;
   const ipeNot=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
   document.getElementById('sc-pm-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--purple)">${ippA}</div><div class="sc-stat-lbl">IPP Approved</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--blue)">${ipeA}</div><div class="sc-stat-lbl">IPE Approved</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${ippNot}</div><div class="sc-stat-lbl">IPP Pending</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--red)">${ipeNot}</div><div class="sc-stat-lbl">IPE Not Yet</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--purple)">'+ippA+'</div><div class="sc-stat-lbl">IPP Approved</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--blue)">'+ipeA+'</div><div class="sc-stat-lbl">IPE Approved</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+ippNot+'</div><div class="sc-stat-lbl">IPP Pending</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--red)">'+ipeNot+'</div><div class="sc-stat-lbl">IPE Not Yet</div></div>';
 }
 
 // ── MPP OVERVIEW ──
@@ -2367,10 +2367,10 @@ function renderLanding(){
   document.getElementById('sc-mpp-sub').textContent='Achievement Rate YTD';
   document.getElementById('sc-mpp-bar').style.width=ach+'%';
   document.getElementById('sc-mpp-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">${mT}</div><div class="sc-stat-lbl">MPP Plan</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">${planned}</div><div class="sc-stat-lbl">Planned FPTK</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${gap}</div><div class="sc-stat-lbl">Gap</div></div>
-     <div class="sc-stat"><div class="sc-stat-val">${D.fptk.length}</div><div class="sc-stat-lbl">Total FPTK</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">'+mT+'</div><div class="sc-stat-lbl">MPP Plan</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">'+planned+'</div><div class="sc-stat-lbl">Planned FPTK</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+gap+'</div><div class="sc-stat-lbl">Gap</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val">'+D.fptk.length+'</div><div class="sc-stat-lbl">Total FPTK</div></div>';
   // SO card
   const so=D.so||[];
   const soSA=so.filter(d=>d.effective_status==='Signed All').length;
@@ -2382,10 +2382,10 @@ function renderLanding(){
   document.getElementById('sc-so-sub').textContent='Divisi sudah signed';
   document.getElementById('sc-so-bar').style.width=soSignedPct+'%';
   document.getElementById('sc-so-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">${soSA}</div><div class="sc-stat-lbl">Signed All</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">${soSU}</div><div class="sc-stat-lbl">Signed by User</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${soSent}</div><div class="sc-stat-lbl">Sent to User</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">${soAvail}</div><div class="sc-stat-lbl">Available</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">'+soSA+'</div><div class="sc-stat-lbl">Signed All</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">'+soSU+'</div><div class="sc-stat-lbl">Signed by User</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+soSent+'</div><div class="sc-stat-lbl">Sent to User</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+soAvail+'</div><div class="sc-stat-lbl">Available</div></div>';
   // JD card
   const jd=D.jd||[];
   const jdComp=jd.filter(r=>r.status==='Completed').length;
@@ -2398,10 +2398,10 @@ function renderLanding(){
   document.getElementById('sc-jd-sub').textContent='Completion rate dari '+JD_TOTAL_TARGET+' jabatan';
   document.getElementById('sc-jd-bar').style.width=Math.min(100,jdPct)+'%';
   document.getElementById('sc-jd-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">${jdDone}</div><div class="sc-stat-lbl">Done</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">${jdRev}</div><div class="sc-stat-lbl">Review</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${jdProg}</div><div class="sc-stat-lbl">On Progress</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">${jdNS}</div><div class="sc-stat-lbl">Not Started</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:#0ea5e9">'+(jdComp+jdDone)+'</div><div class="sc-stat-lbl">Selesai</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--pink)">'+jdRev+'</div><div class="sc-stat-lbl">Review</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+jdProg+'</div><div class="sc-stat-lbl">On Progress</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+(JD_TOTAL_TARGET-(jdComp+jdDone+jdRev+jdProg))+'</div><div class="sc-stat-lbl">Belum Mulai</div></div>';
   // PM card
   const kpi=D.kpi||[];
   const ippA=kpi.filter(r=>r.ipp==='Approved').length;
@@ -2414,10 +2414,10 @@ function renderLanding(){
   const ippNot=kpi.filter(r=>r.ipp!=='Approved').length;
   const ipeNot=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
   document.getElementById('sc-pm-stats').innerHTML=
-    `<div class="sc-stat"><div class="sc-stat-val" style="color:var(--purple)">${ippA}</div><div class="sc-stat-lbl">IPP Approved</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--blue)">${ipeA}</div><div class="sc-stat-lbl">IPE Approved</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">${ippNot}</div><div class="sc-stat-lbl">IPP Pending</div></div>
-     <div class="sc-stat"><div class="sc-stat-val" style="color:var(--red)">${ipeNot}</div><div class="sc-stat-lbl">IPE Not Yet</div></div>`;
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--purple)">'+ippA+'</div><div class="sc-stat-lbl">IPP Approved</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--blue)">'+ipeA+'</div><div class="sc-stat-lbl">IPE Approved</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+ippNot+'</div><div class="sc-stat-lbl">IPP Pending</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--red)">'+ipeNot+'</div><div class="sc-stat-lbl">IPE Not Yet</div></div>';
 }
 
 // ── MPP OVERVIEW ──
