@@ -63,24 +63,33 @@ select.tf{font-size:11px;padding:5px 10px;border-radius:var(--rs);border:.5px so
 
 /* LANDING SUMMARY CARDS */
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.summary-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:20px;cursor:pointer;transition:box-shadow .15s;position:relative;overflow:hidden}
-.summary-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.summary-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.summary-card.mpp::after{background:var(--pink)}
-.summary-card.so::after{background:var(--green)}
-.summary-card.jd::after{background:var(--blue)}
-.summary-card.pm::after{background:var(--purple)}
-.sc-icon{font-size:28px;margin-bottom:12px}
-.sc-title{font-size:12px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
-.sc-main{font-size:36px;font-weight:700;line-height:1;margin-bottom:4px}
-.sc-sub{font-size:11px;color:var(--tx3);margin-bottom:12px}
-.sc-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.summary-card{
+  border-radius:20px;padding:24px;cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease;
+  display:flex;flex-direction:column;justify-content:space-between;min-height:220px;
+  border:none;
+}
+.summary-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 12px 32px rgba(0,0,0,.12)}
+.summary-card.mpp{background:linear-gradient(135deg,#FFE4EF 0%,#FFC8DE 60%,rgba(255,180,210,.3) 100%)}
+.summary-card.so{background:linear-gradient(135deg,#D1FAE5 0%,#A7F3D0 60%,rgba(110,231,183,.3) 100%)}
+.summary-card.jd{background:linear-gradient(135deg,#DBEAFE 0%,#BFDBFE 60%,rgba(147,197,253,.3) 100%)}
+.summary-card.pm{background:linear-gradient(135deg,#EDE9FE 0%,#DDD6FE 60%,rgba(196,181,253,.3) 100%)}
+.sc-deco{position:absolute;right:-18%;bottom:-18%;width:55%;opacity:.25;pointer-events:none;transition:transform .25s ease;font-size:90px;line-height:1;filter:blur(1px)}
+.summary-card:hover .sc-deco{transform:scale(1.1) rotate(8deg);opacity:.35}
+.sc-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(0,0,0,.6);margin-bottom:14px;width:fit-content}
+.sc-badge-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sc-title{font-size:11px;font-weight:600;color:rgba(0,0,0,.5);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.sc-main{font-size:38px;font-weight:700;line-height:1;margin-bottom:4px;color:rgba(0,0,0,.8)}
+.sc-sub{font-size:11px;color:rgba(0,0,0,.45);margin-bottom:12px}
+.sc-bar{height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden;margin-bottom:12px}
 .sc-bar-fill{height:100%;border-radius:2px}
 .sc-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.sc-stat{background:var(--bg);border-radius:6px;padding:6px 8px}
-.sc-stat-val{font-size:15px;font-weight:700}
-.sc-stat-lbl{font-size:9px;color:var(--tx3)}
-.sc-nav{font-size:11px;color:var(--pink);font-weight:500;margin-top:8px}
+.sc-stat{background:rgba(255,255,255,.5);border-radius:8px;padding:7px 10px;backdrop-filter:blur(4px)}
+.sc-stat-val{font-size:15px;font-weight:700;color:rgba(0,0,0,.75)}
+.sc-stat-lbl{font-size:9px;color:rgba(0,0,0,.45);margin-top:1px}
+.sc-nav{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);margin-top:14px;display:flex;align-items:center;gap:4px;transition:gap .2s}
+.summary-card:hover .sc-nav{gap:8px}
 
 /* KPI ROW */
 .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
@@ -231,40 +240,52 @@ canvas{display:block;width:100%}
   </div>
   <div class="summary-grid">
     <div class="summary-card mpp" onclick="goTo('mpp')">
-      <div class="sc-icon">📋</div>
-      <div class="sc-title">MPP & Realisasi</div>
-      <div class="sc-main" id="sc-mpp-val" style="color:var(--pink)">—</div>
-      <div class="sc-sub" id="sc-mpp-sub">Memuat...</div>
-      <div class="sc-bar"><div class="sc-bar-fill" id="sc-mpp-bar" style="background:var(--pink)"></div></div>
-      <div class="sc-stats" id="sc-mpp-stats"></div>
-      <div class="sc-nav">Lihat Detail MPP →</div>
+      <div class="sc-deco">📋</div>
+      <div>
+        <div class="sc-badge"><span class="sc-badge-dot" style="background:#E8197D"></span>MPP & Realisasi</div>
+        <div class="sc-title">Manpower Planning</div>
+        <div class="sc-main" id="sc-mpp-val">—</div>
+        <div class="sc-sub" id="sc-mpp-sub">Memuat...</div>
+        <div class="sc-bar"><div class="sc-bar-fill" id="sc-mpp-bar" style="background:#E8197D"></div></div>
+        <div class="sc-stats" id="sc-mpp-stats"></div>
+      </div>
+      <div class="sc-nav">Lihat Detail <span>→</span></div>
     </div>
     <div class="summary-card so" onclick="goTo('so')">
-      <div class="sc-icon">🏢</div>
-      <div class="sc-title">Struktur Organisasi</div>
-      <div class="sc-main" id="sc-so-val" style="color:var(--green)">—</div>
-      <div class="sc-sub" id="sc-so-sub">Memuat...</div>
-      <div class="sc-bar"><div class="sc-bar-fill" id="sc-so-bar" style="background:var(--green)"></div></div>
-      <div class="sc-stats" id="sc-so-stats"></div>
-      <div class="sc-nav">Lihat Detail SO →</div>
+      <div class="sc-deco">🏢</div>
+      <div>
+        <div class="sc-badge"><span class="sc-badge-dot" style="background:#1D9E75"></span>Struktur Organisasi</div>
+        <div class="sc-title">Organization Structure</div>
+        <div class="sc-main" id="sc-so-val">—</div>
+        <div class="sc-sub" id="sc-so-sub">Memuat...</div>
+        <div class="sc-bar"><div class="sc-bar-fill" id="sc-so-bar" style="background:#1D9E75"></div></div>
+        <div class="sc-stats" id="sc-so-stats"></div>
+      </div>
+      <div class="sc-nav">Lihat Detail <span>→</span></div>
     </div>
     <div class="summary-card jd" onclick="goTo('jd')">
-      <div class="sc-icon">📄</div>
-      <div class="sc-title">Job Description</div>
-      <div class="sc-main" id="sc-jd-val" style="color:var(--blue)">—</div>
-      <div class="sc-sub" id="sc-jd-sub">Memuat...</div>
-      <div class="sc-bar"><div class="sc-bar-fill" id="sc-jd-bar" style="background:var(--blue)"></div></div>
-      <div class="sc-stats" id="sc-jd-stats"></div>
-      <div class="sc-nav">Lihat Detail JD →</div>
+      <div class="sc-deco">📄</div>
+      <div>
+        <div class="sc-badge"><span class="sc-badge-dot" style="background:#3D9BE9"></span>Job Description</div>
+        <div class="sc-title">JD Tracking</div>
+        <div class="sc-main" id="sc-jd-val">—</div>
+        <div class="sc-sub" id="sc-jd-sub">Memuat...</div>
+        <div class="sc-bar"><div class="sc-bar-fill" id="sc-jd-bar" style="background:#3D9BE9"></div></div>
+        <div class="sc-stats" id="sc-jd-stats"></div>
+      </div>
+      <div class="sc-nav">Lihat Detail <span>→</span></div>
     </div>
     <div class="summary-card pm" onclick="goTo('pm')">
-      <div class="sc-icon">🎯</div>
-      <div class="sc-title">Performance Management</div>
-      <div class="sc-main" id="sc-pm-val" style="color:var(--purple)">—</div>
-      <div class="sc-sub" id="sc-pm-sub">Memuat...</div>
-      <div class="sc-bar"><div class="sc-bar-fill" id="sc-pm-bar" style="background:var(--purple)"></div></div>
-      <div class="sc-stats" id="sc-pm-stats"></div>
-      <div class="sc-nav">Lihat Detail PM →</div>
+      <div class="sc-deco">🎯</div>
+      <div>
+        <div class="sc-badge"><span class="sc-badge-dot" style="background:#7C3AED"></span>Performance Management</div>
+        <div class="sc-title">IPP & IPE Tracking</div>
+        <div class="sc-main" id="sc-pm-val">—</div>
+        <div class="sc-sub" id="sc-pm-sub">Memuat...</div>
+        <div class="sc-bar"><div class="sc-bar-fill" id="sc-pm-bar" style="background:#7C3AED"></div></div>
+        <div class="sc-stats" id="sc-pm-stats"></div>
+      </div>
+      <div class="sc-nav">Lihat Detail <span>→</span></div>
     </div>
   </div>
 </div>
