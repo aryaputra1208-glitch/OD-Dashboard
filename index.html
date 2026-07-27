@@ -264,7 +264,7 @@ canvas{display:block;width:100%}
   </div>
   <div id="mpp-overview">
     <!-- MPP CARD -->
-    <div class="card" style="margin-bottom:12px">
+    <div class="card" style="margin-bottom:12px;box-sizing:border-box">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
         <div style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></div>
         <div class="ct">MPP Plan 2026</div>
@@ -321,7 +321,7 @@ canvas{display:block;width:100%}
     </div>
 
     <!-- FPTK CARD -->
-    <div class="card" style="margin-bottom:12px">
+    <div class="card" style="margin-bottom:12px;box-sizing:border-box">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
         <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
         <div class="ct">FPTK Realisasi YTD</div>
@@ -336,7 +336,7 @@ canvas{display:block;width:100%}
             </div>
             <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
               <div style="font-size:22px;font-weight:700;color:var(--green)" id="fptk-hc">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">HC Approved</div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:2px">MP Approved</div>
             </div>
             <div style="background:#EDFAF4;border-radius:10px;padding:10px;text-align:center">
               <div style="font-size:22px;font-weight:700;color:var(--green)" id="fptk-completed">—</div>
@@ -356,21 +356,36 @@ canvas{display:block;width:100%}
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:4px">Headcount Masuk per Bulan</div>
           <div style="font-size:10px;color:var(--tx3);margin-bottom:10px" id="hcs">Jumlah orang approved per bulan</div>
-          <div id="hspk" style="display:flex;gap:3px;align-items:flex-end;height:80px;margin-bottom:4px"></div>
+          <div id="hspk" style="display:flex;gap:3px;align-items:flex-end;height:120px;margin-bottom:4px"></div>
           <div id="hlbl" style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3)"></div>
           <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px">
             <div style="font-size:22px;font-weight:700;color:var(--green)" id="hnum"></div>
-            <div style="font-size:11px;color:var(--tx3)">orang masuk YTD</div>
+            <div style="font-size:11px;color:var(--tx3)">MP approved YTD</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Bottom row: Status + Planned/Unplanned + SLA -->
-    <div class="r3">
-      <div class="card"><div class="chdr"><div><div class="ct">Status FPTK</div><div class="cs" id="sfptks"></div></div></div><div id="sfptk-body"></div></div>
-      <div class="card"><div class="chdr"><div><div class="ct">Planned vs Unplanned</div><div class="cs" id="pvus"></div></div></div><div id="pvu-body"></div></div>
-      <div class="card"><div class="chdr"><div><div class="ct">SLA per Divisi</div><div class="cs" id="sla-div-sub"></div></div></div><div id="sla-div-body"></div></div>
+    <!-- Detail tabs: FPTK / MPP -->
+    <div class="card">
+      <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--bg);border-radius:var(--rs);padding:4px">
+        <button class="sub-nav-btn active" id="detail-tab-fptk" onclick="switchDetailTab('fptk')">Detail FPTK</button>
+        <button class="sub-nav-btn" id="detail-tab-mpp" onclick="switchDetailTab('mpp')">Detail MPP per Posisi</button>
+      </div>
+      <!-- FPTK detail -->
+      <div id="detail-fptk">
+        <div class="filter-bar" style="margin-bottom:10px">
+          <select class="tf" id="ff-status" onchange="renderFPTKFull()"><option value="">Semua Status</option><option>Completed</option><option>On Process</option><option>Pending</option></select>
+          <select class="tf" id="ff-jenis" onchange="renderFPTKFull()"><option value="">Semua Jenis</option><option>Planned</option><option>Replacement</option><option>Unplanned</option></select>
+          <select class="tf" id="ff-bb" onchange="renderFPTKFull()"><option value="">Buy & Build</option><option>Buy</option><option>Build</option></select>
+          <select class="tf" id="ff-pic" onchange="renderFPTKFull()"><option value="">Semua PIC</option></select>
+        </div>
+        <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>No</th><th>Posisi</th><th>Divisi</th><th>Level</th><th>Jml</th><th>Tgl Diajukan</th><th>Tgl Approved</th><th>SLA</th><th>PIC</th><th>Jenis</th><th>Buy/Build</th><th>Note</th></tr></thead><tbody id="ftbody"></tbody></table></div>
+      </div>
+      <!-- MPP detail -->
+      <div id="detail-mpp" style="display:none">
+        <div style="overflow-x:auto" id="mpp-detail-body"></div>
+      </div>
     </div>
   </div>
   <div id="mpp-tracker" style="display:none">
@@ -566,6 +581,37 @@ function goTo(page){
   if(page==='jd'){renderJD().catch(console.error);renderJDWeekly().catch(console.error);}
   if(page==='pm'){renderPM();renderReminder();}
 }
+function switchDetailTab(tab){
+  ['fptk','mpp'].forEach(t=>{
+    const el=document.getElementById('detail-'+t);
+    if(el)el.style.display=t===tab?'':'none';
+    const btn=document.getElementById('detail-tab-'+t);
+    if(btn)btn.classList.toggle('active',t===tab);
+  });
+  if(tab==='fptk')renderFPTKFull();
+  if(tab==='mpp')renderMPPDetail();
+}
+function renderMPPDetail(){
+  const f=getF();
+  const el=document.getElementById('mpp-detail-body');
+  if(!el)return;
+  const divs=Object.keys(D.mpp_detail).sort();
+  el.innerHTML='<table class="tbl"><thead><tr><th>Divisi</th><th>Posisi</th><th>Level</th><th>Plan Buy</th><th>Plan Build</th><th>Total</th><th>Bulan</th></tr></thead><tbody>'+
+    divs.map(div=>{
+      if(f.div&&div.toLowerCase()!==f.div.toLowerCase())return'';
+      return (D.mpp_detail[div]||[]).map(p=>{
+        const months=Object.entries(p.months||{}).map(([m,v])=>m+' (B:'+v.buy+'/Bl:'+v.build+')').join(', ');
+        return '<tr><td style="font-size:11px;color:var(--tx3)">'+div+'</td>'+
+          '<td style="font-size:11px;font-weight:500">'+p.pos+'</td>'+
+          '<td style="font-size:11px">'+p.level+'</td>'+
+          '<td style="text-align:center;color:var(--green)">'+p.total_buy+'</td>'+
+          '<td style="text-align:center;color:var(--blue)">'+p.total_build+'</td>'+
+          '<td style="text-align:center;font-weight:600">'+(p.total_buy+p.total_build)+'</td>'+
+          '<td style="font-size:10px;color:var(--tx3)">'+months+'</td></tr>';
+      }).join('');
+    }).join('')+
+  '</tbody></table>';
+}
 function switchMPPTab(tab){
   currentMPPTab=tab;
   ['overview','tracker','buybuild','matching','divisi','management'].forEach(t=>{
@@ -707,7 +753,7 @@ function renderFPTKCard(f){
   if(el('fptk-sla-info')&&byDiv.length){const best=byDiv[0];const worst=byDiv[byDiv.length-1];el('fptk-sla-info').innerHTML='<span style="color:var(--green)">Terbaik: '+best.d.split(' ')[0]+' ('+best.avg+' hr)</span> &nbsp;<span style="color:var(--amber)">Terlambat: '+worst.d.split(' ')[0]+' ('+worst.avg+' hr)</span>';}
 }
 function renderKPIs(f){}
-function renderMPPOverview(f){renderMPPCard(f);renderFPTKCard(f);renderMPPChart(f);renderHC(f);renderStatusFPTK(f);renderPVU(f);renderSLADivisi(f);}
+function renderMPPOverview(f){renderMPPCard(f);renderFPTKCard(f);renderMPPChart(f);renderHC(f);renderFPTKFull();}
 function renderKPIs(f){
   const mT=mppPlan(f.div,f.mi);
   const plannedAppr=FP.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
@@ -797,7 +843,7 @@ function renderHC(f){
   const byMonth=MF.map((_,i)=>all.filter(r=>r.bulan===i+1).reduce((s,r)=>s+(r.jml_approved||1),0));
   const maxHC=Math.max(...byMonth,1);
   const spkEl=document.getElementById('hspk');
-  if(spkEl)spkEl.innerHTML=byMonth.map((v,i)=>'<div style="flex:1;background:'+(v>0?'var(--green)':'var(--border)')+';height:'+Math.max(4,Math.round(v/maxHC*100))+'px;border-radius:2px 2px 0 0;opacity:'+(f.mi>=0&&i===f.mi?1:.65)+'"></div>').join('');
+  if(spkEl)spkEl.innerHTML=byMonth.map((v,i)=>'<div style="flex:1;background:'+(v>0?'var(--green)':'var(--border)')+';height:'+Math.max(4,Math.round(v/maxHC*120))+'px;border-radius:2px 2px 0 0;opacity:'+(f.mi>=0&&i===f.mi?1:.65)+'"></div>').join('');
   document.getElementById('hlbl').innerHTML=MF.map(m=>'<span>'+m+'</span>').join('');
   const total=byMonth.reduce((a,b)=>a+b,0);
   const hnumEl=document.getElementById('hnum');
