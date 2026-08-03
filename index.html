@@ -548,8 +548,14 @@ const JD_TOTAL_TARGET=433;
 // HELPERS
 function pc(a,b){return b>0?Math.round(a/b*100):0;}
 function fmt(n){return n!=null?n.toLocaleString('id'):'-';}
-function mppBuy(div,mi){const months=mi<0?MF:[MF[mi]];if(div){const k=Object.keys(D.mpp_plan_buy).find(k=>k.toLowerCase()===div.toLowerCase());return k?months.reduce((s,m)=>s+(D.mpp_plan_buy[k][m]||0),0):0;}return Object.values(D.mpp_plan_buy).reduce((s,p)=>s+months.reduce((ss,m)=>ss+(p[m]||0),0),0);}
-function mppBuild(div,mi){const months=mi<0?MF:[MF[mi]];if(div){const k=Object.keys(D.mpp_plan_build).find(k=>k.toLowerCase()===div.toLowerCase());return k?months.reduce((s,m)=>s+(D.mpp_plan_build[k][m]||0),0):0;}return Object.values(D.mpp_plan_build).reduce((s,p)=>s+months.reduce((ss,m)=>ss+(p[m]||0),0),0);}
+function mppBuy(div,mi){
+  if(mi<0){if(div){const k=Object.keys(D.mpp_plan_buy).find(k=>k.toLowerCase()===div.toLowerCase());return k?(D.mpp_plan_buy[k]['__gt']||0):0;}return Object.values(D.mpp_plan_buy).reduce((s,p)=>s+(p['__gt']||0),0);}
+  const m=MF[mi];if(div){const k=Object.keys(D.mpp_plan_buy).find(k=>k.toLowerCase()===div.toLowerCase());return k?(D.mpp_plan_buy[k][m]||0):0;}
+  return Object.values(D.mpp_plan_buy).reduce((s,p)=>s+(p[m]||0),0);}
+function mppBuild(div,mi){
+  if(mi<0){if(div){const k=Object.keys(D.mpp_plan_build).find(k=>k.toLowerCase()===div.toLowerCase());return k?(D.mpp_plan_build[k]['__gt']||0):0;}return Object.values(D.mpp_plan_build).reduce((s,p)=>s+(p['__gt']||0),0);}
+  const m=MF[mi];if(div){const k=Object.keys(D.mpp_plan_build).find(k=>k.toLowerCase()===div.toLowerCase());return k?(D.mpp_plan_build[k][m]||0):0;}
+  return Object.values(D.mpp_plan_build).reduce((s,p)=>s+(p[m]||0),0);}
 function mppPlan(div,mi){return mppBuy(div,mi)+mppBuild(div,mi);}
 function pillClass(s){const m={'Planned':'pill-pink','Replacement':'pill-amber','Unplanned':'pill-blue','Completed':'pill-blue','On Process':'pill-blue','Pending':'pill-grey','Buy':'pill-green','Build':'pill-purple','match':'pill-green','partial':'pill-amber','mismatch':'pill-red','unplanned':'pill-blue','replacement':'pill-amber','Approved':'pill-green','Waiting Approval':'pill-amber','Not Yet':'pill-grey','DRAFT':'pill-blue','Revise':'pill-red','REVISE':'pill-red','Signed All':'pill-green','Signed by User':'pill-pink','Sent to User':'pill-amber','Available':'pill-grey','Done':'pill-green','Review by User':'pill-pink','On Progress':'pill-amber','Not Started':'pill-grey'};return m[s]||'pill-grey';}
 function getF(){const div=document.getElementById('fdiv').value;const bln=parseInt(document.getElementById('fbln').value)||0;const mi=bln>0?bln-1:-1;const bLabel=bln>0?MF[bln-1]+' 2026':'Semua 2026';return{div,bln,mi,bLabel};}
@@ -1289,13 +1295,21 @@ async function fetchAllData(){
     if(!mppDetail[div])mppDetail[div]=[];
     if(!mppPositions[div].includes(pos))mppPositions[div].push(pos);
     let rb=0,rb2=0;const mv={};
+    // Grand total from col 34 (buy) and 35 (build)
+    const gtBuy=parseInt(r[34])||0;
+    const gtBuild=parseInt(r[35])||0;
+    if(!mppPlanBuy[div]['__gt'])mppPlanBuy[div]['__gt']=0;
+    if(!mppPlanBuild[div]['__gt'])mppPlanBuild[div]['__gt']=0;
+    mppPlanBuy[div]['__gt']+=gtBuy;
+    mppPlanBuild[div]['__gt']+=gtBuild;
+    // Month breakdown
     MF_KEYS.forEach((m,i)=>{
       const b=parseInt(r[BUY_COLS[i]])||0;
       const bl=parseInt(r[BUILD_COLS[i]])||0;
       mppPlanBuy[div][m]+=b;mppPlanBuild[div][m]+=bl;rb+=b;rb2+=bl;
       if(b+bl>0)mv[m]={buy:b,build:bl};
     });
-    if(rb+rb2>0)mppDetail[div].push({pos,level:lvl,total_buy:rb,total_build:rb2,months:mv});
+    if(gtBuy+gtBuild>0)mppDetail[div].push({pos,level:lvl,total_buy:gtBuy,total_build:gtBuild,months:mv});
   });
   fresh.mpp_plan_buy=mppPlanBuy;
   fresh.mpp_plan_build=mppPlanBuild;
