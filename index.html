@@ -1406,13 +1406,18 @@ async function exportPPT(){
         const s=document.createElement('script');
         s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
         s.onload=res;
-        s.onerror=function(e){rej(new Error('Gagal load library PPT. Cek koneksi internet.'));};
+        s.onerror=function(){rej(new Error('Gagal load library PPT. Cek koneksi internet.'));};
         document.head.appendChild(s);
       });
     }
-    const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
-    const PK='E8197D',GR='1D9E75',BL='3D9BE9',PU='7C3AED',AM='E8A020',BG='F5F3EE',WH='FFFFFF',DK='111111',GY='999999';
-    function p2(a,b){return b>0?Math.round(a/b*100):0;}
+    const pres=new PptxGenJS();
+    pres.layout='LAYOUT_WIDE';
+    // Font: try Poppins first, fallback to Calibri
+    const FONT='Poppins';
+    const PK='E8197D',GR='1D9E75',BL='3D9BE9',PU='7C3AED',AM='E8A020';
+    const BG='F5F3EE',WH='FFFFFF',DK='1A1A1A',GY='888888',BORDER='E4E2DC';
+    const CARD='FFFFFF';
+    function pct(a,b){return b>0?Math.round(a/b*100):0;}
     const fptk=D.fptk||[],so=D.so||[],jd=D.jd||[],kpi=D.kpi||[];
     const mT=mppPlan('',-1),mBu=mppBuy('',-1),mBl=mppBuild('',-1);
     const plA=fptk.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
@@ -1421,146 +1426,249 @@ async function exportPPT(){
     const soSA=so.filter(d=>d.effective_status==='Signed All').length;
     const soSU=so.filter(d=>d.effective_status==='Signed by User').length;
     const ippA=kpi.filter(r=>r.ipp==='Approved').length;
-    // COVER
-    let s2=pres.addSlide();s2.background={color:PK};
-    s2.addText('OD Hub',{x:.6,y:2.2,w:12,h:1.2,fontSize:52,bold:true,color:WH,fontFace:'Calibri'});
-    s2.addText('Organization Development Dashboard - Anteraja',{x:.6,y:3.4,w:10,h:.5,fontSize:18,color:WH,fontFace:'Calibri'});
-    s2.addText(new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}),{x:.6,y:4.2,w:6,h:.4,fontSize:14,color:WH,fontFace:'Calibri'});
-    // SUMMARY
-    s2=pres.addSlide();s2.background={color:BG};
-    s2.addText('Ringkasan OD',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
-    [{label:'MPP & Realisasi',color:PK,val:p2(plA,mT||1)+'%',sub:'Achievement Rate YTD'},
-     {label:'Struktur Organisasi',color:GR,val:p2(soSA+soSU,so.length||1)+'%',sub:'Divisi Signed'},
-     {label:'Job Description',color:BL,val:p2(jdC,433)+'%',sub:'Completion dari 433 jabatan'},
-     {label:'Performance Mgmt',color:PU,val:p2(ippA,kpi.length||1)+'%',sub:'IPP Approved'}
-    ].forEach((c,i)=>{
-      const x=.4+i*3.1;
-      s2.addShape(pres.ShapeType.roundRect,{x,y:1.4,w:2.9,h:3.0,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.1});
-      s2.addText(c.val,{x,y:1.8,w:2.9,h:.9,fontSize:36,bold:true,color:c.color,align:'center',fontFace:'Calibri'});
-      s2.addText(c.label,{x,y:2.8,w:2.9,h:.35,fontSize:11,bold:true,color:DK,align:'center',fontFace:'Calibri'});
-      s2.addText(c.sub,{x,y:3.15,w:2.9,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
-      const pctb=parseInt(c.val)/100;
-      s2.addShape(pres.ShapeType.rect,{x:x+.25,y:3.65,w:2.4,h:.12,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
-      if(pctb>0&&pctb<=1)s2.addShape(pres.ShapeType.rect,{x:x+.25,y:3.65,w:Math.max(.01,2.4*pctb),h:.12,fill:{color:c.color},line:{color:c.color}});
+
+    function card(sld,x,y,w,h){sld.addShape(pres.ShapeType.roundRect,{x,y,w,h,fill:{color:CARD},line:{color:BORDER,width:.5},rectRadius:.12,shadow:{type:'outer',color:'AAAAAA',opacity:.12,blur:8,offset:4,angle:270}});}
+    function hline(sld,x,y,w,col,h){sld.addShape(pres.ShapeType.rect,{x,y,w:w,h:h||.06,fill:{color:col},line:{color:col}});}
+    function badge(sld,x,y,label,col){
+      sld.addShape(pres.ShapeType.roundRect,{x,y,w:.8,h:.22,fill:{color:col+'22'},line:{color:col,width:.5},rectRadius:.04});
+      sld.addText(label,{x,y,w:.8,h:.22,fontSize:7,bold:true,color:col,align:'center',fontFace:FONT});
+    }
+
+    // ── SLIDE 1: COVER ──
+    let sld=pres.addSlide();
+    sld.background={color:PK};
+    // Decorative circle
+    sld.addShape(pres.ShapeType.ellipse,{x:9.5,y:-.5,w:5,h:5,fill:{color:'FFFFFF',transparency:92},line:{color:'FFFFFF',transparency:92}});
+    sld.addShape(pres.ShapeType.ellipse,{x:10.5,y:2,w:3,h:3,fill:{color:'FFFFFF',transparency:88},line:{color:'FFFFFF',transparency:88}});
+    sld.addText('OD Hub',{x:.7,y:1.8,w:10,h:1.4,fontSize:64,bold:true,color:WH,fontFace:FONT});
+    sld.addText('Organization Development Dashboard',{x:.7,y:3.2,w:10,h:.55,fontSize:20,color:WH,fontFace:FONT,transparency:15});
+    sld.addText('PT. Tri Adi Bersama (Anteraja)',{x:.7,y:3.75,w:8,h:.4,fontSize:14,color:WH,fontFace:FONT,transparency:25});
+    sld.addShape(pres.ShapeType.rect,{x:.7,y:4.3,w:1.5,h:.04,fill:{color:WH,transparency:40},line:{color:WH,transparency:40}});
+    sld.addText(new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}),{x:.7,y:4.45,w:6,h:.35,fontSize:12,color:WH,fontFace:FONT,transparency:30});
+
+    // ── SLIDE 2: RINGKASAN ──
+    sld=pres.addSlide();sld.background={color:BG};
+    sld.addText('Ringkasan OD',{x:.5,y:.35,w:12,h:.65,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Status keseluruhan program Organization Development',{x:.5,y:.95,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
+    const sumCards=[
+      {label:'MPP & Realisasi',color:PK,val:pct(plA,mT||1)+'%',sub:'Achievement Rate YTD',detail:'Plan '+mT+' / FPTK '+plA},
+      {label:'Struktur Organisasi',color:GR,val:pct(soSA+soSU,so.length||1)+'%',sub:'Divisi sudah Signed',detail:(soSA+soSU)+' dari '+so.length+' divisi'},
+      {label:'Job Description',color:BL,val:pct(jdC,433)+'%',sub:'Completion dari 433 jabatan',detail:jdC+' jabatan selesai'},
+      {label:'Performance Mgmt',color:PU,val:pct(ippA,kpi.length||1)+'%',sub:'IPP Approved',detail:ippA+' dari '+kpi.length+' karyawan'},
+    ];
+    sumCards.forEach((c,i)=>{
+      const x=.4+i*3.1,y=1.4,w=2.9,h=3.5;
+      card(sld,x,y,w,h);
+      // Color bar top
+      sld.addShape(pres.ShapeType.roundRect,{x:x+.15,y:y+.15,w:w-.3,h:.18,fill:{color:c.color+'22'},line:{color:c.color,width:0},rectRadius:.04});
+      sld.addText(c.label,{x:x+.15,y:y+.14,w:w-.3,h:.2,fontSize:8,bold:true,color:c.color,align:'center',fontFace:FONT});
+      // Big value
+      sld.addText(c.val,{x,y:y+.5,w,h:1.0,fontSize:40,bold:true,color:c.color,align:'center',fontFace:FONT});
+      sld.addText(c.sub,{x:x+.1,y:y+1.5,w:w-.2,h:.35,fontSize:10,color:DK,align:'center',fontFace:FONT});
+      sld.addText(c.detail,{x:x+.1,y:y+1.85,w:w-.2,h:.28,fontSize:9,color:GY,align:'center',fontFace:FONT});
+      // Progress bar
+      sld.addShape(pres.ShapeType.roundRect,{x:x+.25,y:y+2.3,w:w-.5,h:.12,fill:{color:BORDER},line:{color:BORDER},rectRadius:.06});
+      const pv=parseInt(c.val)/100;
+      if(pv>0)sld.addShape(pres.ShapeType.roundRect,{x:x+.25,y:y+2.3,w:Math.max(.05,(w-.5)*Math.min(pv,1)),h:.12,fill:{color:c.color},line:{color:c.color},rectRadius:.06});
+      sld.addText(c.val+' tercapai',{x:x+.1,y:y+2.55,w:w-.2,h:.25,fontSize:8,color:GY,align:'center',fontFace:FONT});
     });
-    // MPP & FPTK
-    s2=pres.addSlide();s2.background={color:BG};
-    s2.addText('MPP & Realisasi',{x:.5,y:.3,w:8,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
-    s2.addShape(pres.ShapeType.rect,{x:.5,y:.88,w:.06,h:.5,fill:{color:PK},line:{color:PK}});
-    s2.addText('MPP Plan 2026',{x:.65,y:.9,w:5,h:.4,fontSize:14,bold:true,color:DK,fontFace:'Calibri'});
+
+    // ── SLIDE 3: MPP & FPTK ──
+    sld=pres.addSlide();sld.background={color:BG};
+    sld.addText('MPP & Realisasi',{x:.5,y:.3,w:12,h:.6,fontSize:26,bold:true,color:DK,fontFace:FONT});
+
+    // MPP Card
+    card(sld,.4,1.0,6.0,2.3);
+    sld.addShape(pres.ShapeType.rect,{x:.4,y:1.0,w:.1,h:2.3,fill:{color:PK},line:{color:PK}});
+    sld.addText('MPP Plan 2026',{x:.65,y:1.1,w:4,h:.4,fontSize:13,bold:true,color:DK,fontFace:FONT});
     [{l:'Total Plan',v:mT,c:DK},{l:'Gap Planned',v:gap3,c:AM},{l:'Plan Buy',v:mBu,c:GR},{l:'Plan Build',v:mBl,c:BL}].forEach((n,i)=>{
-      const x=.4+i*1.75;
-      s2.addShape(pres.ShapeType.roundRect,{x,y:1.5,w:1.6,h:1.1,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
-      s2.addText(String(n.v),{x,y:1.6,w:1.6,h:.55,fontSize:26,bold:true,color:n.c,align:'center',fontFace:'Calibri'});
-      s2.addText(n.l,{x,y:2.15,w:1.6,h:.35,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+      const x=.7+i*1.4;
+      sld.addText(String(n.v),{x,y:1.55,w:1.3,h:.65,fontSize:28,bold:true,color:n.c,align:'center',fontFace:FONT});
+      sld.addText(n.l,{x,y:2.2,w:1.3,h:.28,fontSize:9,color:GY,align:'center',fontFace:FONT});
+      // Buy/Build bar
+      if(n.l==='Plan Buy'||n.l==='Plan Build'){
+        const tot4=mBu+mBl||1;
+        const bw=(mT>0)?Math.max(.01,4.2*n.v/tot4):0;
+        const bx=.7+(n.l==='Plan Build'?4.2*mBu/tot4:0);
+      }
     });
-    s2.addShape(pres.ShapeType.rect,{x:.5,y:2.85,w:.06,h:.5,fill:{color:GR},line:{color:GR}});
-    s2.addText('FPTK Realisasi YTD',{x:.65,y:2.87,w:5,h:.4,fontSize:14,bold:true,color:DK,fontFace:'Calibri'});
+    // Buy/Build bar full
+    sld.addText('Buy / Build',{x:.65,y:2.55,w:5,h:.25,fontSize:9,color:GY,fontFace:FONT});
+    sld.addShape(pres.ShapeType.roundRect,{x:.65,y:2.8,w:5.5,h:.14,fill:{color:BORDER},line:{color:BORDER},rectRadius:.07});
+    const totBB=mBu+mBl||1;
+    if(mBu>0)sld.addShape(pres.ShapeType.roundRect,{x:.65,y:2.8,w:Math.max(.05,5.5*mBu/totBB),h:.14,fill:{color:GR},line:{color:GR},rectRadius:.07});
+    sld.addText('Buy '+mBu+' ('+pct(mBu,totBB)+'%)',{x:.65,y:3.0,w:2.5,h:.22,fontSize:9,color:GR,fontFace:FONT});
+    sld.addText('Build '+mBl+' ('+pct(mBl,totBB)+'%)',{x:3.2,y:3.0,w:2.5,h:.22,fontSize:9,color:BL,fontFace:FONT});
+
+    // FPTK Card
+    // MP per kategori (jml_approved sum)
+    const plMP=fptk.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||0),0);
+    const rpMP=fptk.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||0),0);
+    const unMP=fptk.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||0),0);
     const hcA=fptk.reduce((s,r)=>s+(r.jml_approved||0),0);
     const cmpF=fptk.filter(r=>r.status==='Completed').length;
     const slaArr=fptk.filter(r=>r.sla!=null);
-    const slaAvg3=slaArr.length?Math.round(slaArr.reduce((s,r)=>s+r.sla,0)/slaArr.length):0;
-    const plF=fptk.filter(r=>r.planned==='Planned').length;
-    const rpF=fptk.filter(r=>r.planned==='Replacement').length;
-    const unF=fptk.filter(r=>r.planned==='Unplanned').length;
-    [{l:'Total FPTK',v:fptk.length,c:BL},{l:'MP Approved',v:hcA,c:GR},{l:'Completed',v:cmpF,c:GR},{l:'Rata SLA',v:slaAvg3+'hr',c:AM}].forEach((n,i)=>{
-      const x=.4+i*1.75;
-      s2.addShape(pres.ShapeType.roundRect,{x,y:3.4,w:1.6,h:1.1,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
-      s2.addText(String(n.v),{x,y:3.5,w:1.6,h:.55,fontSize:26,bold:true,color:n.c,align:'center',fontFace:'Calibri'});
-      s2.addText(n.l,{x,y:4.05,w:1.6,h:.35,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+    const slaAvg=slaArr.length?Math.round(slaArr.reduce((s,r)=>s+r.sla,0)/slaArr.length):0;
+
+    card(sld,6.9,1.0,6.0,2.3);
+    sld.addShape(pres.ShapeType.rect,{x:6.9,y:1.0,w:.1,h:2.3,fill:{color:GR},line:{color:GR}});
+    sld.addText('FPTK Realisasi YTD',{x:7.15,y:1.1,w:4,h:.4,fontSize:13,bold:true,color:DK,fontFace:FONT});
+    [{l:'Total FPTK',v:fptk.length,c:BL},{l:'MP Approved',v:hcA,c:GR},{l:'Completed',v:cmpF,c:GR},{l:'Rata SLA',v:slaAvg+'hr',c:AM}].forEach((n,i)=>{
+      const x=7.15+i*1.4;
+      sld.addText(String(n.v),{x,y:1.55,w:1.3,h:.65,fontSize:28,bold:true,color:n.c,align:'center',fontFace:FONT});
+      sld.addText(n.l,{x,y:2.2,w:1.3,h:.28,fontSize:9,color:GY,align:'center',fontFace:FONT});
     });
-    const totF2=plF+rpF+unF||1;
-    s2.addShape(pres.ShapeType.rect,{x:.5,y:4.95,w:7,h:.25,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
-    if(plF>0)s2.addShape(pres.ShapeType.rect,{x:.5,y:4.95,w:7*plF/totF2,h:.25,fill:{color:PK},line:{color:PK}});
-    if(rpF>0)s2.addShape(pres.ShapeType.rect,{x:.5+7*plF/totF2,y:4.95,w:7*rpF/totF2,h:.25,fill:{color:AM},line:{color:AM}});
-    if(unF>0)s2.addShape(pres.ShapeType.rect,{x:.5+7*(plF+rpF)/totF2,y:4.95,w:7*unF/totF2,h:.25,fill:{color:BL},line:{color:BL}});
-    s2.addText('Planned '+plF+' / Replacement '+rpF+' / Unplanned '+unF,{x:.5,y:5.25,w:7,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
+    // Komposisi MP bar (by jml_approved)
+    sld.addText('Komposisi MP (orang)',{x:7.15,y:2.55,w:5,h:.25,fontSize:9,color:GY,fontFace:FONT});
+    sld.addShape(pres.ShapeType.roundRect,{x:7.15,y:2.8,w:5.5,h:.14,fill:{color:BORDER},line:{color:BORDER},rectRadius:.07});
+    const totMP=plMP+rpMP+unMP||1;
+    let xbar=7.15;
+    [[plMP,PK],[rpMP,AM],[unMP,BL]].forEach(([v,c])=>{const w=5.5*(v||0)/totMP;if(w>0.01){sld.addShape(pres.ShapeType.roundRect,{x:xbar,y:2.8,w:Math.max(.02,w),h:.14,fill:{color:c},line:{color:c},rectRadius:.07});xbar+=w;}});
+    sld.addText('Planned '+plMP,{x:7.15,y:3.0,w:1.7,h:.22,fontSize:9,color:PK,fontFace:FONT});
+    sld.addText('Replacement '+rpMP,{x:9.0,y:3.0,w:1.8,h:.22,fontSize:9,color:AM,fontFace:FONT});
+    sld.addText('Unplanned '+unMP,{x:10.9,y:3.0,w:1.8,h:.22,fontSize:9,color:BL,fontFace:FONT});
+
+    // HC per bulan chart
+    card(sld,.4,3.4,12.5,3.6);
+    sld.addText('Headcount Masuk per Bulan',{x:.7,y:3.55,w:8,h:.4,fontSize:13,bold:true,color:DK,fontFace:FONT});
     const bMo=MF.map((_,i2)=>fptk.filter(r=>r.bulan===i2+1).reduce((s,r)=>s+(r.jml_approved||0),0));
     const mxH=Math.max(...bMo,1);
-    s2.addText('Headcount Masuk per Bulan',{x:7.8,y:.9,w:5,h:.4,fontSize:13,bold:true,color:DK,fontFace:'Calibri'});
-    bMo.forEach((v,i2)=>{const bw=Math.max(.01,5/12-.05),bx=7.8+i2*(5/12),bh=v>0?Math.max(.05,4.5*(v||0)/(mxH||1)):.04;s2.addShape(pres.ShapeType.rect,{x:bx,y:1.4+4.5-bh,w:bw,h:bh,fill:{color:v>0?GR:'D3D1C7'},line:{color:v>0?GR:'D3D1C7'}});if(v>0)s2.addText(String(v),{x:bx,y:1.4+4.5-bh-.22,w:bw,h:.2,fontSize:8,color:GR,align:'center',fontFace:'Calibri'});s2.addText(MF[i2],{x:bx,y:6.0,w:bw,h:.2,fontSize:8,color:GY,align:'center',fontFace:'Calibri'});});
-    // SO
-    s2=pres.addSlide();s2.background={color:BG};
-    s2.addText('Struktur Organisasi',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+    const chartX=.6,chartY=4.0,chartW=12.1,chartH=2.6;
+    const slotW2=chartW/12;
+    bMo.forEach((v,i)=>{
+      const bw=slotW2*.7,bx=chartX+i*slotW2+(slotW2-bw)/2;
+      const bh=v>0?Math.max(.05,chartH*(v/mxH)):.04;
+      const by=chartY+chartH-bh;
+      sld.addShape(pres.ShapeType.roundRect,{x:bx,y:by,w:bw,h:bh,fill:{color:v>0?GR:'D3D1C7'},line:{color:v>0?GR:'D3D1C7'},rectRadius:.04});
+      if(v>0)sld.addText(String(v),{x:bx,y:by-.25,w:bw,h:.22,fontSize:9,bold:true,color:GR,align:'center',fontFace:FONT});
+      sld.addText(MF[i],{x:bx,y:chartY+chartH+.05,w:bw,h:.22,fontSize:9,color:GY,align:'center',fontFace:FONT});
+    });
+
+    // ── SLIDE 4: SO ──
+    sld=pres.addSlide();sld.background={color:BG};
+    sld.addText('Struktur Organisasi',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Status pengesahan struktur organisasi per divisi',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
     const soSent=so.filter(d=>d.effective_status==='Sent to User').length;
     const soAv=so.filter(d=>!d.effective_status||d.effective_status==='Available').length;
-    [{l:'Signed All',v:soSA,c:GR},{l:'Signed by User',v:soSU,c:PK},{l:'Sent to User',v:soSent,c:AM},{l:'Available',v:soAv,c:GY}].forEach((c,i)=>{
+    const soCards2=[
+      {l:'Signed All',v:soSA,c:GR,bg:'D1FAE5'},
+      {l:'Signed by User',v:soSU,c:PK,bg:'FFE4EF'},
+      {l:'Sent to User',v:soSent,c:AM,bg:'FEF3C7'},
+      {l:'Available',v:soAv,c:GY,bg:'F3F4F6'},
+    ];
+    soCards2.forEach((c,i)=>{
       const x=.4+i*3.1;
-      s2.addShape(pres.ShapeType.roundRect,{x,y:1.1,w:2.9,h:2.0,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.1});
-      s2.addText(String(c.v),{x,y:1.2,w:2.9,h:.8,fontSize:36,bold:true,color:c.c,align:'center',fontFace:'Calibri'});
-      s2.addText(c.l,{x,y:2.0,w:2.9,h:.35,fontSize:12,bold:true,color:DK,align:'center',fontFace:'Calibri'});
-      s2.addText(p2(c.v,so.length||1)+'% dari total',{x,y:2.35,w:2.9,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+      sld.addShape(pres.ShapeType.roundRect,{x,y:1.3,w:2.9,h:1.9,fill:{color:c.bg},line:{color:c.c+'44',width:.5},rectRadius:.12});
+      sld.addText(String(c.v),{x,y:1.45,w:2.9,h:.85,fontSize:38,bold:true,color:c.c,align:'center',fontFace:FONT});
+      sld.addText(c.l,{x,y:2.3,w:2.9,h:.3,fontSize:11,bold:true,color:c.c,align:'center',fontFace:FONT});
+      sld.addText(pct(c.v,so.length||1)+'% dari total',{x,y:2.62,w:2.9,h:.28,fontSize:9,color:c.c,align:'center',fontFace:FONT,transparency:30});
     });
-    const cMso={'Signed All':GR,'Signed by User':PK,'Sent to User':AM,'Available':GY};
-    s2.addText('Detail per Divisi',{x:.5,y:3.3,w:12,h:.4,fontSize:14,bold:true,color:DK,fontFace:'Calibri'});
-    so.slice(0,15).forEach((d,i)=>{const col=Math.floor(i/5),row=i%5,x=.5+col*4.2,y=3.8+row*.55;s2.addShape(pres.ShapeType.rect,{x,y:y+.1,w:.05,h:.25,fill:{color:cMso[d.effective_status]||GY},line:{color:cMso[d.effective_status]||GY}});s2.addText((d.divisi||'').slice(0,40),{x:x+.1,y,w:3.9,h:.45,fontSize:10,color:DK,fontFace:'Calibri'});});
-    // JD
-    s2=pres.addSlide();s2.background={color:BG};
-    s2.addText('Job Description',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+    // SO divisi list
+    sld.addText('Detail per Divisi',{x:.5,y:3.45,w:12,h:.38,fontSize:13,bold:true,color:DK,fontFace:FONT});
+    const cMso2={'Signed All':GR,'Signed by User':PK,'Sent to User':AM,'Available':GY};
+    so.slice(0,15).forEach((d,i)=>{
+      const col=Math.floor(i/5),row=i%5;
+      const x=.5+col*4.2,y=3.95+row*.5;
+      const col2=cMso2[d.effective_status]||GY;
+      sld.addShape(pres.ShapeType.roundRect,{x,y:y+.08,w:.18,h:.18,fill:{color:col2+'33'},line:{color:col2,width:.5},rectRadius:.04});
+      sld.addText((d.divisi||'').slice(0,38),{x:x+.25,y,w:3.7,h:.42,fontSize:10,color:DK,fontFace:FONT});
+    });
+
+    // ── SLIDE 5: JD ──
+    sld=pres.addSlide();sld.background={color:BG};
+    sld.addText('Job Description',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Tracking status pembuatan Job Description per jabatan',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
     const jdR=jd.filter(r=>r.status==='Review by User').length;
     const jdPr=jd.filter(r=>r.status==='On Progress').length;
-    [{l:'Total Target',v:433,c:DK},{l:'Completed',v:jdC,c:BL},{l:'Review by User',v:jdR,c:PK},{l:'On Progress',v:jdPr,c:AM},{l:'Not Started',v:433-jdC-jdR-jdPr,c:GY}].forEach((c,i)=>{
+    const jdCards2=[
+      {l:'Total Target',v:433,c:DK,bg:'F8F6F0'},
+      {l:'Completed',v:jdC,c:BL,bg:'DBEAFE'},
+      {l:'Review by User',v:jdR,c:PK,bg:'FFE4EF'},
+      {l:'On Progress',v:jdPr,c:AM,bg:'FEF3C7'},
+      {l:'Not Started',v:433-jdC-jdR-jdPr,c:GY,bg:'F3F4F6'},
+    ];
+    jdCards2.forEach((c,i)=>{
       const x=.3+i*2.5;
-      s2.addShape(pres.ShapeType.roundRect,{x,y:1.1,w:2.3,h:1.5,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
-      s2.addText(String(c.v),{x,y:1.2,w:2.3,h:.7,fontSize:30,bold:true,color:c.c,align:'center',fontFace:'Calibri'});
-      s2.addText(c.l,{x,y:1.9,w:2.3,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
-      if(i>0)s2.addText(p2(c.v,433)+'%',{x,y:2.2,w:2.3,h:.28,fontSize:10,color:c.c,align:'center',fontFace:'Calibri',bold:true});
+      sld.addShape(pres.ShapeType.roundRect,{x,y:1.3,w:2.3,h:1.8,fill:{color:c.bg},line:{color:c.c+'44',width:.5},rectRadius:.12});
+      sld.addText(String(c.v),{x,y:1.42,w:2.3,h:.8,fontSize:32,bold:true,color:c.c,align:'center',fontFace:FONT});
+      sld.addText(c.l,{x,y:2.22,w:2.3,h:.3,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
+      if(i>0)sld.addText(pct(c.v,433)+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
     });
-    const pctJD=p2(jdC,433);
-    s2.addShape(pres.ShapeType.rect,{x:.5,y:2.8,w:12,h:.3,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
-    if(pctJD>0)s2.addShape(pres.ShapeType.rect,{x:.5,y:2.8,w:12*pctJD/100,h:.3,fill:{color:BL},line:{color:BL}});
-    s2.addText('Progress: '+pctJD+'%',{x:.5,y:3.18,w:8,h:.32,fontSize:12,bold:true,color:DK,fontFace:'Calibri'});
+    // Progress bar
+    const pctJD=pct(jdC,433);
+    sld.addText('Overall Progress: '+pctJD+'%',{x:.5,y:3.28,w:5,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
+    sld.addShape(pres.ShapeType.roundRect,{x:.5,y:3.7,w:12,h:.2,fill:{color:BORDER},line:{color:BORDER},rectRadius:.1});
+    if(pctJD>0)sld.addShape(pres.ShapeType.roundRect,{x:.5,y:3.7,w:Math.max(.05,12*pctJD/100),h:.2,fill:{color:BL},line:{color:BL},rectRadius:.1});
+    // Divisi breakdown
     const dGjd={};jd.forEach(r=>{if(!dGjd[r.divisi])dGjd[r.divisi]={c:0,t:0};dGjd[r.divisi].t++;if(r.status==='Completed')dGjd[r.divisi].c++;});
-    s2.addText('Jabatan per Divisi',{x:.5,y:3.6,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:'Calibri'});
+    sld.addText('Jabatan per Divisi',{x:.5,y:4.05,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
     Object.entries(dGjd).filter(([d,v])=>d&&v.t>0).sort((a,b)=>b[1].t-a[1].t).slice(0,7).forEach(([div,v],i)=>{
-      const y=4.05+i*.43;
-      s2.addText(div.slice(0,40),{x:.5,y,w:7,h:.36,fontSize:9,color:DK,fontFace:'Calibri'});
-      s2.addShape(pres.ShapeType.rect,{x:9.3,y:y+.1,w:3.5,h:.15,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
-      if(v.c>0)s2.addShape(pres.ShapeType.rect,{x:9.3,y:y+.1,w:3.5*v.c/v.t,h:.15,fill:{color:BL},line:{color:BL}});
-      s2.addText(v.c+'/'+v.t,{x:7.6,y,w:1.5,h:.36,fontSize:9,color:GY,align:'right',fontFace:'Calibri'});
+      const y=4.5+i*.42;
+      sld.addText(div.slice(0,42),{x:.5,y,w:7.5,h:.35,fontSize:9.5,color:DK,fontFace:FONT});
+      sld.addText(v.c+'/'+v.t,{x:8.1,y,w:1.3,h:.35,fontSize:9.5,color:GY,align:'right',fontFace:FONT});
+      sld.addShape(pres.ShapeType.roundRect,{x:9.6,y:y+.09,w:3,h:.16,fill:{color:BORDER},line:{color:BORDER},rectRadius:.08});
+      if(v.c>0)sld.addShape(pres.ShapeType.roundRect,{x:9.6,y:y+.09,w:Math.max(.02,3*v.c/v.t),h:.16,fill:{color:BL},line:{color:BL},rectRadius:.08});
     });
-    // PM
-    s2=pres.addSlide();s2.background={color:BG};
-    s2.addText('Performance Management',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+
+    // ── SLIDE 6: PM ──
+    sld=pres.addSlide();sld.background={color:BG};
+    sld.addText('Performance Management',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Tracking pengisian IPP & IPE per karyawan',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
     const ippWp=kpi.filter(r=>r.ipp==='Waiting Approval').length;
     const ippNp=kpi.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise'||r.ipp==='REVISE').length;
     const ipeAp=kpi.filter(r=>r.ipe==='Approved').length;
     const ipeWp=kpi.filter(r=>r.ipe==='Waiting Approval').length;
     const ipeNp=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
     const kTp=kpi.length||1;
-    [{l:'Total',v:kTp,c:DK},{l:'IPP Approved',v:ippA,c:GR,pp:p2(ippA,kTp)},{l:'IPP Pending',v:ippWp+ippNp,c:AM,pp:p2(ippWp+ippNp,kTp)},{l:'IPE Approved',v:ipeAp,c:BL,pp:p2(ipeAp,kTp)},{l:'IPE Not Yet',v:ipeNp,c:PK,pp:p2(ipeNp,kTp)}].forEach((c,i)=>{
+    const pmCards2=[
+      {l:'Total Karyawan',v:kTp,c:DK,bg:'F8F6F0'},
+      {l:'IPP Approved',v:ippA,c:GR,bg:'D1FAE5',pp:pct(ippA,kTp)},
+      {l:'IPP Pending',v:ippWp+ippNp,c:AM,bg:'FEF3C7',pp:pct(ippWp+ippNp,kTp)},
+      {l:'IPE Approved',v:ipeAp,c:BL,bg:'DBEAFE',pp:pct(ipeAp,kTp)},
+      {l:'IPE Not Yet',v:ipeNp,c:PK,bg:'FFE4EF',pp:pct(ipeNp,kTp)},
+    ];
+    pmCards2.forEach((c,i)=>{
       const x=.3+i*2.5;
-      s2.addShape(pres.ShapeType.roundRect,{x,y:1.1,w:2.3,h:1.6,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
-      s2.addText(String(c.v),{x,y:1.2,w:2.3,h:.7,fontSize:30,bold:true,color:c.c,align:'center',fontFace:'Calibri'});
-      s2.addText(c.l,{x,y:1.9,w:2.3,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
-      if(c.pp!=null)s2.addText(c.pp+'%',{x,y:2.2,w:2.3,h:.28,fontSize:10,color:c.c,align:'center',fontFace:'Calibri',bold:true});
+      sld.addShape(pres.ShapeType.roundRect,{x,y:1.3,w:2.3,h:1.9,fill:{color:c.bg},line:{color:c.c+'44',width:.5},rectRadius:.12});
+      sld.addText(String(c.v),{x,y:1.42,w:2.3,h:.8,fontSize:32,bold:true,color:c.c,align:'center',fontFace:FONT});
+      sld.addText(c.l,{x,y:2.22,w:2.3,h:.3,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
+      if(c.pp!=null)sld.addText(c.pp+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
     });
-    let xipp=.5;[[ippA,GR],[ippWp,AM],[ippNp,PK]].forEach(([v,c])=>{const w=5.5*(v||0)/(kTp||1);if(w>0.01){s2.addShape(pres.ShapeType.rect,{x:xipp,y:3.0,w:Math.max(.01,w),h:.35,fill:{color:c},line:{color:c}});xipp+=w;}});
-    s2.addText('IPP: Approved '+ippA+' / Waiting '+ippWp+' / Not Yet '+ippNp,{x:.5,y:3.4,w:6,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
-    let xipe=7.0;[[ipeAp,BL],[ipeWp,AM],[ipeNp,PK]].forEach(([v,c])=>{const w=5.5*(v||0)/(kTp||1);if(w>0.01){s2.addShape(pres.ShapeType.rect,{x:xipe,y:3.0,w:Math.max(.01,w),h:.35,fill:{color:c},line:{color:c}});xipe+=w;}});
-    s2.addText('IPE: Approved '+ipeAp+' / Waiting '+ipeWp+' / Not Yet '+ipeNp,{x:7.0,y:3.4,w:6,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
+    // IPP bar
+    sld.addText('Distribusi IPP',{x:.5,y:3.38,w:5.5,h:.32,fontSize:11,bold:true,color:DK,fontFace:FONT});
+    sld.addShape(pres.ShapeType.roundRect,{x:.5,y:3.75,w:5.5,h:.22,fill:{color:BORDER},line:{color:BORDER},rectRadius:.1});
+    let xipp=.5;[[ippA,GR],[ippWp,AM],[ippNp,PK]].forEach(([v,c])=>{const w=5.5*(v||0)/kTp;if(w>0.01){sld.addShape(pres.ShapeType.roundRect,{x:xipp,y:3.75,w:Math.max(.02,w),h:.22,fill:{color:c},line:{color:c},rectRadius:.1});xipp+=w;}});
+    sld.addText('Approved '+ippA+' / Waiting '+ippWp+' / Not Yet '+ippNp,{x:.5,y:4.05,w:5.5,h:.28,fontSize:9,color:GY,fontFace:FONT});
+    // IPE bar
+    sld.addText('Distribusi IPE',{x:7.2,y:3.38,w:5.5,h:.32,fontSize:11,bold:true,color:DK,fontFace:FONT});
+    sld.addShape(pres.ShapeType.roundRect,{x:7.2,y:3.75,w:5.5,h:.22,fill:{color:BORDER},line:{color:BORDER},rectRadius:.1});
+    let xipe=7.2;[[ipeAp,BL],[ipeWp,AM],[ipeNp,PK]].forEach(([v,c])=>{const w=5.5*(v||0)/kTp;if(w>0.01){sld.addShape(pres.ShapeType.roundRect,{x:xipe,y:3.75,w:Math.max(.02,w),h:.22,fill:{color:c},line:{color:c},rectRadius:.1});xipe+=w;}});
+    sld.addText('Approved '+ipeAp+' / Waiting '+ipeWp+' / Not Yet '+ipeNp,{x:7.2,y:4.05,w:5.5,h:.28,fontSize:9,color:GY,fontFace:FONT});
+    // Per divisi
     const dKp={};kpi.forEach(r=>{if(!dKp[r.divisi])dKp[r.divisi]={iA:0,eA:0,t:0};dKp[r.divisi].t++;if(r.ipp==='Approved')dKp[r.divisi].iA++;if(r.ipe==='Approved')dKp[r.divisi].eA++;});
-    s2.addText('IPP & IPE per Divisi',{x:.5,y:3.85,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:'Calibri'});
-    Object.entries(dKp).filter(([d,v])=>d&&v.t>0).sort((a,b)=>b[1].t-a[1].t).slice(0,7).forEach(([div,v],i)=>{
-      const y=4.25+i*.42;
-      s2.addText(div.slice(0,30),{x:.5,y,w:4.5,h:.35,fontSize:9,color:DK,fontFace:'Calibri'});
-      s2.addShape(pres.ShapeType.rect,{x:5.2,y:y+.08,w:3.5,h:.16,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
-      if(v.iA>0)s2.addShape(pres.ShapeType.rect,{x:5.2,y:y+.08,w:3.5*v.iA/v.t,h:.16,fill:{color:GR},line:{color:GR}});
-      s2.addText('IPP '+v.iA+'/'+v.t,{x:8.8,y,w:1.5,h:.35,fontSize:9,color:GY,fontFace:'Calibri'});
-      s2.addShape(pres.ShapeType.rect,{x:10.4,y:y+.08,w:2.5,h:.16,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
-      if(v.eA>0)s2.addShape(pres.ShapeType.rect,{x:10.4,y:y+.08,w:2.5*v.eA/v.t,h:.16,fill:{color:BL},line:{color:BL}});
-      s2.addText('IPE '+v.eA+'/'+v.t,{x:13.0,y,w:1.2,h:.35,fontSize:9,color:GY,fontFace:'Calibri'});
+    sld.addText('IPP & IPE per Divisi',{x:.5,y:4.45,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
+    Object.entries(dKp).filter(([d,v])=>d&&v.t>0).sort((a,b)=>b[1].t-a[1].t).slice(0,6).forEach(([div,v],i)=>{
+      const y=4.9+i*.4;
+      sld.addText(div.slice(0,32),{x:.5,y,w:4.8,h:.35,fontSize:9.5,color:DK,fontFace:FONT});
+      // IPP
+      sld.addShape(pres.ShapeType.roundRect,{x:5.5,y:y+.09,w:3,h:.16,fill:{color:BORDER},line:{color:BORDER},rectRadius:.08});
+      if(v.iA>0)sld.addShape(pres.ShapeType.roundRect,{x:5.5,y:y+.09,w:Math.max(.02,3*v.iA/v.t),h:.16,fill:{color:GR},line:{color:GR},rectRadius:.08});
+      sld.addText('IPP '+v.iA+'/'+v.t,{x:8.6,y,w:1.5,h:.35,fontSize:9,color:GY,fontFace:FONT});
+      // IPE
+      sld.addShape(pres.ShapeType.roundRect,{x:10.3,y:y+.09,w:2.5,h:.16,fill:{color:BORDER},line:{color:BORDER},rectRadius:.08});
+      if(v.eA>0)sld.addShape(pres.ShapeType.roundRect,{x:10.3,y:y+.09,w:Math.max(.02,2.5*v.eA/v.t),h:.16,fill:{color:BL},line:{color:BL},rectRadius:.08});
+      sld.addText('IPE '+v.eA+'/'+v.t,{x:12.9,y,w:1.2,h:.35,fontSize:9,color:GY,fontFace:FONT});
     });
+
     await pres.writeFile({fileName:'OD_Hub_'+new Date().toISOString().slice(0,10)+'.pptx'});
   }catch(e){
-    console.error('PPT Error full:', e);
-    alert('Gagal export PPT: '+(e.message||e.toString()||JSON.stringify(e)));
+    console.error('PPT Error:',e);
+    alert('Gagal export PPT: '+(e.message||e.toString()||'Unknown error'));
   }finally{
     const b=document.querySelector('[onclick="exportPPT()"]');
     if(b){b.textContent='Export PowerPoint';b.disabled=false;}
   }
 }
-
 </script>
 </body>
 </html>
