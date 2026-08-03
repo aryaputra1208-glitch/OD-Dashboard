@@ -168,7 +168,7 @@ canvas{display:block;width:100%}
       <button class="btn" id="export-btn" onclick="toggleExportMenu()">↓ Export ▾</button>
       <div id="export-menu">
         <button onclick="exportCSV();toggleExportMenu()"><svg class="ic"><use href="#i-file"/></svg> Export CSV</button>
-        <button onclick="alert('Coming soon')"><svg class="ic"><use href="#i-chart"/></svg> Export PowerPoint</button>
+        <button onclick="exportPPT()"><svg class="ic"><use href="#i-chart"/></svg> Export PowerPoint</button>
       </div>
     </div>
     <button class="btn btn-pink" id="refresh-btn" onclick="refreshData()">↺ Refresh Data</button>
@@ -1396,6 +1396,164 @@ document.addEventListener('DOMContentLoaded',async function(){
     console.error('Init fetch error:',e);
   }
 });
+
+async function exportPPT(){
+  const btn=document.querySelector('[onclick="exportPPT()"]');
+  if(btn){btn.textContent='Membuat PPT...';btn.disabled=true;}
+  try{
+    if(!window.PptxGenJS){
+      await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+    }
+    const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
+    const PK='E8197D',GR='1D9E75',BL='3D9BE9',PU='7C3AED',AM='E8A020',BG='F5F3EE',WH='FFFFFF',DK='111111',GY='999999';
+    function p2(a,b){return b>0?Math.round(a/b*100):0;}
+    const fptk=D.fptk||[],so=D.so||[],jd=D.jd||[],kpi=D.kpi||[];
+    const mT=mppPlan('',-1),mBu=mppBuy('',-1),mBl=mppBuild('',-1);
+    const plA=fptk.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const gap3=Math.max(0,mT-plA);
+    const jdC=jd.filter(r=>r.status==='Completed').length;
+    const soSA=so.filter(d=>d.effective_status==='Signed All').length;
+    const soSU=so.filter(d=>d.effective_status==='Signed by User').length;
+    const ippA=kpi.filter(r=>r.ipp==='Approved').length;
+    // COVER
+    let s2=pres.addSlide();s2.background={color:PK};
+    s2.addText('OD Hub',{x:.6,y:2.2,w:12,h:1.2,fontSize:52,bold:true,color:WH,fontFace:'Calibri'});
+    s2.addText('Organization Development Dashboard - Anteraja',{x:.6,y:3.4,w:10,h:.5,fontSize:18,color:WH,fontFace:'Calibri'});
+    s2.addText(new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}),{x:.6,y:4.2,w:6,h:.4,fontSize:14,color:WH,fontFace:'Calibri'});
+    // SUMMARY
+    s2=pres.addSlide();s2.background={color:BG};
+    s2.addText('Ringkasan OD',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+    [{label:'MPP & Realisasi',color:PK,val:p2(plA,mT||1)+'%',sub:'Achievement Rate YTD'},
+     {label:'Struktur Organisasi',color:GR,val:p2(soSA+soSU,so.length||1)+'%',sub:'Divisi Signed'},
+     {label:'Job Description',color:BL,val:p2(jdC,433)+'%',sub:'Completion dari 433 jabatan'},
+     {label:'Performance Mgmt',color:PU,val:p2(ippA,kpi.length||1)+'%',sub:'IPP Approved'}
+    ].forEach((c,i)=>{
+      const x=.4+i*3.1;
+      s2.addShape(pres.ShapeType.roundRect,{x,y:1.4,w:2.9,h:3.0,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.1});
+      s2.addText(c.val,{x,y:1.8,w:2.9,h:.9,fontSize:36,bold:true,color:c.color,align:'center',fontFace:'Calibri'});
+      s2.addText(c.label,{x,y:2.8,w:2.9,h:.35,fontSize:11,bold:true,color:DK,align:'center',fontFace:'Calibri'});
+      s2.addText(c.sub,{x,y:3.15,w:2.9,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+      const pctb=parseInt(c.val)/100;
+      s2.addShape(pres.ShapeType.rect,{x:x+.25,y:3.65,w:2.4,h:.12,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
+      if(pctb>0)s2.addShape(pres.ShapeType.rect,{x:x+.25,y:3.65,w:2.4*Math.min(pctb,1),h:.12,fill:{color:c.color},line:{color:c.color}});
+    });
+    // MPP & FPTK
+    s2=pres.addSlide();s2.background={color:BG};
+    s2.addText('MPP & Realisasi',{x:.5,y:.3,w:8,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+    s2.addShape(pres.ShapeType.rect,{x:.5,y:.88,w:.06,h:.5,fill:{color:PK},line:{color:PK}});
+    s2.addText('MPP Plan 2026',{x:.65,y:.9,w:5,h:.4,fontSize:14,bold:true,color:DK,fontFace:'Calibri'});
+    [{l:'Total Plan',v:mT,c:DK},{l:'Gap Planned',v:gap3,c:AM},{l:'Plan Buy',v:mBu,c:GR},{l:'Plan Build',v:mBl,c:BL}].forEach((n,i)=>{
+      const x=.4+i*1.75;
+      s2.addShape(pres.ShapeType.roundRect,{x,y:1.5,w:1.6,h:1.1,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
+      s2.addText(String(n.v),{x,y:1.6,w:1.6,h:.55,fontSize:26,bold:true,color:n.c,align:'center',fontFace:'Calibri'});
+      s2.addText(n.l,{x,y:2.15,w:1.6,h:.35,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+    });
+    s2.addShape(pres.ShapeType.rect,{x:.5,y:2.85,w:.06,h:.5,fill:{color:GR},line:{color:GR}});
+    s2.addText('FPTK Realisasi YTD',{x:.65,y:2.87,w:5,h:.4,fontSize:14,bold:true,color:DK,fontFace:'Calibri'});
+    const hcA=fptk.reduce((s,r)=>s+(r.jml_approved||0),0);
+    const cmpF=fptk.filter(r=>r.status==='Completed').length;
+    const slaArr=fptk.filter(r=>r.sla!=null);
+    const slaAvg3=slaArr.length?Math.round(slaArr.reduce((s,r)=>s+r.sla,0)/slaArr.length):0;
+    const plF=fptk.filter(r=>r.planned==='Planned').length;
+    const rpF=fptk.filter(r=>r.planned==='Replacement').length;
+    const unF=fptk.filter(r=>r.planned==='Unplanned').length;
+    [{l:'Total FPTK',v:fptk.length,c:BL},{l:'MP Approved',v:hcA,c:GR},{l:'Completed',v:cmpF,c:GR},{l:'Rata SLA',v:slaAvg3+'hr',c:AM}].forEach((n,i)=>{
+      const x=.4+i*1.75;
+      s2.addShape(pres.ShapeType.roundRect,{x,y:3.4,w:1.6,h:1.1,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
+      s2.addText(String(n.v),{x,y:3.5,w:1.6,h:.55,fontSize:26,bold:true,color:n.c,align:'center',fontFace:'Calibri'});
+      s2.addText(n.l,{x,y:4.05,w:1.6,h:.35,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+    });
+    const totF2=plF+rpF+unF||1;
+    s2.addShape(pres.ShapeType.rect,{x:.5,y:4.95,w:7,h:.25,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
+    if(plF>0)s2.addShape(pres.ShapeType.rect,{x:.5,y:4.95,w:7*plF/totF2,h:.25,fill:{color:PK},line:{color:PK}});
+    if(rpF>0)s2.addShape(pres.ShapeType.rect,{x:.5+7*plF/totF2,y:4.95,w:7*rpF/totF2,h:.25,fill:{color:AM},line:{color:AM}});
+    if(unF>0)s2.addShape(pres.ShapeType.rect,{x:.5+7*(plF+rpF)/totF2,y:4.95,w:7*unF/totF2,h:.25,fill:{color:BL},line:{color:BL}});
+    s2.addText('Planned '+plF+' / Replacement '+rpF+' / Unplanned '+unF,{x:.5,y:5.25,w:7,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
+    const bMo=MF.map((_,i2)=>fptk.filter(r=>r.bulan===i2+1).reduce((s,r)=>s+(r.jml_approved||0),0));
+    const mxH=Math.max(...bMo,1);
+    s2.addText('Headcount Masuk per Bulan',{x:7.8,y:.9,w:5,h:.4,fontSize:13,bold:true,color:DK,fontFace:'Calibri'});
+    bMo.forEach((v,i2)=>{const bw=5/12-.05,bx=7.8+i2*(5/12),bh=v>0?Math.max(.05,4.5*v/mxH):.04;s2.addShape(pres.ShapeType.rect,{x:bx,y:1.4+4.5-bh,w:bw,h:bh,fill:{color:v>0?GR:'D3D1C7'},line:{color:v>0?GR:'D3D1C7'}});if(v>0)s2.addText(String(v),{x:bx,y:1.4+4.5-bh-.22,w:bw,h:.2,fontSize:8,color:GR,align:'center',fontFace:'Calibri'});s2.addText(MF[i2],{x:bx,y:6.0,w:bw,h:.2,fontSize:8,color:GY,align:'center',fontFace:'Calibri'});});
+    // SO
+    s2=pres.addSlide();s2.background={color:BG};
+    s2.addText('Struktur Organisasi',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+    const soSent=so.filter(d=>d.effective_status==='Sent to User').length;
+    const soAv=so.filter(d=>!d.effective_status||d.effective_status==='Available').length;
+    [{l:'Signed All',v:soSA,c:GR},{l:'Signed by User',v:soSU,c:PK},{l:'Sent to User',v:soSent,c:AM},{l:'Available',v:soAv,c:GY}].forEach((c,i)=>{
+      const x=.4+i*3.1;
+      s2.addShape(pres.ShapeType.roundRect,{x,y:1.1,w:2.9,h:2.0,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.1});
+      s2.addText(String(c.v),{x,y:1.2,w:2.9,h:.8,fontSize:36,bold:true,color:c.c,align:'center',fontFace:'Calibri'});
+      s2.addText(c.l,{x,y:2.0,w:2.9,h:.35,fontSize:12,bold:true,color:DK,align:'center',fontFace:'Calibri'});
+      s2.addText(p2(c.v,so.length||1)+'% dari total',{x,y:2.35,w:2.9,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+    });
+    const cMso={'Signed All':GR,'Signed by User':PK,'Sent to User':AM,'Available':GY};
+    s2.addText('Detail per Divisi',{x:.5,y:3.3,w:12,h:.4,fontSize:14,bold:true,color:DK,fontFace:'Calibri'});
+    so.slice(0,15).forEach((d,i)=>{const col=Math.floor(i/5),row=i%5,x=.5+col*4.2,y=3.8+row*.55;s2.addShape(pres.ShapeType.rect,{x,y:y+.1,w:.05,h:.25,fill:{color:cMso[d.effective_status]||GY},line:{color:cMso[d.effective_status]||GY}});s2.addText((d.divisi||'').slice(0,40),{x:x+.1,y,w:3.9,h:.45,fontSize:10,color:DK,fontFace:'Calibri'});});
+    // JD
+    s2=pres.addSlide();s2.background={color:BG};
+    s2.addText('Job Description',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+    const jdR=jd.filter(r=>r.status==='Review by User').length;
+    const jdPr=jd.filter(r=>r.status==='On Progress').length;
+    [{l:'Total Target',v:433,c:DK},{l:'Completed',v:jdC,c:BL},{l:'Review by User',v:jdR,c:PK},{l:'On Progress',v:jdPr,c:AM},{l:'Not Started',v:433-jdC-jdR-jdPr,c:GY}].forEach((c,i)=>{
+      const x=.3+i*2.5;
+      s2.addShape(pres.ShapeType.roundRect,{x,y:1.1,w:2.3,h:1.5,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
+      s2.addText(String(c.v),{x,y:1.2,w:2.3,h:.7,fontSize:30,bold:true,color:c.c,align:'center',fontFace:'Calibri'});
+      s2.addText(c.l,{x,y:1.9,w:2.3,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+      if(i>0)s2.addText(p2(c.v,433)+'%',{x,y:2.2,w:2.3,h:.28,fontSize:10,color:c.c,align:'center',fontFace:'Calibri',bold:true});
+    });
+    const pctJD=p2(jdC,433);
+    s2.addShape(pres.ShapeType.rect,{x:.5,y:2.8,w:12,h:.3,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
+    if(pctJD>0)s2.addShape(pres.ShapeType.rect,{x:.5,y:2.8,w:12*pctJD/100,h:.3,fill:{color:BL},line:{color:BL}});
+    s2.addText('Progress: '+pctJD+'%',{x:.5,y:3.18,w:8,h:.32,fontSize:12,bold:true,color:DK,fontFace:'Calibri'});
+    const dGjd={};jd.forEach(r=>{if(!dGjd[r.divisi])dGjd[r.divisi]={c:0,t:0};dGjd[r.divisi].t++;if(r.status==='Completed')dGjd[r.divisi].c++;});
+    s2.addText('Jabatan per Divisi',{x:.5,y:3.6,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:'Calibri'});
+    Object.entries(dGjd).filter(([d,v])=>d&&v.t>0).sort((a,b)=>b[1].t-a[1].t).slice(0,7).forEach(([div,v],i)=>{
+      const y=4.05+i*.43;
+      s2.addText(div.slice(0,40),{x:.5,y,w:7,h:.36,fontSize:9,color:DK,fontFace:'Calibri'});
+      s2.addShape(pres.ShapeType.rect,{x:9.3,y:y+.1,w:3.5,h:.15,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
+      if(v.c>0)s2.addShape(pres.ShapeType.rect,{x:9.3,y:y+.1,w:3.5*v.c/v.t,h:.15,fill:{color:BL},line:{color:BL}});
+      s2.addText(v.c+'/'+v.t,{x:7.6,y,w:1.5,h:.36,fontSize:9,color:GY,align:'right',fontFace:'Calibri'});
+    });
+    // PM
+    s2=pres.addSlide();s2.background={color:BG};
+    s2.addText('Performance Management',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
+    const ippWp=kpi.filter(r=>r.ipp==='Waiting Approval').length;
+    const ippNp=kpi.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise'||r.ipp==='REVISE').length;
+    const ipeAp=kpi.filter(r=>r.ipe==='Approved').length;
+    const ipeWp=kpi.filter(r=>r.ipe==='Waiting Approval').length;
+    const ipeNp=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
+    const kTp=kpi.length||1;
+    [{l:'Total',v:kTp,c:DK},{l:'IPP Approved',v:ippA,c:GR,pp:p2(ippA,kTp)},{l:'IPP Pending',v:ippWp+ippNp,c:AM,pp:p2(ippWp+ippNp,kTp)},{l:'IPE Approved',v:ipeAp,c:BL,pp:p2(ipeAp,kTp)},{l:'IPE Not Yet',v:ipeNp,c:PK,pp:p2(ipeNp,kTp)}].forEach((c,i)=>{
+      const x=.3+i*2.5;
+      s2.addShape(pres.ShapeType.roundRect,{x,y:1.1,w:2.3,h:1.6,fill:{color:WH},line:{color:'E4E2DC',width:.5},rectRadius:.08});
+      s2.addText(String(c.v),{x,y:1.2,w:2.3,h:.7,fontSize:30,bold:true,color:c.c,align:'center',fontFace:'Calibri'});
+      s2.addText(c.l,{x,y:1.9,w:2.3,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
+      if(c.pp!=null)s2.addText(c.pp+'%',{x,y:2.2,w:2.3,h:.28,fontSize:10,color:c.c,align:'center',fontFace:'Calibri',bold:true});
+    });
+    let xipp=.5;[[ippA,GR],[ippWp,AM],[ippNp,PK]].forEach(([v,c])=>{const w=5.5*v/kTp;if(w>0){s2.addShape(pres.ShapeType.rect,{x:xipp,y:3.0,w,h:.35,fill:{color:c},line:{color:c}});xipp+=w;}});
+    s2.addText('IPP: Approved '+ippA+' / Waiting '+ippWp+' / Not Yet '+ippNp,{x:.5,y:3.4,w:6,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
+    let xipe=7.0;[[ipeAp,BL],[ipeWp,AM],[ipeNp,PK]].forEach(([v,c])=>{const w=5.5*v/kTp;if(w>0){s2.addShape(pres.ShapeType.rect,{x:xipe,y:3.0,w,h:.35,fill:{color:c},line:{color:c}});xipe+=w;}});
+    s2.addText('IPE: Approved '+ipeAp+' / Waiting '+ipeWp+' / Not Yet '+ipeNp,{x:7.0,y:3.4,w:6,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
+    const dKp={};kpi.forEach(r=>{if(!dKp[r.divisi])dKp[r.divisi]={iA:0,eA:0,t:0};dKp[r.divisi].t++;if(r.ipp==='Approved')dKp[r.divisi].iA++;if(r.ipe==='Approved')dKp[r.divisi].eA++;});
+    s2.addText('IPP & IPE per Divisi',{x:.5,y:3.85,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:'Calibri'});
+    Object.entries(dKp).filter(([d,v])=>d&&v.t>0).sort((a,b)=>b[1].t-a[1].t).slice(0,7).forEach(([div,v],i)=>{
+      const y=4.25+i*.42;
+      s2.addText(div.slice(0,30),{x:.5,y,w:4.5,h:.35,fontSize:9,color:DK,fontFace:'Calibri'});
+      s2.addShape(pres.ShapeType.rect,{x:5.2,y:y+.08,w:3.5,h:.16,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
+      if(v.iA>0)s2.addShape(pres.ShapeType.rect,{x:5.2,y:y+.08,w:3.5*v.iA/v.t,h:.16,fill:{color:GR},line:{color:GR}});
+      s2.addText('IPP '+v.iA+'/'+v.t,{x:8.8,y,w:1.5,h:.35,fontSize:9,color:GY,fontFace:'Calibri'});
+      s2.addShape(pres.ShapeType.rect,{x:10.4,y:y+.08,w:2.5,h:.16,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
+      if(v.eA>0)s2.addShape(pres.ShapeType.rect,{x:10.4,y:y+.08,w:2.5*v.eA/v.t,h:.16,fill:{color:BL},line:{color:BL}});
+      s2.addText('IPE '+v.eA+'/'+v.t,{x:13.0,y,w:1.2,h:.35,fontSize:9,color:GY,fontFace:'Calibri'});
+    });
+    await pres.writeFile({fileName:'OD_Hub_'+new Date().toISOString().slice(0,10)+'.pptx'});
+  }catch(e){
+    alert('Gagal export PPT: '+e.message);
+  }finally{
+    const b=document.querySelector('[onclick="exportPPT()"]');
+    if(b){b.textContent='Export PowerPoint';b.disabled=false;}
+  }
+}
+
 </script>
 </body>
 </html>
