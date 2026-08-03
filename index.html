@@ -1435,7 +1435,7 @@ async function exportPPT(){
       s2.addText(c.sub,{x,y:3.15,w:2.9,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
       const pctb=parseInt(c.val)/100;
       s2.addShape(pres.ShapeType.rect,{x:x+.25,y:3.65,w:2.4,h:.12,fill:{color:'E4E2DC'},line:{color:'E4E2DC'}});
-      if(pctb>0)s2.addShape(pres.ShapeType.rect,{x:x+.25,y:3.65,w:2.4*Math.min(pctb,1),h:.12,fill:{color:c.color},line:{color:c.color}});
+      if(pctb>0&&pctb<=1)s2.addShape(pres.ShapeType.rect,{x:x+.25,y:3.65,w:Math.max(.01,2.4*pctb),h:.12,fill:{color:c.color},line:{color:c.color}});
     });
     // MPP & FPTK
     s2=pres.addSlide();s2.background={color:BG};
@@ -1472,7 +1472,7 @@ async function exportPPT(){
     const bMo=MF.map((_,i2)=>fptk.filter(r=>r.bulan===i2+1).reduce((s,r)=>s+(r.jml_approved||0),0));
     const mxH=Math.max(...bMo,1);
     s2.addText('Headcount Masuk per Bulan',{x:7.8,y:.9,w:5,h:.4,fontSize:13,bold:true,color:DK,fontFace:'Calibri'});
-    bMo.forEach((v,i2)=>{const bw=5/12-.05,bx=7.8+i2*(5/12),bh=v>0?Math.max(.05,4.5*v/mxH):.04;s2.addShape(pres.ShapeType.rect,{x:bx,y:1.4+4.5-bh,w:bw,h:bh,fill:{color:v>0?GR:'D3D1C7'},line:{color:v>0?GR:'D3D1C7'}});if(v>0)s2.addText(String(v),{x:bx,y:1.4+4.5-bh-.22,w:bw,h:.2,fontSize:8,color:GR,align:'center',fontFace:'Calibri'});s2.addText(MF[i2],{x:bx,y:6.0,w:bw,h:.2,fontSize:8,color:GY,align:'center',fontFace:'Calibri'});});
+    bMo.forEach((v,i2)=>{const bw=Math.max(.01,5/12-.05),bx=7.8+i2*(5/12),bh=v>0?Math.max(.05,4.5*(v||0)/(mxH||1)):.04;s2.addShape(pres.ShapeType.rect,{x:bx,y:1.4+4.5-bh,w:bw,h:bh,fill:{color:v>0?GR:'D3D1C7'},line:{color:v>0?GR:'D3D1C7'}});if(v>0)s2.addText(String(v),{x:bx,y:1.4+4.5-bh-.22,w:bw,h:.2,fontSize:8,color:GR,align:'center',fontFace:'Calibri'});s2.addText(MF[i2],{x:bx,y:6.0,w:bw,h:.2,fontSize:8,color:GY,align:'center',fontFace:'Calibri'});});
     // SO
     s2=pres.addSlide();s2.background={color:BG};
     s2.addText('Struktur Organisasi',{x:.5,y:.3,w:12,h:.6,fontSize:28,bold:true,color:DK,fontFace:'Calibri'});
@@ -1529,9 +1529,9 @@ async function exportPPT(){
       s2.addText(c.l,{x,y:1.9,w:2.3,h:.3,fontSize:10,color:GY,align:'center',fontFace:'Calibri'});
       if(c.pp!=null)s2.addText(c.pp+'%',{x,y:2.2,w:2.3,h:.28,fontSize:10,color:c.c,align:'center',fontFace:'Calibri',bold:true});
     });
-    let xipp=.5;[[ippA,GR],[ippWp,AM],[ippNp,PK]].forEach(([v,c])=>{const w=5.5*v/kTp;if(w>0){s2.addShape(pres.ShapeType.rect,{x:xipp,y:3.0,w,h:.35,fill:{color:c},line:{color:c}});xipp+=w;}});
+    let xipp=.5;[[ippA,GR],[ippWp,AM],[ippNp,PK]].forEach(([v,c])=>{const w=5.5*(v||0)/(kTp||1);if(w>0.01){s2.addShape(pres.ShapeType.rect,{x:xipp,y:3.0,w:Math.max(.01,w),h:.35,fill:{color:c},line:{color:c}});xipp+=w;}});
     s2.addText('IPP: Approved '+ippA+' / Waiting '+ippWp+' / Not Yet '+ippNp,{x:.5,y:3.4,w:6,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
-    let xipe=7.0;[[ipeAp,BL],[ipeWp,AM],[ipeNp,PK]].forEach(([v,c])=>{const w=5.5*v/kTp;if(w>0){s2.addShape(pres.ShapeType.rect,{x:xipe,y:3.0,w,h:.35,fill:{color:c},line:{color:c}});xipe+=w;}});
+    let xipe=7.0;[[ipeAp,BL],[ipeWp,AM],[ipeNp,PK]].forEach(([v,c])=>{const w=5.5*(v||0)/(kTp||1);if(w>0.01){s2.addShape(pres.ShapeType.rect,{x:xipe,y:3.0,w:Math.max(.01,w),h:.35,fill:{color:c},line:{color:c}});xipe+=w;}});
     s2.addText('IPE: Approved '+ipeAp+' / Waiting '+ipeWp+' / Not Yet '+ipeNp,{x:7.0,y:3.4,w:6,h:.3,fontSize:10,color:GY,fontFace:'Calibri'});
     const dKp={};kpi.forEach(r=>{if(!dKp[r.divisi])dKp[r.divisi]={iA:0,eA:0,t:0};dKp[r.divisi].t++;if(r.ipp==='Approved')dKp[r.divisi].iA++;if(r.ipe==='Approved')dKp[r.divisi].eA++;});
     s2.addText('IPP & IPE per Divisi',{x:.5,y:3.85,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:'Calibri'});
@@ -1547,7 +1547,8 @@ async function exportPPT(){
     });
     await pres.writeFile({fileName:'OD_Hub_'+new Date().toISOString().slice(0,10)+'.pptx'});
   }catch(e){
-    alert('Gagal export PPT: '+e.message);
+    console.error('PPT Error full:', e);
+    alert('Gagal export PPT: '+(e.message||e.toString()||JSON.stringify(e)));
   }finally{
     const b=document.querySelector('[onclick="exportPPT()"]');
     if(b){b.textContent='Export PowerPoint';b.disabled=false;}
