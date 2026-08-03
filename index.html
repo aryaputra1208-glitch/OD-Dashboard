@@ -1402,7 +1402,13 @@ async function exportPPT(){
   if(btn){btn.textContent='Membuat PPT...';btn.disabled=true;}
   try{
     if(!window.PptxGenJS){
-      await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+        s.onload=res;
+        s.onerror=function(e){rej(new Error('Gagal load library PPT. Cek koneksi internet.'));};
+        document.head.appendChild(s);
+      });
     }
     const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
     const PK='E8197D',GR='1D9E75',BL='3D9BE9',PU='7C3AED',AM='E8A020',BG='F5F3EE',WH='FFFFFF',DK='111111',GY='999999';
