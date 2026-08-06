@@ -588,7 +588,7 @@ let currentPage='landing';
 let currentMPPTab='overview';
 const MF=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
 const SLA_T=5;
-const JD_TOTAL_TARGET=433;
+const JD_TOTAL_TARGET=552;
 
 // HELPERS
 function pc(a,b){return b>0?Math.round(a/b*100):0;}
@@ -1533,18 +1533,23 @@ const MF_KEYS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov'
 const BUY_COLS=[10,12,14,16,18,20,22,24,26,28,30,32];
 const BUILD_COLS=[11,13,15,17,19,21,23,25,27,29,31,33];
 
+const JD_TARGET_FALLBACK={"Business Collaboration & Implementation": 2, "Ecosystem Support": 1, "Human Capital": 47, "Brand & Business Ecosystem": 20, "Business Operation & Monitoring Support": 37, "Business Process & Risk Management": 8, "Customer Experience": 4, "E-Fulfillment": 20, "Finance": 54, "Internal Audit & Anti Fraud": 9, "IT Development": 50, "IT Operation": 12, "IT Product Management & Technology Innovation": 45, "IT Services & IT Project Coordination": 10, "Operation": 184, "Sales, Growth & Customer Experience": 41, "Warehouse & Fulfillment Services": 8};
 async function fetchJDTarget(){
   try{
     const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/JD%20Target?key='+API_KEY;
     const r=await fetch(url);
     const d=await r.json();
     const rows=(d.values||[]).slice(1);
+    if(!rows.length)return JD_TARGET_FALLBACK;
     const targets={};
     rows.filter(r=>r[0]&&r[1]).forEach(r=>{
       targets[(r[0]||'').toString().trim()]=(parseInt(r[1])||0);
     });
-    return targets;
-  }catch(e){console.warn('fetchJDTarget failed:',e);return{};}
+    return Object.keys(targets).length?targets:JD_TARGET_FALLBACK;
+  }catch(e){
+    console.warn('fetchJDTarget using fallback:',e);
+    return JD_TARGET_FALLBACK;
+  }
 }
 async function fetchAllData(){
   const sheetNames=['FPTK KJ 3Up','MPP','SO','Job Description','KPI','Master Karyawan'];
