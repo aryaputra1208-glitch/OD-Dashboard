@@ -1380,7 +1380,13 @@ function renderJDDivisi(jd, targets){
     const prog=dr.filter(r=>r.status==='On Progress').length;
     const actual=comp+sign+rev+prog;
     return{d,target,comp,sign,rev,prog,actual};
-  }).sort((a,b)=>(b.comp+b.sign)-(a.comp+a.sign));
+  }).sort((a,b)=>{
+    const da=a.comp+a.sign,db=b.comp+b.sign;
+    if(da===0&&db===0)return 0;
+    if(da===0)return 1;
+    if(db===0)return -1;
+    return db-da;
+  });
 
   el.innerHTML=divData.map((v,i)=>{
     const border=i<divData.length-1?'border-bottom:.5px solid var(--border)':'';
