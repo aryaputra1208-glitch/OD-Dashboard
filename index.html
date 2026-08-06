@@ -532,7 +532,7 @@ canvas{display:block;width:100%}
         <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--red);margin-right:3px"></span>Not Yet</span>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 160px 160px;gap:8px;padding:6px 8px;background:var(--bg);border-radius:6px;margin-bottom:6px">
+    <div style="display:grid;grid-template-columns:1fr 210px 210px;gap:8px;padding:6px 8px;background:var(--bg);border-radius:6px;margin-bottom:6px">
       <div style="font-size:10px;font-weight:600;color:var(--tx3)">DIVISI</div>
       <div style="font-size:10px;font-weight:600;color:var(--purple)">IPP</div>
       <div style="font-size:10px;font-weight:600;color:var(--blue)">IPE</div>
@@ -1202,7 +1202,7 @@ function renderPM(){
         statRows([['Approved',ippA,'var(--green)'],['Waiting Approval',ippW,'var(--amber)'],['Not Yet / Revise',ippN,'var(--red)']]),
         [[ippA,'var(--green)'],[ippW,'var(--amber)'],[ippN,'var(--red)']],tot)+
       summaryCard('IPE','Individual Performance Evaluation',ipeA+' / '+tot,pc(ipeA,tot),'var(--blue)',
-        statRows([['Approved',ipeA,'var(--green)'],['Draft',ipeD,'var(--blue)'],['Waiting',ipeW,'var(--amber)'],['Not Yet / Revise',ipeN,'var(--red)']]),
+        statRows([['Approved',ipeA,'var(--green)'],['Draft',ipeD,'var(--blue)'],['Waiting Approval',ipeW,'var(--amber)'],['Not Yet / Revise',ipeN,'var(--red)']]),
         [[ipeA,'var(--green)'],[ipeD,'var(--blue)'],[ipeW,'var(--amber)'],[ipeN,'var(--red)']],tot);
   }
 
@@ -1234,7 +1234,7 @@ function renderPM(){
           '</div>'+
           '<div style="display:flex;gap:8px;margin-top:4px;font-size:9px;color:var(--tx3)">'+
             (iA>0?'<span style="color:var(--green)">Approved '+iA+'</span>':'')+
-            (iW>0?'<span style="color:var(--amber)">Waiting '+iW+'</span>':'')+
+            (iW>0?'<span style="color:var(--amber)">Waiting Approval '+iW+'</span>':'')+
             (iN>0?'<span style="color:var(--red)">Not Yet '+iN+'</span>':'')+
           '</div>'+
         '</div>'+
@@ -1250,7 +1250,7 @@ function renderPM(){
           '<div style="display:flex;gap:8px;margin-top:4px;font-size:9px;color:var(--tx3)">'+
             (eA>0?'<span style="color:var(--green)">Approved '+eA+'</span>':'')+
             (eD>0?'<span style="color:var(--blue)">Draft '+eD+'</span>':'')+
-            (eW>0?'<span style="color:var(--amber)">Waiting '+eW+'</span>':'')+
+            (eW>0?'<span style="color:var(--amber)">Waiting Approval '+eW+'</span>':'')+
             (eN>0?'<span style="color:var(--red)">Not Yet '+eN+'</span>':'')+
           '</div>'+
         '</div>'+
@@ -1275,9 +1275,9 @@ function renderPM(){
     }).sort((a,b)=>pc(a.iA,a.n)-pc(b.iA,b.n));
 
     divEl.innerHTML=divData.map((v,i)=>{
-      const dn=v.d.length>30?v.d.slice(0,30)+'...':v.d;
+      const dn=v.d;
       const border=i<divData.length-1?'border-bottom:.5px solid var(--border)':'';
-      return '<div style="display:grid;grid-template-columns:1fr 160px 160px;gap:8px;padding:9px 8px;'+border+'">'+
+      return '<div style="display:grid;grid-template-columns:1fr 210px 210px;gap:8px;padding:9px 8px;'+border+'">'+
         '<div><div style="font-size:11px;font-weight:500;color:var(--tx)">'+dn+'</div>'+
           '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+v.n+' orang</div></div>'+
         '<div style="display:flex;flex-direction:column;justify-content:center">'+
