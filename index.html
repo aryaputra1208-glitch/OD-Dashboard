@@ -440,8 +440,12 @@ canvas{display:block;width:100%}
 <div class="page" id="page-jd">
   <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
   <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking status JD per jabatan · 2026</div>
-  <!-- Weekly Report -->
-  <div class="card">
+
+  <!-- JD KPI -->
+  <div class="r3" style="margin-bottom:14px" id="jd-kpi-row"></div>
+
+  <!-- Weekly Report (as-is) -->
+  <div class="card" style="margin-bottom:14px">
     <div class="chdr">
       <div><div class="ct">Weekly Progress Report</div><div class="cs">Progres kumulatif Job Description per minggu</div></div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -477,18 +481,27 @@ canvas{display:block;width:100%}
       <div id="jd-save-status" style="margin-top:8px;font-size:11px;display:none"></div>
     </div>
   </div>
-  <!-- JD KPI -->
-  <div class="r3" style="margin-bottom:0" id="jd-kpi-row"></div>
-  <!-- JD Detail Table -->
+
+  <!-- Breakdown per Divisi -->
   <div class="card">
     <div class="chdr">
-      <div><div class="ct">Job Description</div><div class="cs" id="jd-sub">Memuat dari Google Sheets...</div></div>
-      <div class="filter-bar" style="margin:0">
-        <select class="tf" id="jd-filter-status" onchange="renderJD()"><option value="">Semua Status</option><option>Completed</option><option>Review by User</option><option>On Progress</option><option>Not Started</option></select>
-        <select class="tf" id="jd-filter-divisi" onchange="renderJD()"><option value="">Semua Divisi</option></select>
+      <div><div class="ct">Breakdown per Divisi</div><div class="cs">Diurutkan dari progress terendah</div></div>
+      <div style="display:flex;gap:10px;font-size:10px;color:var(--tx3);align-items:center">
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--blue);margin-right:3px"></span>Completed</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--green);margin-right:3px"></span>Signing</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--pink);margin-right:3px"></span>Review by User</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--amber);margin-right:3px"></span>On Progress</span>
       </div>
     </div>
-    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Divisi</th><th>Department</th><th>Level</th><th>Jabatan</th><th>Status</th></tr></thead><tbody id="jd-tbody"></tbody></table></div>
+    <!-- Header row -->
+    <div style="display:grid;grid-template-columns:200px 1fr 60px;gap:12px;padding:6px 8px;background:var(--bg);border-radius:var(--rs);margin-bottom:6px">
+      <div style="font-size:10px;font-weight:600;color:var(--tx3)">DIVISI</div>
+      <div style="font-size:10px;font-weight:600;color:var(--tx3)">PROGRESS (aktual / target)</div>
+      <div style="font-size:10px;font-weight:600;color:var(--tx3);text-align:right">%</div>
+    </div>
+    <div id="jd-divisi-rows"></div>
+    <!-- Footer -->
+    <div id="jd-divisi-footer" style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--border);font-size:11px;color:var(--tx3);display:flex;gap:16px"></div>
   </div>
 </div>
 
@@ -589,7 +602,7 @@ function mppBuild(div,mi){
   const m=MF[mi];if(div){const k=Object.keys(D.mpp_plan_build).find(k=>k.toLowerCase()===div.toLowerCase());return k?(D.mpp_plan_build[k][m]||0):0;}
   return Object.values(D.mpp_plan_build).reduce((s,p)=>s+(p[m]||0),0);}
 function mppPlan(div,mi){return mppBuy(div,mi)+mppBuild(div,mi);}
-function pillClass(s){const m={'Planned':'pill-pink','Replacement':'pill-amber','Unplanned':'pill-blue','Completed':'pill-blue','On Process':'pill-blue','Pending':'pill-grey','Buy':'pill-green','Build':'pill-purple','match':'pill-green','partial':'pill-amber','mismatch':'pill-red','unplanned':'pill-blue','replacement':'pill-amber','Approved':'pill-green','Waiting Approval':'pill-amber','Not Yet':'pill-grey','DRAFT':'pill-blue','Revise':'pill-red','REVISE':'pill-red','Signed All':'pill-green','Signed by User':'pill-pink','Sent to User':'pill-amber','Available':'pill-grey','Done':'pill-green','Review by User':'pill-pink','On Progress':'pill-amber','Not Started':'pill-grey'};return m[s]||'pill-grey';}
+function pillClass(s){const m={'Planned':'pill-pink','Replacement':'pill-amber','Unplanned':'pill-blue','Completed':'pill-blue','On Process':'pill-blue','Pending':'pill-grey','Buy':'pill-green','Build':'pill-purple','match':'pill-green','partial':'pill-amber','mismatch':'pill-red','unplanned':'pill-blue','replacement':'pill-amber','Approved':'pill-green','Waiting Approval':'pill-amber','Not Yet':'pill-grey','DRAFT':'pill-blue','Revise':'pill-red','REVISE':'pill-red','Signed All':'pill-green','Signed by User':'pill-pink','Sent to User':'pill-amber','Available':'pill-grey','Done':'pill-green','Signing':'pill-green','Review by User':'pill-pink','On Progress':'pill-amber','Not Started':'pill-grey'};return m[s]||'pill-grey';}
 function getF(){const div=document.getElementById('fdiv').value;const bln=parseInt(document.getElementById('fbln').value)||0;const mi=bln>0?bln-1:-1;const bLabel=bln>0?MF[bln-1]+' 2026':'Semua 2026';return{div,bln,mi,bLabel};}
 function toggleExportMenu(){const m=document.getElementById('export-menu');m.style.display=m.style.display==='block'?'none':'block';}
 document.addEventListener('click',e=>{const m=document.getElementById('export-menu');if(m&&!e.target.closest('#export-btn'))m.style.display='none';});
@@ -707,7 +720,7 @@ function renderLanding(){
     '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+soAvail+'</div><div class="sc-stat-lbl">Available</div></div>';
   const jd=D.jd||[];
   const jdComp=jd.filter(r=>r.status==='Completed').length;
-
+  const jdSigning=jd.filter(r=>r.status==='Signing').length;
   const jdRev=jd.filter(r=>r.status==='Review by User').length;
   const jdProg=jd.filter(r=>r.status==='On Progress').length;
   const jdPct=pc(jdComp,JD_TOTAL_TARGET);
@@ -1132,7 +1145,10 @@ async function renderJD(){
       gc('Not Started',ns,pc(ns,tot)+'%','linear-gradient(135deg,#F3F4F6,#E5E7EB)','rgba(0,0,0,.4)');
   })();
   document.getElementById('jd-sub').textContent=filtered.length+' jabatan ditampilkan dari '+tot+' di sheet';
-  document.getElementById('jd-tbody').innerHTML=filtered.map(r=>'<tr><td style="font-size:11px;font-weight:500">'+r.divisi+'</td><td style="font-size:11px;color:var(--tx3)">'+(r.dept||'—')+'</td><td style="font-size:11px">'+r.level+'</td><td style="font-size:11px">'+r.jabatan+'</td><td><span class="pill '+pillClass(r.status)+'">'+(r.status||'Not Started')+'</span></td></tr>').join('');}
+  document.getElementById('jd-tbody')&&(document.getElementById('jd-tbody').innerHTML=filtered.map(r=>'<tr><td style="font-size:11px;font-weight:500">'+r.divisi+'</td><td style="font-size:11px;color:var(--tx3)">'+(r.dept||'—')+'</td><td style="font-size:11px">'+r.level+'</td><td style="font-size:11px">'+r.jabatan+'</td><td><span class="pill '+pillClass(r.status)+'">'+(r.status||'Not Started')+'</span></td></tr>').join(''));
+  // Fetch JD targets and render divisi breakdown
+  fetchJDTarget().then(function(targets){renderJDDivisi(jd,targets);}).catch(function(){renderJDDivisi(jd,{});});
+}
 
 // PM
 function renderPM(){
@@ -1305,6 +1321,60 @@ function renderPM(){
 }
 
 // PM REMINDER
+function renderJDDivisi(jd, targets){
+  const el=document.getElementById('jd-divisi-rows');
+  const footer=document.getElementById('jd-divisi-footer');
+  if(!el)return;
+
+  // Get all divisi from both JD data and targets
+  const allDivs=new Set([...Object.keys(targets),...jd.map(r=>r.divisi).filter(Boolean)]);
+  const totalTarget=Object.values(targets).reduce((s,v)=>s+v,0)||JD_TOTAL_TARGET;
+
+  // Build per-divisi data
+  const divData=[...allDivs].map(d=>{
+    const dr=jd.filter(r=>r.divisi===d);
+    const target=targets[d]||0;
+    const comp=dr.filter(r=>r.status==='Completed').length;
+    const sign=dr.filter(r=>r.status==='Signing').length;
+    const rev=dr.filter(r=>r.status==='Review by User').length;
+    const prog=dr.filter(r=>r.status==='On Progress').length;
+    const actual=comp+sign+rev+prog;
+    return{d,target,comp,sign,rev,prog,actual};
+  }).sort((a,b)=>pc(a.comp+a.sign,a.target||1)-pc(b.comp+b.sign,b.target||1));
+
+  el.innerHTML=divData.map((v,i)=>{
+    const border=i<divData.length-1?'border-bottom:.5px solid var(--border)':'';
+    const tot=v.target||1;
+    const pctVal=pc(v.comp+v.sign,tot);
+    const pctCol=pctVal>=80?'var(--green)':pctVal>=40?'var(--amber)':'var(--tx3)';
+    return '<div style="display:grid;grid-template-columns:200px 1fr 60px;gap:12px;padding:9px 8px;'+border+'">'+
+      '<div>'+
+        '<div style="font-size:11px;font-weight:500;color:var(--tx)">'+v.d+'</div>'+
+        '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+v.actual+' / '+v.target+' jabatan</div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center">'+
+        '<div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;display:flex">'+
+          (v.comp>0?'<div style="width:'+pc(v.comp,tot)+'%;background:var(--blue);height:100%"></div>':'')+
+          (v.sign>0?'<div style="width:'+pc(v.sign,tot)+'%;background:var(--green);height:100%"></div>':'')+
+          (v.rev>0?'<div style="width:'+pc(v.rev,tot)+'%;background:var(--pink);height:100%"></div>':'')+
+          (v.prog>0?'<div style="width:'+pc(v.prog,tot)+'%;background:var(--amber);height:100%"></div>':'')+
+        '</div>'+
+      '</div>'+
+      '<div style="text-align:right;font-size:11px;font-weight:600;color:'+pctCol+'">'+pctVal+'%</div>'+
+    '</div>';
+  }).join('');
+
+  // Footer
+  const totalActual=jd.filter(r=>r.status&&r.status!=='Not Started').length;
+  const overallPct=pc(totalActual,totalTarget);
+  if(footer)footer.innerHTML=
+    'Total ditrack: <b style="color:var(--tx);font-weight:500">'+jd.length+'</b>'+
+    '<span style="margin:0 4px">·</span>Total target: <b style="color:var(--tx);font-weight:500">'+totalTarget+'</b>'+
+    '<span style="margin:0 4px">·</span>Overall progress: <b style="color:var(--blue);font-weight:500">'+overallPct+'%</b>';
+
+  // Update JD_TOTAL_TARGET dynamically
+  if(totalTarget>0)window.JD_TOTAL_TARGET=totalTarget;
+}
 function renderReminder(){
   const kpi=D.kpi||[];const filt=document.getElementById('remind-filter').value;
   let needReminder=kpi.filter(r=>{
@@ -1435,6 +1505,19 @@ const MF_KEYS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov'
 const BUY_COLS=[10,12,14,16,18,20,22,24,26,28,30,32];
 const BUILD_COLS=[11,13,15,17,19,21,23,25,27,29,31,33];
 
+async function fetchJDTarget(){
+  try{
+    const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/JD%20Target?key='+API_KEY;
+    const r=await fetch(url);
+    const d=await r.json();
+    const rows=(d.values||[]).slice(1);
+    const targets={};
+    rows.filter(r=>r[0]&&r[1]).forEach(r=>{
+      targets[(r[0]||'').toString().trim()]=(parseInt(r[1])||0);
+    });
+    return targets;
+  }catch(e){console.warn('fetchJDTarget failed:',e);return{};}
+}
 async function fetchAllData(){
   const sheetNames=['FPTK KJ 3Up','MPP','SO','Job Description','KPI','Master Karyawan'];
   const urls=sheetNames.map(s=>'https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent(s)+'?key='+API_KEY);
@@ -1754,6 +1837,7 @@ async function exportPPT(){
     sld=pres.addSlide();sld.background={color:BG};
     sld.addText('Job Description',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
     sld.addText('Tracking status pembuatan Job Description per jabatan',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
+    const jdSgn=jd.filter(r=>r.status==='Signing').length;
     const jdR=jd.filter(r=>r.status==='Review by User').length;
     const jdPr=jd.filter(r=>r.status==='On Progress').length;
     const jdCards2=[
