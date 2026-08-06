@@ -1369,6 +1369,9 @@ function renderJDDivisi(jd, targets){
     ...r,
     divisiCanon:normToCanon[normD(r.divisi)]||null
   }));
+  const _unmatched=[...new Set(jdMapped.filter(r=>!r.divisiCanon).map(r=>r.divisi))];
+  if(_unmatched.length)console.warn('JD tidak match:',_unmatched);
+  console.log('JD sample:',jd.slice(0,2),'targets keys:',Object.keys(targets).slice(0,3));
 
   // Build per-divisi data using canonical names from targets
   const divData=targetDivs.map(d=>{
