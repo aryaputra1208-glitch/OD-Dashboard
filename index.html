@@ -1101,56 +1101,84 @@ function renderSO(){
 // JD
 async function renderJD(){
   // Fetch JD data fresh from Google Sheets
-  let jd = D.jd||[];
-  try {
-    const url = 'https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/Job%20Description?key='+API_KEY;
-    const r = await fetch(url);
-    const data = await r.json();
-    const rows = (data.values||[]).slice(1);
-    if(rows.length > 0){
-      jd = rows.filter(r=>r[3]).map(r=>({
+  let jd=D.jd||[];
+  try{
+    const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/Job%20Description?key='+API_KEY;
+    const r=await fetch(url);
+    const data=await r.json();
+    const rows=(data.values||[]).slice(1);
+    if(rows.length>0){
+      jd=rows.filter(r=>r[3]).map(r=>({
         divisi:(r[0]||'').trim(),
         dept:(r[2]||'').trim(),
         jabatan:(r[3]||'').trim(),
         level:(r[4]||'').trim(),
         status:(function(s){s=(s||'Not Started').trim();return s==='Done'?'Completed':s;})(r[5])
       }));
-      // Update D.jd for KPI card accuracy
-      D.jd = jd;
+      D.jd=jd;
     }
-  } catch(e) {
-    console.warn('Gagal fetch JD dari Sheets, pakai embedded:', e);
-  }
-  const stF=document.getElementById('jd-filter-status').value;
-  const divF=document.getElementById('jd-filter-divisi').value;
+  }catch(e){console.warn('Gagal fetch JD:',e);}
+
+  const stF=document.getElementById('jd-filter-status')?document.getElementById('jd-filter-status').value:'';
+  const divF=document.getElementById('jd-filter-divisi')?document.getElementById('jd-filter-divisi').value:'';
   const filtered=jd.filter(r=>(!stF||r.status===stF)&&(!divF||r.divisi===divF));
   const tot=jd.length;
   const completed=jd.filter(r=>r.status==='Completed').length;
-
+  const signing=jd.filter(r=>r.status==='Signing').length;
   const review=jd.filter(r=>r.status==='Review by User').length;
   const prog=jd.filter(r=>r.status==='On Progress').length;
-  const ns=jd.filter(r=>!r.status||r.status==='Not Started').length;
+
   // Update divisi filter
   const divs=[...new Set(jd.map(r=>r.divisi).filter(Boolean))].sort();
   const jdfd=document.getElementById('jd-filter-divisi');
   if(jdfd){jdfd.innerHTML='<option value="">Semua Divisi</option>'+divs.map(d=>'<option>'+d+'</option>').join('');}
-  // KPI row with gradient cards
-  document.getElementById('jd-kpi-row').innerHTML=(function(){
-    function gc(lbl,val,sub,grad,col){return '<div class="gc-mini" style="background:'+grad+';text-align:center"><div style="font-size:10px;color:rgba(0,0,0,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">'+lbl+'</div><div style="font-size:28px;font-weight:700;color:'+col+'">'+val+'</div><div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:4px">'+sub+'</div></div>';}
-    return gc('Total Job Description',tot,divs.length+' divisi','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
-      gc('Completed',completed,pc(completed,tot)+'%','linear-gradient(135deg,#DBEAFE,#BFDBFE)','#1d6fa8')+
 
-      gc('Review By User',review,pc(review,tot)+'%','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d')+
-      gc('On Progress',prog,pc(prog,tot)+'%','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e')+
-      gc('Not Started',ns,pc(ns,tot)+'%','linear-gradient(135deg,#F3F4F6,#E5E7EB)','rgba(0,0,0,.4)');
-  })();
-  const _jdSub=document.getElementById('jd-sub');if(_jdSub)_jdSub.textContent=filtered.length+' jabatan ditampilkan dari '+tot+' di sheet';
-  // Fetch JD targets and render divisi breakdown
-  var _jdForDivisi=jd;
-  fetchJDTarget().then(function(targets){renderJDDivisi(_jdForDivisi,targets);}).catch(function(){renderJDDivisi(_jdForDivisi,{});});
+  // KPI cards - fetch target total from JD Target sheet first
+  fetchJDTarget().then(function(targets){
+    const totalTarget=Object.values(targets).reduce((s,v)=>s+v,0)||JD_TOTAL_TARGET;
+    window.JD_TOTAL_TARGET=totalTarget;
+    const kpiEl=document.getElementById('jd-kpi-row');
+    if(kpiEl){
+      function gc(lbl,val,sub,grad,col){
+        return '<div class="gc-mini" style="background:'+grad+';text-align:center">'+
+          '<div style="font-size:10px;color:rgba(0,0,0,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">'+lbl+'</div>'+
+          '<div style="font-size:28px;font-weight:700;color:'+col+'">'+val+'</div>'+
+          '<div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:4px">'+sub+'</div>'+
+        '</div>';
+      }
+      kpiEl.innerHTML=
+        gc('Total Target',totalTarget,divs.length+' divisi tracked','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
+        gc('Completed',completed,pc(completed,totalTarget)+'%','linear-gradient(135deg,#DBEAFE,#BFDBFE)','#1d6fa8')+
+        gc('Signing',signing,pc(signing,totalTarget)+'%','linear-gradient(135deg,#D1FAE5,#A7F3D0)','#065f46')+
+        gc('Review By User',review,pc(review,totalTarget)+'%','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d')+
+        gc('On Progress',prog,pc(prog,totalTarget)+'%','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e');
+    }
+    // Render divisi breakdown with targets
+    renderJDDivisi(jd,targets);
+  }).catch(function(e){
+    console.warn('JD Target fetch failed, using fallback:',e);
+    // Fallback: show KPI with JD_TOTAL_TARGET
+    const kpiEl=document.getElementById('jd-kpi-row');
+    if(kpiEl){
+      function gc2(lbl,val,sub,grad,col){
+        return '<div class="gc-mini" style="background:'+grad+';text-align:center">'+
+          '<div style="font-size:10px;color:rgba(0,0,0,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">'+lbl+'</div>'+
+          '<div style="font-size:28px;font-weight:700;color:'+col+'">'+val+'</div>'+
+          '<div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:4px">'+sub+'</div>'+
+        '</div>';
+      }
+      kpiEl.innerHTML=
+        gc2('Total Job Description',JD_TOTAL_TARGET,divs.length+' divisi','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
+        gc2('Completed',completed,pc(completed,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#DBEAFE,#BFDBFE)','#1d6fa8')+
+        gc2('Signing',signing,pc(signing,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#D1FAE5,#A7F3D0)','#065f46')+
+        gc2('Review By User',review,pc(review,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d')+
+        gc2('On Progress',prog,pc(prog,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e');
+    }
+    renderJDDivisi(jd,{});
+  });
 }
 
-// PM
+
 function renderPM(){
   const divF=document.getElementById('pm-filter-divisi')?document.getElementById('pm-filter-divisi').value:'';
   const lvlF=document.getElementById('pm-filter-level')?document.getElementById('pm-filter-level').value:'';
