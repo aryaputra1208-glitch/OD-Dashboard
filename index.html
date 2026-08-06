@@ -1354,13 +1354,25 @@ function renderJDDivisi(jd, targets){
   const footer=document.getElementById('jd-divisi-footer');
   if(!el)return;
 
-  // Get all divisi from both JD data and targets
-  const allDivs=new Set([...Object.keys(targets),...jd.map(r=>r.divisi).filter(Boolean)]);
+  // Master divisi list = from targets (user-provided), not from JD sheet
+  // Match JD rows to target divisi case-insensitively
+  function normD(s){return (s||'').trim().toUpperCase();}
+  const targetDivs=Object.keys(targets); // canonical names
   const totalTarget=Object.values(targets).reduce((s,v)=>s+v,0)||JD_TOTAL_TARGET;
 
-  // Build per-divisi data
-  const divData=[...allDivs].map(d=>{
-    const dr=jd.filter(r=>r.divisi===d);
+  // Build lookup: normalized name -> canonical name
+  const normToCanon={};
+  targetDivs.forEach(d=>normToCanon[normD(d)]=d);
+
+  // Map each JD row to canonical divisi
+  const jdMapped=jd.map(r=>({
+    ...r,
+    divisiCanon:normToCanon[normD(r.divisi)]||null
+  }));
+
+  // Build per-divisi data using canonical names from targets
+  const divData=targetDivs.map(d=>{
+    const dr=jdMapped.filter(r=>r.divisiCanon===d);
     const target=targets[d]||0;
     const comp=dr.filter(r=>r.status==='Completed').length;
     const sign=dr.filter(r=>r.status==='Signing').length;
@@ -1368,7 +1380,7 @@ function renderJDDivisi(jd, targets){
     const prog=dr.filter(r=>r.status==='On Progress').length;
     const actual=comp+sign+rev+prog;
     return{d,target,comp,sign,rev,prog,actual};
-  }).sort((a,b)=>pc(a.comp+a.sign,a.target||1)-pc(b.comp+b.sign,b.target||1));
+  }).sort((a,b)=>(b.comp+b.sign)-(a.comp+a.sign));
 
   el.innerHTML=divData.map((v,i)=>{
     const border=i<divData.length-1?'border-bottom:.5px solid var(--border)':'';
@@ -1392,17 +1404,17 @@ function renderJDDivisi(jd, targets){
     '</div>';
   }).join('');
 
-  // Footer
-  const totalActual=jd.filter(r=>r.status&&r.status!=='Not Started').length;
+  const totalActual=divData.reduce((s,v)=>s+v.actual,0);
   const overallPct=pc(totalActual,totalTarget);
   if(footer)footer.innerHTML=
-    'Total ditrack: <b style="color:var(--tx);font-weight:500">'+jd.length+'</b>'+
-    '<span style="margin:0 4px">·</span>Total target: <b style="color:var(--tx);font-weight:500">'+totalTarget+'</b>'+
-    '<span style="margin:0 4px">·</span>Overall progress: <b style="color:var(--blue);font-weight:500">'+overallPct+'%</b>';
+    'Total ditrack: <b style="color:var(--tx);font-weight:500">'+totalActual+'</b>'+
+    ' &nbsp;·&nbsp; Total target: <b style="color:var(--tx);font-weight:500">'+totalTarget+'</b>'+
+    ' &nbsp;·&nbsp; Overall progress: <b style="color:var(--blue);font-weight:500">'+overallPct+'%</b>';
 
-  // Update JD_TOTAL_TARGET dynamically
   if(totalTarget>0)window.JD_TOTAL_TARGET=totalTarget;
 }
+
+
 function renderReminder(){
   const kpi=D.kpi||[];const filt=document.getElementById('remind-filter').value;
   let needReminder=kpi.filter(r=>{
