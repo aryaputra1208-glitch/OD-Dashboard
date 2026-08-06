@@ -442,7 +442,7 @@ canvas{display:block;width:100%}
   <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking status JD per jabatan · 2026</div>
 
   <!-- JD KPI -->
-  <div class="r3" style="margin-bottom:14px" id="jd-kpi-row"></div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px" id="jd-kpi-row"></div>
 
   <!-- Weekly Report (as-is) -->
   <div class="card" style="margin-bottom:14px">
@@ -1144,10 +1144,10 @@ async function renderJD(){
       gc('On Progress',prog,pc(prog,tot)+'%','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e')+
       gc('Not Started',ns,pc(ns,tot)+'%','linear-gradient(135deg,#F3F4F6,#E5E7EB)','rgba(0,0,0,.4)');
   })();
-  document.getElementById('jd-sub').textContent=filtered.length+' jabatan ditampilkan dari '+tot+' di sheet';
-  document.getElementById('jd-tbody')&&(document.getElementById('jd-tbody').innerHTML=filtered.map(r=>'<tr><td style="font-size:11px;font-weight:500">'+r.divisi+'</td><td style="font-size:11px;color:var(--tx3)">'+(r.dept||'—')+'</td><td style="font-size:11px">'+r.level+'</td><td style="font-size:11px">'+r.jabatan+'</td><td><span class="pill '+pillClass(r.status)+'">'+(r.status||'Not Started')+'</span></td></tr>').join(''));
+  const _jdSub=document.getElementById('jd-sub');if(_jdSub)_jdSub.textContent=filtered.length+' jabatan ditampilkan dari '+tot+' di sheet';
   // Fetch JD targets and render divisi breakdown
-  fetchJDTarget().then(function(targets){renderJDDivisi(jd,targets);}).catch(function(){renderJDDivisi(jd,{});});
+  var _jdForDivisi=jd;
+  fetchJDTarget().then(function(targets){renderJDDivisi(_jdForDivisi,targets);}).catch(function(){renderJDDivisi(_jdForDivisi,{});});
 }
 
 // PM
