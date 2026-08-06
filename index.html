@@ -494,24 +494,56 @@ canvas{display:block;width:100%}
 
 <!-- PM -->
 <div class="page" id="page-pm">
-  <div style="font-size:16px;font-weight:700;margin-bottom:4px">Performance Management</div>
-  <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking IPP & IPE · 2026</div>
-  <div class="kpi-row" id="pm-kpis" style="margin-bottom:12px"></div>
-  <div class="r2" style="margin-bottom:12px">
-    <div class="card"><div class="chdr"><div><div class="ct">Status IPP</div><div class="cs">Individual Performance Plan</div></div></div><div id="ipp-dist"></div></div>
-    <div class="card"><div class="chdr"><div><div class="ct">Status IPE</div><div class="cs">Individual Performance Evaluation</div></div></div><div id="ipe-dist"></div></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
+    <div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:2px">Performance Management</div>
+      <div style="font-size:11px;color:var(--tx3)" id="pm-header-sub">Tracking IPP & IPE · 2026</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <select class="tf" id="pm-filter-divisi" onchange="renderPM()"><option value="">Semua Divisi</option></select>
+      <select class="tf" id="pm-filter-level" onchange="renderPM()"><option value="">Semua Level</option></select>
+    </div>
   </div>
-  <div class="r2" style="margin-bottom:12px">
-    <div class="card"><div class="chdr"><div class="ct">IPP per Level</div></div><div id="ipp-level"></div></div>
-    <div class="card"><div class="chdr"><div class="ct">IPE per Level</div></div><div id="ipe-level"></div></div>
+
+  <!-- SECTION 1: SUMMARY -->
+  <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Completion Rate</div>
+  <div class="r2" style="margin-bottom:20px" id="pm-summary-cards"></div>
+
+  <!-- SECTION 2: PER LEVEL -->
+  <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Breakdown per Level</div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:16px;padding:0 0 8px;border-bottom:.5px solid var(--border);margin-bottom:4px">
+      <div style="font-size:10px;font-weight:600;color:var(--tx3)">LEVEL</div>
+      <div style="font-size:10px;font-weight:600;color:var(--purple)">IPP — STATUS</div>
+      <div style="font-size:10px;font-weight:600;color:var(--blue)">IPE — STATUS</div>
+    </div>
+    <div id="pm-level-rows"></div>
   </div>
-  <div class="r2" style="margin-bottom:12px" id="pm-divisi">
-    <div class="card" style="overflow-y:auto;max-height:500px"><div class="chdr"><div><div class="ct">IPP per Divisi</div><div class="cs">% Approved per divisi</div></div></div><div id="pm-divisi-ipp"></div></div>
-    <div class="card" style="overflow-y:auto;max-height:500px"><div class="chdr"><div><div class="ct">IPE per Divisi</div><div class="cs">% Approved per divisi</div></div></div><div id="pm-divisi-ipe"></div></div>
+
+  <!-- SECTION 3: PER DIVISI -->
+  <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Breakdown per Divisi</div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--tx3)">Diurutkan dari IPP terendah</div>
+      <div style="display:flex;gap:10px;font-size:10px;color:var(--tx3)">
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--green);margin-right:3px"></span>Approved</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--amber);margin-right:3px"></span>Waiting</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--blue);margin-right:3px"></span>Draft</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--red);margin-right:3px"></span>Not Yet</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 160px 160px;gap:8px;padding:6px 8px;background:var(--bg);border-radius:6px;margin-bottom:6px">
+      <div style="font-size:10px;font-weight:600;color:var(--tx3)">DIVISI</div>
+      <div style="font-size:10px;font-weight:600;color:var(--purple)">IPP</div>
+      <div style="font-size:10px;font-weight:600;color:var(--blue)">IPE</div>
+    </div>
+    <div id="pm-divisi-rows"></div>
   </div>
+
+  <!-- REMINDER -->
   <div class="card">
     <div class="chdr">
-      <div><div class="ct">Reminder: Karyawan Belum Mengisi</div><div class="cs" id="remind-sub"></div></div>
+      <div><div class="ct">Reminder Karyawan</div><div class="cs" id="remind-sub"></div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <select class="tf" id="remind-filter" onchange="renderReminder()"><option value="all">IPP & IPE</option><option value="ipp">IPP saja</option><option value="ipe">IPE saja</option></select>
         <select class="tf" id="remind-bulan">
@@ -1104,29 +1136,173 @@ async function renderJD(){
 
 // PM
 function renderPM(){
-  const kpi=D.kpi||[];const tot=kpi.length;
-  const ippAppr=kpi.filter(r=>r.ipp==='Approved').length;
-  const ippWait=kpi.filter(r=>r.ipp==='Waiting Approval').length;
-  const ippNot=kpi.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise'||r.ipp==='REVISE').length;
-  const ipeAppr=kpi.filter(r=>r.ipe==='Approved').length;
-  const ipeNot=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
-  // PM KPI with gradient cards
-  function kpi2(l,v,s,grad,col){return '<div class="gc-mini" style="background:'+grad+'"><div style="font-size:10px;color:rgba(0,0,0,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">'+l+'</div><div style="font-size:26px;font-weight:700;color:'+col+'">'+v+'</div>'+(s?'<div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:6px">'+s+'</div><div style="height:3px;background:rgba(0,0,0,.08);border-radius:2px;margin-top:8px;overflow:hidden"><div style="width:'+Math.min(100,parseInt(s)||0)+'%;height:100%;border-radius:2px;background:'+col+'"></div></div>':'')+'</div>';}
-  document.getElementById('pm-kpis').innerHTML=
-    kpi2('Total Karyawan',tot,'','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
-    kpi2('IPP Approved',ippAppr,pc(ippAppr,tot)+'%','linear-gradient(135deg,#D1FAE5,#A7F3D0)','#065f46')+
-    kpi2('IPP Belum Selesai',ippNot+ippWait,pc(ippNot+ippWait,tot)+'%','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e')+
-    kpi2('IPE Approved',ipeAppr,pc(ipeAppr,tot)+'%','linear-gradient(135deg,#DBEAFE,#BFDBFE)','#1d6fa8')+
-    kpi2('IPE Not Yet',ipeNot,pc(ipeNot,tot)+'%','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d');
-  function distBar(items,totN){return items.map(([l,v,c])=>'<div class="dist-row"><span class="dist-label">'+l+'</span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pc(v,totN)+'%;background:'+c+'"></div></div><span class="dist-num">'+v+'</span></div>').join('');}
-  document.getElementById('ipp-dist').innerHTML=distBar([['Approved',ippAppr,'var(--green)'],['Waiting Approval',ippWait,'var(--amber)'],['Not Yet / Revise',ippNot,'var(--red)']],tot);
-  document.getElementById('ipe-dist').innerHTML=distBar([['Approved',ipeAppr,'var(--green)'],['Waiting Approval',kpi.filter(r=>r.ipe==='Waiting Approval').length,'var(--amber)'],['DRAFT',kpi.filter(r=>r.ipe==='DRAFT').length,'var(--blue)'],['Not Yet / Revise',ipeNot,'var(--red)']],tot);
-  const levels=[...new Set(kpi.map(r=>r.level).filter(Boolean))].sort();
-  document.getElementById('ipp-level').innerHTML=levels.map(l=>{const lr=kpi.filter(r=>r.level===l);const a=lr.filter(r=>r.ipp==='Approved').length;return '<div class="dist-row"><span class="dist-label">'+l+'</span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pc(a,lr.length)+'%;background:var(--green)"></div></div><span class="dist-num">'+a+'/'+lr.length+'</span></div>';}).join('');
-  document.getElementById('ipe-level').innerHTML=levels.map(l=>{const lr=kpi.filter(r=>r.level===l);const a=lr.filter(r=>r.ipe==='Approved').length;return '<div class="dist-row"><span class="dist-label">'+l+'</span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pc(a,lr.length)+'%;background:var(--blue)"></div></div><span class="dist-num">'+a+'/'+lr.length+'</span></div>';}).join('');
-  const divs=[...new Set(kpi.map(r=>r.divisi).filter(Boolean))].sort();
-  document.getElementById('pm-divisi-ipp').innerHTML=divs.map(d=>{const dr=kpi.filter(r=>r.divisi===d);const a=dr.filter(r=>r.ipp==='Approved').length;const pct=pc(a,dr.length);const col=pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)';return '<div class="dist-row"><span class="dist-label">'+(d.length>22?d.slice(0,22)+'...':d)+'</span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pct+'%;background:'+col+'"></div></div><span class="dist-num">'+a+'/'+dr.length+'</span></div>';}).join('');
-  document.getElementById('pm-divisi-ipe').innerHTML=divs.map(d=>{const dr=kpi.filter(r=>r.divisi===d);const a=dr.filter(r=>r.ipe==='Approved').length;const pct=pc(a,dr.length);const col=pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)';return '<div class="dist-row"><span class="dist-label">'+(d.length>22?d.slice(0,22)+'...':d)+'</span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pct+'%;background:'+col+'"></div></div><span class="dist-num">'+a+'/'+dr.length+'</span></div>';}).join('');}
+  const divF=document.getElementById('pm-filter-divisi')?document.getElementById('pm-filter-divisi').value:'';
+  const lvlF=document.getElementById('pm-filter-level')?document.getElementById('pm-filter-level').value:'';
+  const allKpi=D.kpi||[];
+  const kpi=allKpi.filter(r=>(!divF||r.divisi===divF)&&(!lvlF||r.level===lvlF));
+  const tot=kpi.length||1;
+
+  // Populate filters
+  const divs=[...new Set(allKpi.map(r=>r.divisi).filter(Boolean))].sort();
+  const lvls=[...new Set(allKpi.map(r=>r.level).filter(Boolean))].sort();
+  const dEl=document.getElementById('pm-filter-divisi');
+  if(dEl&&dEl.options.length<=1){divs.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;dEl.appendChild(o);});}
+  const lEl=document.getElementById('pm-filter-level');
+  if(lEl&&lEl.options.length<=1){lvls.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;lEl.appendChild(o);});}
+
+  // Update subtitle
+  const sub=document.getElementById('pm-header-sub');
+  if(sub)sub.textContent='Tracking IPP & IPE · '+kpi.length+' karyawan · 2026';
+
+  // IPP / IPE counts
+  const ippA=kpi.filter(r=>r.ipp==='Approved').length;
+  const ippW=kpi.filter(r=>r.ipp==='Waiting Approval').length;
+  const ippN=kpi.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise'||r.ipp==='REVISE').length;
+  const ipeA=kpi.filter(r=>r.ipe==='Approved').length;
+  const ipeD=kpi.filter(r=>r.ipe==='DRAFT').length;
+  const ipeW=kpi.filter(r=>r.ipe==='Waiting Approval').length;
+  const ipeN=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
+
+  // Helper: stacked bar
+  function stackedBar(segs,tot2){
+    return segs.map(([v,col])=>{const w=Math.max(0,pc(v,tot2));return w>0?'<div style="width:'+w+'%;background:'+col+';height:100%"></div>':''}).join('');
+  }
+  function statBar(segs,tot2){
+    return '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;display:flex;margin:4px 0">'+stackedBar(segs,tot2)+'</div>';
+  }
+  function statRows(items){
+    return items.map(([l,v,c])=>'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0"></span><span style="flex:1;font-size:11px;color:var(--tx2)">'+l+'</span><span style="font-size:11px;font-weight:700;color:'+c+'">'+v+'</span></div>').join('');
+  }
+
+  // ── SECTION 1: SUMMARY CARDS ──
+  const sumEl=document.getElementById('pm-summary-cards');
+  if(sumEl){
+    function summaryCard(title,subtitle,badge,pct,bigColor,rows,barSegs,tot2){
+      const grad=bigColor==='var(--purple)'?'linear-gradient(135deg,#EDE9FE,#DDD6FE)':'linear-gradient(135deg,#DBEAFE,#BFDBFE)';
+      const darkCol=bigColor==='var(--purple)'?'#3B0764':'#0C2D5A';
+      const midCol=bigColor==='var(--purple)'?'#5B21B6':'#1D6FA8';
+      return '<div style="background:'+grad+';border-radius:16px;padding:20px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'+
+          '<div><div style="font-size:10px;font-weight:700;color:'+midCol+';text-transform:uppercase;letter-spacing:.07em">'+title+'</div>'+
+          '<div style="font-size:13px;font-weight:600;color:'+darkCol+';margin-top:2px">'+subtitle+'</div></div>'+
+          '<div style="background:rgba(0,0,0,.08);border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;color:'+midCol+'">'+badge+'</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:20px;margin-bottom:14px">'+
+          '<div style="text-align:center;flex-shrink:0">'+
+            '<div style="font-size:52px;font-weight:700;color:'+midCol+';line-height:1">'+pct+'%</div>'+
+            '<div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:4px">Approved</div>'+
+          '</div>'+
+          '<div style="flex:1">'+rows+'</div>'+
+        '</div>'+
+        '<div style="height:8px;background:rgba(0,0,0,.1);border-radius:4px;overflow:hidden;display:flex">'+stackedBar(barSegs,tot2)+'</div>'+
+      '</div>';
+    }
+    sumEl.innerHTML=
+      summaryCard('IPP','Individual Performance Plan',ippA+' / '+tot,pc(ippA,tot),'var(--purple)',
+        statRows([['Approved',ippA,'var(--green)'],['Waiting Approval',ippW,'var(--amber)'],['Not Yet / Revise',ippN,'var(--red)']]),
+        [[ippA,'var(--green)'],[ippW,'var(--amber)'],[ippN,'var(--red)']],tot)+
+      summaryCard('IPE','Individual Performance Evaluation',ipeA+' / '+tot,pc(ipeA,tot),'var(--blue)',
+        statRows([['Approved',ipeA,'var(--green)'],['Draft',ipeD,'var(--blue)'],['Waiting',ipeW,'var(--amber)'],['Not Yet / Revise',ipeN,'var(--red)']]),
+        [[ipeA,'var(--green)'],[ipeD,'var(--blue)'],[ipeW,'var(--amber)'],[ipeN,'var(--red)']],tot);
+  }
+
+  // ── SECTION 2: PER LEVEL ──
+  const lvlEl=document.getElementById('pm-level-rows');
+  if(lvlEl){
+    const levels=[...new Set(kpi.map(r=>r.level).filter(Boolean))].sort();
+    lvlEl.innerHTML=levels.map((l,i)=>{
+      const lr=kpi.filter(r=>r.level===l);
+      const n=lr.length;
+      const iA=lr.filter(r=>r.ipp==='Approved').length;
+      const iW=lr.filter(r=>r.ipp==='Waiting Approval').length;
+      const iN=lr.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise'||r.ipp==='REVISE').length;
+      const eA=lr.filter(r=>r.ipe==='Approved').length;
+      const eD=lr.filter(r=>r.ipe==='DRAFT').length;
+      const eW=lr.filter(r=>r.ipe==='Waiting Approval').length;
+      const eN=lr.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
+      const border=i<levels.length-1?'border-bottom:.5px solid var(--border)':'';
+      return '<div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:16px;padding:12px 0;'+border+'">'+
+        '<div><div style="font-size:12px;font-weight:500;color:var(--tx)">'+l+'</div>'+
+          '<div style="font-size:10px;color:var(--tx3);margin-top:2px">'+n+' orang</div></div>'+
+        '<div>'+
+          '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px">'+
+            '<span>'+iA+' Approved ('+pc(iA,n)+'%)</span></div>'+
+          '<div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;display:flex">'+
+            (iA>0?'<div style="width:'+pc(iA,n)+'%;background:var(--green);height:100%"></div>':'')+
+            (iW>0?'<div style="width:'+pc(iW,n)+'%;background:var(--amber);height:100%"></div>':'')+
+            (iN>0?'<div style="width:'+pc(iN,n)+'%;background:var(--red);height:100%"></div>':'')+
+          '</div>'+
+          '<div style="display:flex;gap:8px;margin-top:4px;font-size:9px;color:var(--tx3)">'+
+            (iA>0?'<span style="color:var(--green)">Approved '+iA+'</span>':'')+
+            (iW>0?'<span style="color:var(--amber)">Waiting '+iW+'</span>':'')+
+            (iN>0?'<span style="color:var(--red)">Not Yet '+iN+'</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div>'+
+          '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px">'+
+            '<span>'+eA+' Approved ('+pc(eA,n)+'%)</span></div>'+
+          '<div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;display:flex">'+
+            (eA>0?'<div style="width:'+pc(eA,n)+'%;background:var(--green);height:100%"></div>':'')+
+            (eD>0?'<div style="width:'+pc(eD,n)+'%;background:var(--blue);height:100%"></div>':'')+
+            (eW>0?'<div style="width:'+pc(eW,n)+'%;background:var(--amber);height:100%"></div>':'')+
+            (eN>0?'<div style="width:'+pc(eN,n)+'%;background:var(--red);height:100%"></div>':'')+
+          '</div>'+
+          '<div style="display:flex;gap:8px;margin-top:4px;font-size:9px;color:var(--tx3)">'+
+            (eA>0?'<span style="color:var(--green)">Approved '+eA+'</span>':'')+
+            (eD>0?'<span style="color:var(--blue)">Draft '+eD+'</span>':'')+
+            (eW>0?'<span style="color:var(--amber)">Waiting '+eW+'</span>':'')+
+            (eN>0?'<span style="color:var(--red)">Not Yet '+eN+'</span>':'')+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // ── SECTION 3: PER DIVISI (sorted by IPP asc) ──
+  const divEl=document.getElementById('pm-divisi-rows');
+  if(divEl){
+    const allDivs=[...new Set(kpi.map(r=>r.divisi).filter(Boolean))];
+    const divData=allDivs.map(d=>{
+      const dr=kpi.filter(r=>r.divisi===d);const n=dr.length;
+      const iA=dr.filter(r=>r.ipp==='Approved').length;
+      const iW=dr.filter(r=>r.ipp==='Waiting Approval').length;
+      const iN=dr.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise'||r.ipp==='REVISE').length;
+      const eA=dr.filter(r=>r.ipe==='Approved').length;
+      const eD=dr.filter(r=>r.ipe==='DRAFT').length;
+      const eW=dr.filter(r=>r.ipe==='Waiting Approval').length;
+      const eN=dr.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
+      return{d,n,iA,iW,iN,eA,eD,eW,eN};
+    }).sort((a,b)=>pc(a.iA,a.n)-pc(b.iA,b.n));
+
+    divEl.innerHTML=divData.map((v,i)=>{
+      const dn=v.d.length>30?v.d.slice(0,30)+'...':v.d;
+      const border=i<divData.length-1?'border-bottom:.5px solid var(--border)':'';
+      return '<div style="display:grid;grid-template-columns:1fr 160px 160px;gap:8px;padding:9px 8px;'+border+'">'+
+        '<div><div style="font-size:11px;font-weight:500;color:var(--tx)">'+dn+'</div>'+
+          '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+v.n+' orang</div></div>'+
+        '<div style="display:flex;flex-direction:column;justify-content:center">'+
+          '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px">'+
+            '<span>'+v.iA+'/'+v.n+'</span><span style="font-weight:700;color:var(--purple)">'+pc(v.iA,v.n)+'%</span></div>'+
+          '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;display:flex">'+
+            (v.iA>0?'<div style="width:'+pc(v.iA,v.n)+'%;background:var(--green);height:100%"></div>':'')+
+            (v.iW>0?'<div style="width:'+pc(v.iW,v.n)+'%;background:var(--amber);height:100%"></div>':'')+
+            (v.iN>0?'<div style="width:'+pc(v.iN,v.n)+'%;background:var(--red);height:100%"></div>':'')+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;flex-direction:column;justify-content:center">'+
+          '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px">'+
+            '<span>'+v.eA+'/'+v.n+'</span><span style="font-weight:700;color:var(--blue)">'+pc(v.eA,v.n)+'%</span></div>'+
+          '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;display:flex">'+
+            (v.eA>0?'<div style="width:'+pc(v.eA,v.n)+'%;background:var(--green);height:100%"></div>':'')+
+            (v.eD>0?'<div style="width:'+pc(v.eD,v.n)+'%;background:var(--blue);height:100%"></div>':'')+
+            (v.eW>0?'<div style="width:'+pc(v.eW,v.n)+'%;background:var(--amber);height:100%"></div>':'')+
+            (v.eN>0?'<div style="width:'+pc(v.eN,v.n)+'%;background:var(--red);height:100%"></div>':'')+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+}
 
 // PM REMINDER
 function renderReminder(){
