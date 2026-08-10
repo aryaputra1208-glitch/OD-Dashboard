@@ -1836,7 +1836,14 @@ async function exportPPT(){
         const bw=(mT>0)?Math.max(.01,4.2*n.v/tot4):0;
         const bx=.7+(n.l==='Plan Build'?4.2*mBu/tot4:0);
       }
-    });
+    })
+    // Gap breakdown info box
+    const actualBuyPPT=fptk.filter(r=>r.planned==='Planned'&&r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const actualBuildPPT=fptk.filter(r=>r.planned==='Planned'&&r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const gapBuyPPT=Math.max(0,mBu-actualBuyPPT);
+    const gapBuildPPT=Math.max(0,mBl-actualBuildPPT);
+    sld.addShape(pres.ShapeType.roundRect,{x:.6,y:2.6,w:5.5,h:.72,fill:{color:AM+'18'},line:{color:AM+'55',width:.5},rectRadius:.08});
+    sld.addText('Gap Breakdown — Buy: '+gapBuyPPT+' (Plan '+mBu+' / Realized '+actualBuyPPT+')     Build: '+gapBuildPPT+' (Plan '+mBl+' / Realized '+actualBuildPPT+')',{x:.75,y:2.68,w:5.2,h:.55,fontSize:9,color:DK,fontFace:FONT});;
     // Buy/Build bar full
     sld.addText('Buy / Build',{x:.65,y:2.55,w:5,h:.25,fontSize:9,color:GY,fontFace:FONT});
     sld.addShape(pres.ShapeType.roundRect,{x:.65,y:2.8,w:5.5,h:.14,fill:{color:BORDER},line:{color:BORDER},rectRadius:.07});
