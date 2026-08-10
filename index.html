@@ -759,7 +759,39 @@ function renderMPPCard(f){
   const buildPct=mT>0?Math.round(mBuild/mT*100):0;
   const el=id=>document.getElementById(id);
   if(el('mpp-total-plan'))el('mpp-total-plan').textContent=fmt(mT);
-  if(el('mpp-gap-plan'))el('mpp-gap-plan').textContent=fmt(gap);
+  if(el('mpp-gap-plan')){
+    el('mpp-gap-plan').textContent=fmt(gap);
+    // Breakdown: gap buy = plan buy - actual buy FPTK planned; gap build = plan build - actual build
+    const actualBuy=FP.filter(r=>r.planned==='Planned'&&r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const actualBuild=FP.filter(r=>r.planned==='Planned'&&r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
+    const gapBuy=Math.max(0,mBuy-actualBuy);
+    const gapBuild=Math.max(0,mBuild-actualBuild);
+    const gapEl=el('mpp-gap-plan');
+    gapEl.style.cursor='help';
+    gapEl.title='';
+    const tip=document.getElementById('gap-tooltip');
+    gapEl.onmouseenter=function(e){
+      if(!tip)return;
+      tip.innerHTML=
+        '<div style="font-weight:600;margin-bottom:4px;color:#FCD34D">Gap Planned: '+gap+'</div>'+
+        '<div style="display:flex;justify-content:space-between;gap:16px">'+
+          '<span style="color:#6EE7B7">Buy</span><span style="color:#6EE7B7;font-weight:600">'+gapBuy+'</span>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:space-between;gap:16px">'+
+          '<span style="color:#93C5FD">Build</span><span style="color:#93C5FD;font-weight:600">'+gapBuild+'</span>'+
+        '</div>'+
+        '<div style="margin-top:4px;font-size:10px;color:#9CA3AF">Plan Buy: '+mBuy+' | Realized: '+actualBuy+'<br>Plan Build: '+mBuild+' | Realized: '+actualBuild+'</div>';
+      tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px';
+      tip.style.top=(e.clientY-10)+'px';
+    };
+    gapEl.onmousemove=function(e){
+      if(!tip)return;
+      tip.style.left=(e.clientX+14)+'px';
+      tip.style.top=(e.clientY-10)+'px';
+    };
+    gapEl.onmouseleave=function(){if(tip)tip.style.display='none';};
+  }
   if(el('mpp-buy-plan'))el('mpp-buy-plan').textContent=fmt(mBuy);
   if(el('mpp-build-plan'))el('mpp-build-plan').textContent=fmt(mBuild);
   if(el('mpp-bb-buy'))el('mpp-bb-buy').style.width=buyPct+'%';
@@ -2004,5 +2036,6 @@ async function exportPPT(){
   }
 }
 </script>
+<div id="gap-tooltip" style="position:fixed;display:none;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;line-height:1.8;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.3)"></div>
 </body>
 </html>
