@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SO Generator — OD Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style id="pageRule">@page{size:A3 landscape;margin:8mm}</style>
+<style>
+:root{
+  --magenta:#ED0677; --yellow:#FFCB05; --pink:#FF84A1; --blue:#7ECCEE;
+  --blush:#FFECF0; --dark:#524245; --soft:#d9cfd2; --green:#1D9E75; --amber:#D98A0B; --red:#D94A4A;
+  --col-w:200px; --node-h:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+html,body{height:100%}
+body{font-family:'Poppins',system-ui,sans-serif;color:var(--dark);background:#fff;display:flex;flex-direction:column;overflow:hidden}
+
+header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;border-bottom:1px solid #eee;flex-wrap:wrap;z-index:30}
+.brand{display:flex;align-items:center;gap:8px}
+.brand .arrow{width:26px;height:26px;border-radius:6px;background:var(--magenta);display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+.brand b{font-size:13.5px;font-weight:700}
+.brand small{display:block;font-size:9.5px;color:#a08e93;font-weight:500;letter-spacing:.07em;text-transform:uppercase}
+#orgTitle{font-family:inherit;font-weight:600;font-size:13px;border:1px dashed transparent;border-radius:8px;padding:6px 10px;min-width:210px;background:transparent;color:var(--dark)}
+#orgTitle:hover{border-color:var(--pink)}
+#orgTitle:focus{outline:none;border-color:var(--magenta);background:var(--blush)}
+.spacer{flex:1}
+.btn{font-family:inherit;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;border:1.5px solid var(--soft);background:#fff;color:var(--dark);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .12s,transform .08s}
+.btn:hover{background:var(--blush)}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--magenta);border-color:var(--magenta);color:#fff}
+.btn.primary:hover{background:#c9055f}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn.danger:hover{background:#fdeaea}
+.zoom-group{display:flex;align-items:center;border:1.5px solid var(--soft);border-radius:999px;padding:2px}
+.zoom-group .btn{border:none;padding:5px 9px}
+#zoomLabel{font-size:11.5px;font-weight:600;min-width:42px;text-align:center;color:#a08e93}
+#dirty{font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;display:none}
+#dirty.on{display:inline-block;background:#FEF3C7;color:#92400e}
+#dirty.saved{display:inline-block;background:#EDFAF4;color:#065f46}
+
+#tabs{display:flex;align-items:center;gap:4px;padding:0 14px;background:#fff;border-bottom:2px solid var(--blush);overflow-x:auto;z-index:20}
+.tab{font-family:inherit;font-size:12.5px;font-weight:600;padding:9px 15px;border:none;background:transparent;color:#a08e93;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--dark)}
+.tab.active{color:var(--magenta);border-bottom-color:var(--magenta)}
+.tab .n{font-size:10px;font-weight:700;background:var(--blush);color:var(--magenta);border-radius:999px;padding:1px 7px}
+.tab.active .n{background:var(--magenta);color:#fff}
+.tab .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);display:none}
+.tab.dirty .dot{display:block}
+#addTab{font-size:16px;font-weight:700;color:#c9bcc0;padding:6px 12px;border:none;background:transparent;cursor:pointer}
+#addTab:hover{color:var(--magenta)}
+
+#viewport{flex:1;overflow:hidden;position:relative;cursor:grab;background:radial-gradient(circle,#f1e4e8 1.1px,transparent 1.1px) 0 0/26px 26px,#fdfafb}
+#viewport.panning{cursor:grabbing}
+#stage{position:absolute;transform-origin:0 0;padding:34px;will-change:transform}
+#sheet{background:#fff;padding:16px 20px 26px;border:1px solid #e9e0e2;box-shadow:0 4px 24px rgba(82,66,69,.07);display:inline-block}
+.sheet-title{font-size:15px;font-weight:700;margin-bottom:12px}
+.sheet-title small{display:block;font-size:10px;font-weight:500;color:#a08e93;margin-top:2px}
+
+#ribbon{display:flex;margin-bottom:16px}
+.rib{width:var(--col-w);margin-right:14px;flex:0 0 auto}
+.rib .g,.rib .l{border:1px solid #7a7a7a;text-align:center;font-size:10.5px;font-weight:700;padding:2px 0;line-height:1.5}
+.rib .l{background:#fff;font-weight:600}
+.rib-key{width:120px;flex:0 0 auto;margin-right:14px}
+.rib-key div{border:1px solid #7a7a7a;font-size:10px;font-weight:700;padding:2px 6px;line-height:1.5;background:#F4B183}
+
+#chart{position:relative}
+#wires{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.node{position:absolute;width:var(--col-w);height:var(--node-h);border:1px solid #7a7a7a;background:#fff;cursor:pointer;display:flex;flex-direction:column;transition:box-shadow .12s,border-color .12s}
+.node:hover{box-shadow:0 4px 14px rgba(237,6,119,.2);border-color:var(--magenta);z-index:5}
+.node.dragging{opacity:.35}
+.node.drop-ok{border-color:var(--magenta);box-shadow:0 0 0 3px var(--blush)}
+.node .t{flex:1;background:#D9D9D9;border-bottom:1px solid #7a7a7a;display:grid;place-items:center;text-align:center;font-size:10.5px;font-weight:600;line-height:1.25;padding:2px 6px;overflow:hidden}
+.node .p{height:20px;display:grid;place-items:center;font-size:10px;font-weight:500;color:#6b5c60;padding:0 6px;overflow:hidden}
+.node .p.vac{color:#b3a1a6;font-style:italic}
+.node .badge{position:absolute;top:-8px;right:-6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--magenta);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.node .quick{position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);display:none;gap:3px;z-index:6}
+.node:hover .quick{display:flex}
+.quick button{width:22px;height:22px;border-radius:50%;border:none;cursor:pointer;background:var(--magenta);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.quick button.col,.quick button.mv{background:var(--dark)}
+.quick button:hover{filter:brightness(1.15)}
+
+#overlay{position:fixed;inset:0;background:rgba(82,66,69,.45);display:none;place-items:center;z-index:60}
+#overlay.show{display:grid}
+.modal{width:min(400px,93vw);background:#fff;border-radius:18px;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:15px;display:flex;align-items:center;gap:8px}
+.modal h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--magenta)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10.5px;font-weight:600;color:#9a878c;margin-bottom:4px;letter-spacing:.05em;text-transform:uppercase}
+.field input,.field select{width:100%;font-family:inherit;font-size:13px;font-weight:500;padding:9px 11px;border:1.5px solid var(--soft);border-radius:10px;color:var(--dark);background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--magenta);background:#fffafc}
+.two{display:flex;gap:10px}.two .field{flex:1}
+.modal .actions{display:flex;gap:8px;margin-top:16px}
+.modal .actions .btn{flex:1;justify-content:center}
+.hintline{font-size:10.5px;color:#b3a1a6;margin-top:-6px;margin-bottom:12px}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dark);color:#fff;font-size:12.5px;padding:10px 18px;border-radius:999px;transition:transform .25s;z-index:70;pointer-events:none;max-width:90vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#hint{position:absolute;bottom:12px;left:12px;font-size:10.5px;color:#b3a1a6;background:rgba(255,255,255,.9);padding:6px 12px;border-radius:999px;z-index:10}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(253,250,251,.94);z-index:15;font-size:13px;font-weight:600;color:#a08e93}
+#loading.hide{display:none}
+
+@media print{
+  html,body{background:#fff!important}
+  header,#tabs,#hint,#toast,#overlay,#loading,.quick{display:none!important}
+  body{overflow:visible;display:block}
+  #viewport{overflow:visible;background:#fff;position:static}
+  #stage{position:static;padding:0;transform:none!important}
+  #sheet{border:none;box-shadow:none;padding:0;transform-origin:top left}
+  .node{box-shadow:none!important;border-color:#7a7a7a!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="btn" id="backBtn" title="Kembali ke OD Hub">←</button>
+  <div class="brand"><div class="arrow">➤</div><div><b>SO Generator</b><small>OD Hub · People &amp; Culture</small></div></div>
+  <input id="orgTitle" value="Struktur Organisasi — PT. Tri Adi Bersama">
+  <span id="dirty"></span>
+  <div class="spacer"></div>
+  <button class="btn" id="undoBtn">↩ Undo</button>
+  <div class="zoom-group">
+    <button class="btn" id="zoomOut">−</button><span id="zoomLabel">100%</span>
+    <button class="btn" id="zoomIn">+</button><button class="btn" id="zoomFit">Fit</button>
+  </div>
+  <select id="paper" class="btn" title="Ukuran kertas PDF">
+    <option value="a3" selected>A3</option><option value="a4">A4</option><option value="a2">A2</option>
+  </select>
+  <button class="btn" id="printBtn">🖨 PDF</button>
+  <button class="btn" id="exportBtn" title="Backup ke file JSON">⤓ JSON</button>
+  <input type="file" id="fileInput" accept=".json" hidden>
+  <button class="btn" id="reloadBtn" title="Muat ulang dari Google Sheets">⟳</button>
+  <button class="btn primary" id="saveBtn2">💾 Simpan ke Sheets</button>
+</header>
+
+<div id="tabs"></div>
+
+<div id="viewport">
+  <div id="stage">
+    <div id="sheet">
+      <div class="sheet-title" id="sheetTitle"></div>
+      <div id="ribbon"></div>
+      <div id="chart"><svg id="wires"></svg></div>
+    </div>
+  </div>
+  <div id="hint">💡 Klik kotak = edit · <b>+</b> tambah bawahan · <b>▲▼</b> atur urutan · drag kotak ke kotak lain = ganti atasan</div>
+  <div id="loading">Memuat data dari Google Sheets…</div>
+</div>
+
+<div id="overlay">
+  <div class="modal">
+    <h3><span class="dot"></span><span id="modalTitle">Edit Posisi</span></h3>
+    <div class="field"><label>Nama Jabatan / Posisi</label><input id="fTitle" placeholder="cth: Head of People &amp; Organization Dev"></div>
+    <div class="field"><label>Nama Pemegang Jabatan</label><input id="fName" placeholder="kosongkan jika belum terisi"></div>
+    <div class="two">
+      <div class="field"><label>Layer</label><select id="fLayer"></select></div>
+      <div class="field"><label>Status</label><select id="fStatus">
+        <option value="">— Normal —</option>
+        <option value="VAC">VAC · Vacant</option>
+        <option value="*">* · Concurrent</option>
+        <option value="**">** · Proposed</option>
+        <option value="Act">Act · Acting</option>
+      </select></div>
+    </div>
+    <div class="hintline">Layer menentukan kolom di chart, bukan urutan atasan-bawahan.</div>
+    <div class="actions">
+      <button class="btn danger" id="deleteBtn">Hapus</button>
+      <button class="btn" id="cancelBtn">Batal</button>
+      <button class="btn primary" id="saveModalBtn">Simpan</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ════════ KONFIGURASI — samakan dengan OD Hub ════════ */
+const SHEET_ID = '1Y4okept6ADvk-KZVU8qgkBkTaCvH8dwkhDVSYaOnTuQ';
+const API_KEY = 'AIzaSyA_K5XPnnvGvPzt08Bvdg9vmcW-gWJJt8k';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1IZ-_WghcQU0ZPMHQt3dcbN7SGencFrb4rPj18YJuoos_CwHF4CR-lfGPd6Xa5zc2/exec';
+const SO_SHEET = 'Org Structure';
+const OD_HUB_URL = 'index.html';
+const DRAFT_KEY = 'so_generator_draft';
+
+const LAYERS = [
+  {id:'division',label:'Division',group:6,color:'#92D050'},
+  {id:'subdivision',label:'Sub Division',group:5,color:'#ED0677'},
+  {id:'dept',label:'Department Head',group:4,color:'#FFCB05'},
+  {id:'section',label:'Section Head',group:4,color:'#FFCB05'},
+  {id:'spv',label:'Supervisor',group:4,color:'#FFCB05'},
+  {id:'staff',label:'Staff',group:4,color:'#FFCB05'},
+  {id:'unit',label:'Unit',group:3,color:'#B4C7E7'},
+  {id:'leader',label:'Leader',group:2,color:'#F4B183'},
+  {id:'admin',label:'Admin',group:1,color:'#00A160'}
+];
+const COL_W=200, COL_GAP=14, NODE_H=56, ROW_GAP=12;
+const layerIndex = id => Math.max(0, LAYERS.findIndex(l=>l.id===id));
+
+/* ════════ STATE ════════ */
+let divisions = [];
+let activeDiv = null;
+let dirtySet = new Set();
+let collapsed = new Set();
+let seq = 1;
+const undoStack = [];
+const $ = s => document.querySelector(s);
+const params = new URLSearchParams(location.search);
+let editorName = localStorage.getItem('so_editor_name') || '';
+
+const cur = () => divisions.find(d=>d.id===activeDiv) || {name:'',nodes:[]};
+const nodes = () => cur().nodes;
+const uid = p => (p||'n') + (seq++) + '_' + Date.now().toString(36).slice(-4);
+const byId = id => nodes().find(n=>n.id===id);
+const kidsOf = id => nodes().filter(n=>n.parentId===id).sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+function isDesc(id,ancId){let c=byId(id);while(c&&c.parentId){if(c.parentId===ancId)return true;c=byId(c.parentId);}return false;}
+function subCount(id){let c=0;for(const k of kidsOf(id))c+=1+subCount(k.id);return c;}
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function markDirty(){ if(activeDiv) dirtySet.add(activeDiv); updateDirtyBadge(); saveDraft(); renderTabs(); }
+function updateDirtyBadge(){
+  const b=$('#dirty');
+  if(dirtySet.size){ b.className='on'; b.textContent='● '+dirtySet.size+' divisi belum disimpan'; }
+  else { b.className=''; b.textContent=''; }
+}
+function snapshot(){ undoStack.push(JSON.stringify({divisions,activeDiv,dirty:[...dirtySet]})); if(undoStack.length>60)undoStack.shift(); }
+function undo(){
+  if(!undoStack.length) return toast('Tidak ada yang bisa di-undo');
+  const s=JSON.parse(undoStack.pop());
+  divisions=s.divisions; activeDiv=s.activeDiv; dirtySet=new Set(s.dirty);
+  updateDirtyBadge(); saveDraft(); renderTabs(); render(); toast('Undo ✓');
+}
+
+/* ════════ DRAFT LOKAL (jaring pengaman) ════════ */
+function saveDraft(){
+  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify({divisions, dirty:[...dirtySet], at:new Date().toISOString()})); }catch(e){}
+}
+function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+
+/* ════════ LOAD DARI SHEETS ════════ */
+async function loadFromSheets(){
+  $('#loading').classList.remove('hide');
+  $('#loading').textContent='Memuat data dari Google Sheets…';
+  try{
+    const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent(SO_SHEET)+'?key='+API_KEY;
+    const r=await fetch(url);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const rows=d.values||[];
+    if(!rows.length){ divisions=[]; }
+    else{
+      const head=rows[0].map(h=>String(h||'').trim().toLowerCase());
+      const ix=n=>head.indexOf(n);
+      const cId=ix('id'),cDiv=ix('divisi'),cPar=ix('parent_id'),cLay=ix('layer'),
+            cJab=ix('jabatan'),cNam=ix('nama'),cSta=ix('status'),cUru=ix('urutan');
+      const map={};
+      rows.slice(1).forEach(r0=>{
+        const div=String(r0[cDiv]||'').trim();
+        if(!div||!String(r0[cId]||'').trim()) return;
+        if(!map[div]) map[div]={id:'div_'+div.replace(/\W+/g,'_'),name:div,nodes:[]};
+        map[div].nodes.push({
+          id:String(r0[cId]).trim(),
+          parentId:String(r0[cPar]||'').trim()||null,
+          layer:String(r0[cLay]||'staff').trim(),
+          title:String(r0[cJab]||'').trim(),
+          name:String(r0[cNam]||'').trim(),
+          status:String(r0[cSta]||'').trim(),
+          urutan:parseInt(r0[cUru])||0
+        });
+      });
+      divisions=Object.values(map);
+    }
+    dirtySet.clear();
+    restoreDraftIfAny();
+  }catch(e){
+    console.warn('Load gagal:',e);
+    const draft=readDraft();
+    if(draft){ divisions=draft.divisions; dirtySet=new Set(draft.dirty||[]); toast('⚠️ Sheets tidak terbaca — memakai draft lokal'); }
+    else{ divisions=[]; toast('⚠️ Gagal memuat dari Sheets: '+e.message); }
+  }
+  if(!divisions.length){
+    divisions=[{id:'div_baru',name:'Divisi Baru',nodes:[{id:uid(),parentId:null,layer:'division',title:'Pimpinan Divisi',name:'',status:'',urutan:0}]}];
+    dirtySet.add('div_baru');
+  }
+  const want=params.get('div');
+  const found=want && divisions.find(d=>d.name.toLowerCase()===want.toLowerCase());
+  activeDiv=(found||divisions[0]).id;
+  collapsed.clear(); updateDirtyBadge(); renderTabs(); render(); fit();
+  $('#loading').classList.add('hide');
+}
+function readDraft(){ try{ const s=localStorage.getItem(DRAFT_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
+function restoreDraftIfAny(){
+  const draft=readDraft();
+  if(!draft||!draft.dirty||!draft.dirty.length) return;
+  const when=new Date(draft.at).toLocaleString('id-ID');
+  if(!confirm('Ada perubahan yang belum tersimpan ke Sheets (terakhir diubah '+when+').\n\nOK = lanjutkan draft tersebut\nCancel = buang draft, pakai data dari Sheets')){ clearDraft(); return; }
+  const byName={}; divisions.forEach(d=>byName[d.name]=d);
+  draft.divisions.forEach(dd=>{
+    if(draft.dirty.includes(dd.id)||!byName[dd.name]){
+      const i=divisions.findIndex(x=>x.name===dd.name);
+      if(i>=0) divisions[i]=dd; else divisions.push(dd);
+    }
+  });
+  dirtySet=new Set(draft.dirty);
+}
+
+/* ════════ SIMPAN KE SHEETS ════════ */
+async function saveToSheets(){
+  if(!dirtySet.size) return toast('Tidak ada perubahan untuk disimpan');
+  if(!editorName){
+    const n=prompt('Nama kamu (dicatat sebagai pengubah terakhir):','');
+    if(!n) return;
+    editorName=n.trim(); localStorage.setItem('so_editor_name',editorName);
+  }
+  const btn=$('#saveBtn2'); btn.disabled=true; btn.textContent='Menyimpan…';
+  const targets=divisions.filter(d=>dirtySet.has(d.id));
+  let ok=0, failNames=[];
+  for(const d of targets){
+    const rows=d.nodes.map(n=>({
+      id:n.id, divisi:d.name, parent_id:n.parentId||'', layer:n.layer,
+      jabatan:n.title||'', nama:n.name||'', status:n.status||'', urutan:n.urutan||0
+    }));
+    try{
+      const resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({
+        action:'saveOrgStructure', divisi:d.name, updated_by:editorName, rows
+      })});
+      const res=await resp.json();
+      if(!res.success) throw new Error(res.error||'gagal');
+      dirtySet.delete(d.id); ok++;
+    }catch(e){ console.warn(e); failNames.push(d.name); }
+  }
+  btn.disabled=false; btn.textContent='💾 Simpan ke Sheets';
+  updateDirtyBadge(); renderTabs(); saveDraft();
+  if(!failNames.length){
+    clearDraft();
+    $('#dirty').className='saved'; $('#dirty').textContent='✓ Tersimpan';
+    setTimeout(updateDirtyBadge,2500);
+    toast('✓ '+ok+' divisi tersimpan ke Google Sheets');
+  } else {
+    toast('⚠️ Gagal menyimpan: '+failNames.join(', ')+' — draft tetap aman di browser');
+  }
+}
+
+/* ════════ TABS ════════ */
+function renderTabs(){
+  const t=$('#tabs'); t.innerHTML='';
+  divisions.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='tab'+(d.id===activeDiv?' active':'')+(dirtySet.has(d.id)?' dirty':'');
+    b.innerHTML='<span class="dot"></span>'+esc(d.name)+'<span class="n">'+d.nodes.length+'</span>';
+    b.title='Klik untuk buka · klik lagi untuk ganti nama';
+    b.addEventListener('click',()=>{
+      if(d.id===activeDiv) return renameDiv(d);
+      activeDiv=d.id; collapsed.clear(); renderTabs(); render(); fit();
+    });
+    t.appendChild(b);
+  });
+  const add=document.createElement('button');
+  add.id='addTab'; add.textContent='+'; add.title='Tambah divisi';
+  add.addEventListener('click',()=>{
+    const name=prompt('Nama divisi baru:','');
+    if(!name||!name.trim()) return;
+    snapshot();
+    const id='div_'+name.trim().replace(/\W+/g,'_');
+    if(divisions.some(d=>d.id===id)) return toast('Divisi itu sudah ada');
+    divisions.push({id,name:name.trim(),nodes:[{id:uid(),parentId:null,layer:'division',title:name.trim(),name:'',status:'',urutan:0}]});
+    activeDiv=id; dirtySet.add(id); collapsed.clear();
+    updateDirtyBadge(); saveDraft(); renderTabs(); render(); fit();
+  });
+  t.appendChild(add);
+}
+function renameDiv(d){
+  const name=prompt('Ganti nama divisi:',d.name);
+  if(name===null||!name.trim()||name.trim()===d.name) return;
+  snapshot(); d.name=name.trim(); markDirty(); render();
+  toast('Nama divisi diubah — jangan lupa Simpan ke Sheets');
+}
+
+/* ════════ RENDER ════════ */
+function render(){
+  $('#sheetTitle').innerHTML=esc($('#orgTitle').value)+' — '+esc(cur().name)+
+    '<small>People &amp; Culture · digenerate '+new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})+'</small>';
+  renderRibbon(); layoutAndDraw();
+}
+function renderRibbon(){
+  const r=$('#ribbon'); r.innerHTML='';
+  const k=document.createElement('div'); k.className='rib-key';
+  k.innerHTML='<div>Kelompok Jabatan</div><div>Layer</div>'; r.appendChild(k);
+  LAYERS.forEach(l=>{
+    const d=document.createElement('div'); d.className='rib';
+    d.innerHTML='<div class="g" style="background:'+l.color+';color:'+(l.id==='admin'?'#fff':'#2b2b2b')+'">'+l.group+'</div><div class="l">'+l.label+'</div>';
+    r.appendChild(d);
+  });
+}
+function layoutAndDraw(){
+  const chart=$('#chart');
+  [...chart.querySelectorAll('.node')].forEach(e=>e.remove());
+  const svg=$('#wires'); svg.innerHTML='';
+  const list=nodes(), pos={};
+  let cursorY=0;
+  const roots=list.filter(n=>!n.parentId).sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+  (function place(arr){
+    arr.forEach(n=>{
+      const kids=kidsOf(n.id);
+      if(!kids.length||collapsed.has(n.id)){ pos[n.id]=cursorY; cursorY+=NODE_H+ROW_GAP; }
+      else{ place(kids); pos[n.id]=(pos[kids[0].id]+pos[kids[kids.length-1].id])/2; }
+    });
+  })(roots);
+
+  const OFFSET=134;
+  const xOf=n=>OFFSET+layerIndex(n.layer)*(COL_W+COL_GAP);
+  let maxX=0,maxY=0;
+  list.forEach(n=>{
+    if(pos[n.id]===undefined) return;
+    const x=xOf(n),y=pos[n.id];
+    maxX=Math.max(maxX,x+COL_W); maxY=Math.max(maxY,y+NODE_H);
+    chart.appendChild(makeCard(n,x,y));
+  });
+  list.forEach(n=>{
+    if(!n.parentId||pos[n.id]===undefined) return;
+    const p=byId(n.parentId); if(!p||pos[p.id]===undefined) return;
+    const sx=xOf(p)+COL_W, sy=pos[p.id]+NODE_H/2, cx=xOf(n), ey=pos[n.id]+NODE_H/2;
+    const mid=sx+COL_GAP/2;
+    const d=(Math.abs(sy-ey)<0.5)?'M'+sx+','+sy+' H'+cx:'M'+sx+','+sy+' H'+mid+' V'+ey+' H'+cx;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',d); path.setAttribute('fill','none');
+    path.setAttribute('stroke','#7a7a7a'); path.setAttribute('stroke-width','1.2');
+    svg.appendChild(path);
+  });
+  const cw=Math.max(maxX+20,600), ch=Math.max(maxY+16,160);
+  chart.style.width=cw+'px'; chart.style.height=ch+'px';
+  svg.setAttribute('width',cw); svg.setAttribute('height',ch);
+  svg.setAttribute('viewBox','0 0 '+cw+' '+ch);
+}
+function makeCard(n,x,y){
+  const el=document.createElement('div');
+  el.className='node'; el.style.left=x+'px'; el.style.top=y+'px';
+  el.dataset.id=n.id; el.draggable=n.parentId!==null;
+  const kids=kidsOf(n.id), isCol=collapsed.has(n.id);
+  el.innerHTML=(n.status?'<span class="badge">'+esc(n.status)+'</span>':'')+
+    '<div class="t">'+esc(n.title||'(tanpa jabatan)')+'</div>'+
+    '<div class="p'+(n.name?'':' vac')+'">'+(n.name?esc(n.name):(n.status==='VAC'?'vacant':'—'))+'</div>'+
+    '<div class="quick">'+
+      '<button class="mv up" title="Naikkan urutan">▲</button>'+
+      '<button class="add" title="Tambah bawahan">+</button>'+
+      '<button class="mv down" title="Turunkan urutan">▼</button>'+
+      (kids.length?'<button class="col" title="Lipat/buka">'+(isCol?'▸':'▾')+'</button>':'')+
+    '</div>';
+  el.addEventListener('click',e=>{ if(!e.target.closest('.quick')) openModal(n.id); });
+  el.querySelector('.add').addEventListener('click',e=>{e.stopPropagation();addChild(n.id);});
+  el.querySelector('.up').addEventListener('click',e=>{e.stopPropagation();move(n.id,-1);});
+  el.querySelector('.down').addEventListener('click',e=>{e.stopPropagation();move(n.id,1);});
+  const cb=el.querySelector('.col');
+  if(cb) cb.addEventListener('click',e=>{e.stopPropagation();isCol?collapsed.delete(n.id):collapsed.add(n.id);render();});
+  el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',n.id);e.dataTransfer.effectAllowed='move';requestAnimationFrame(()=>el.classList.add('dragging'));});
+  el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drop-ok');});
+  el.addEventListener('dragleave',()=>el.classList.remove('drop-ok'));
+  el.addEventListener('drop',e=>{
+    e.preventDefault(); el.classList.remove('drop-ok');
+    const id=e.dataTransfer.getData('text/plain');
+    if(!id||id===n.id) return;
+    if(isDesc(n.id,id)) return toast('⚠️ Tidak bisa memindahkan atasan ke bawahannya sendiri');
+    const m=byId(id); if(!m||m.parentId===n.id) return;
+    snapshot(); m.parentId=n.id; m.urutan=kidsOf(n.id).length; collapsed.delete(n.id);
+    markDirty(); render();
+    toast('“'+(m.title||'Posisi')+'” sekarang report ke “'+(n.title||'-')+'”');
+  });
+  return el;
+}
+function move(id,dir){
+  const n=byId(id);
+  const sib=nodes().filter(x=>x.parentId===n.parentId).sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+  const i=sib.findIndex(x=>x.id===id), j=i+dir;
+  if(j<0||j>=sib.length) return;
+  snapshot();
+  sib.forEach((x,k)=>x.urutan=k);
+  sib[i].urutan=j; sib[j].urutan=i;
+  markDirty(); render();
+}
+
+/* ════════ CRUD ════════ */
+function addChild(parentId){
+  snapshot();
+  const p=byId(parentId);
+  const next=LAYERS[Math.min(layerIndex(p.layer)+1,LAYERS.length-1)].id;
+  const n={id:uid(),parentId,layer:next,title:'Posisi Baru',name:'',status:'',urutan:kidsOf(parentId).length};
+  nodes().push(n); collapsed.delete(parentId);
+  markDirty(); render(); openModal(n.id,true);
+}
+let editingId=null;
+function openModal(id,isNew){
+  editingId=id; const n=byId(id);
+  $('#modalTitle').textContent=isNew?'Tambah Posisi':'Edit Posisi';
+  $('#fTitle').value=n.title||''; $('#fName').value=n.name||''; $('#fStatus').value=n.status||'';
+  const sel=$('#fLayer'); sel.innerHTML='';
+  LAYERS.forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.group+' · '+l.label;sel.appendChild(o);});
+  sel.value=n.layer;
+  $('#deleteBtn').style.display=n.parentId===null?'none':'';
+  $('#overlay').classList.add('show');
+  setTimeout(()=>{$('#fTitle').focus();$('#fTitle').select();},50);
+}
+function closeModal(){ $('#overlay').classList.remove('show'); editingId=null; }
+$('#saveModalBtn').addEventListener('click',()=>{
+  const n=byId(editingId); if(!n) return closeModal();
+  snapshot();
+  n.title=$('#fTitle').value.trim(); n.name=$('#fName').value.trim();
+  n.layer=$('#fLayer').value; n.status=$('#fStatus').value;
+  closeModal(); markDirty(); render();
+});
+$('#cancelBtn').addEventListener('click',closeModal);
+$('#overlay').addEventListener('click',e=>{ if(e.target===$('#overlay')) closeModal(); });
+$('#deleteBtn').addEventListener('click',()=>{
+  const n=byId(editingId); if(!n) return;
+  const kids=kidsOf(n.id);
+  if(kids.length&&!confirm('Posisi ini punya '+subCount(n.id)+' bawahan.\n\nOK = hapus posisi ini saja, bawahan naik ke atasannya.\nCancel = batal.')) return;
+  snapshot();
+  kids.forEach(k=>k.parentId=n.parentId);
+  cur().nodes=nodes().filter(x=>x.id!==n.id);
+  closeModal(); markDirty(); render();
+  toast('Posisi dihapus'+(kids.length?' — bawahan dipindah ke atasannya':''));
+});
+document.addEventListener('keydown',e=>{
+  const open=$('#overlay').classList.contains('show');
+  if(e.key==='Escape') closeModal();
+  if(e.key==='Enter'&&open) $('#saveModalBtn').click();
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!open){e.preventDefault();undo();}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveToSheets();}
+});
+$('#undoBtn').addEventListener('click',undo);
+
+/* ════════ PAN & ZOOM ════════ */
+let scale=1,panX=0,panY=0;
+const stage=$('#stage'),viewport=$('#viewport');
+function applyT(){stage.style.transform='translate('+panX+'px,'+panY+'px) scale('+scale+')';$('#zoomLabel').textContent=Math.round(scale*100)+'%';}
+function setZoom(s,cx,cy){const ns=Math.min(2,Math.max(.15,s));if(cx!==undefined){panX=cx-(cx-panX)*(ns/scale);panY=cy-(cy-panY)*(ns/scale);}scale=ns;applyT();}
+function fit(){
+  const sh=$('#sheet'); const w=sh.offsetWidth+68,h=sh.offsetHeight+68;
+  const vw=viewport.clientWidth,vh=viewport.clientHeight;
+  scale=Math.min(1.1,Math.min(vw/w,vh/h)*.96);
+  panX=Math.max(0,(vw-w*scale)/2); panY=10; applyT();
+}
+$('#zoomIn').addEventListener('click',()=>setZoom(scale*1.15));
+$('#zoomOut').addEventListener('click',()=>setZoom(scale/1.15));
+$('#zoomFit').addEventListener('click',fit);
+viewport.addEventListener('wheel',e=>{
+  if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(scale*(e.deltaY<0?1.08:1/1.08),e.clientX,e.clientY);}
+  else{panX-=e.deltaX;panY-=e.deltaY;applyT();}
+},{passive:false});
+let pd=null;
+viewport.addEventListener('mousedown',e=>{if(e.target.closest('.node'))return;pd={x:e.clientX-panX,y:e.clientY-panY};viewport.classList.add('panning');});
+window.addEventListener('mousemove',e=>{if(!pd)return;panX=e.clientX-pd.x;panY=e.clientY-pd.y;applyT();});
+window.addEventListener('mouseup',()=>{pd=null;viewport.classList.remove('panning');});
+
+/* ════════ PDF / JSON / NAV ════════ */
+const PAPERS={a3:{css:'A3 landscape',w:1520,h:1020},a4:{css:'A4 landscape',w:1060,h:700},a2:{css:'A2 landscape',w:2170,h:1500}};
+function preparePrint(){
+  collapsed.clear(); render();
+  const sh=$('#sheet'); sh.style.zoom='';
+  const paper=PAPERS[$('#paper').value];
+  $('#pageRule').textContent='@page{size:'+paper.css+';margin:8mm}';
+  sh.style.zoom=Math.min(1,paper.w/sh.scrollWidth,paper.h/sh.scrollHeight);
+}
+$('#printBtn').addEventListener('click',()=>{preparePrint();setTimeout(()=>window.print(),60);});
+window.addEventListener('beforeprint',preparePrint);
+window.addEventListener('afterprint',()=>{$('#sheet').style.zoom='';});
+$('#exportBtn').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({title:$('#orgTitle').value,divisions,savedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='struktur-organisasi-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  toast('Backup JSON terunduh');
+});
+$('#reloadBtn').addEventListener('click',()=>{
+  if(dirtySet.size&&!confirm('Ada perubahan belum disimpan. Muat ulang dari Sheets dan buang perubahan itu?')) return;
+  dirtySet.clear(); clearDraft(); loadFromSheets();
+});
+$('#backBtn').addEventListener('click',()=>{
+  if(dirtySet.size&&!confirm('Ada perubahan belum disimpan ke Sheets. Tetap kembali ke OD Hub?')) return;
+  location.href=OD_HUB_URL;
+});
+$('#saveBtn2').addEventListener('click',saveToSheets);
+$('#orgTitle').addEventListener('input',render);
+window.addEventListener('beforeunload',e=>{ if(dirtySet.size){e.preventDefault();e.returnValue='';} });
+
+let tt;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2800);}
+
+loadFromSheets();
+</script>
+</body>
+</html>
