@@ -441,8 +441,16 @@ canvas{display:block;width:100%}
 
 <!-- JD -->
 <div class="page" id="page-jd">
-  <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
-  <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking status JD per jabatan · 2026</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+    <div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
+      <div style="font-size:11px;color:var(--tx3)">Tracking status JD per jabatan · 2026</div>
+    </div>
+    <a href="https://jd-generator.arya-putra1208.workers.dev/" target="_blank" class="btn btn-pink" style="text-decoration:none;display:flex;align-items:center;gap:6px">
+      <svg class="ic" style="width:14px;height:14px"><use href="#i-file"/></svg>
+      JD Generator
+    </a>
+  </div>
 
   <!-- JD KPI -->
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px" id="jd-kpi-row"></div>
