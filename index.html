@@ -423,7 +423,10 @@ canvas{display:block;width:100%}
 <!-- SO -->
 <div class="page" id="page-so">
   <div style="font-size:16px;font-weight:700;margin-bottom:4px">Struktur Organisasi</div>
-  <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Status SO per divisi · 2026</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-size:11px;color:var(--tx3)">Status SO per divisi · 2026</div>
+    <a href="so-generator.html" class="btn btn-pink" style="text-decoration:none">+ SO Generator</a>
+  </div>
   <div class="r2">
     <div class="card"><div class="chdr"><div><div class="ct">Status SO per Divisi</div><div class="cs" id="so-sub"></div></div></div><div id="so-list"></div></div>
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -581,6 +584,8 @@ canvas{display:block;width:100%}
 const SHEET_ID='1Y4okept6ADvk-KZVU8qgkBkTaCvH8dwkhDVSYaOnTuQ';
 const API_KEY='AIzaSyA_K5XPnnvGvPzt08Bvdg9vmcW-gWJJt8k';
 const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbz1IZ-_WghcQU0ZPMHQt3dcbN7SGencFrb4rPj18YJuoos_CwHF4CR-lfGPd6Xa5zc2/exec';
+const SO_GENERATOR_URL='so-generator.html';
+const SO_SHEET='Org Structure';
 const EMBEDDED={fptk:[],match_results:[],mpp_positions:{},mpp_plan_buy:{},mpp_plan_build:{},mpp_detail:{},so:[],jd:[],kpi:[],months:["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"],generated:"Memuat..."}
 let D=EMBEDDED;
 let FP=[];
@@ -1108,9 +1113,23 @@ function renderSO(){
   const COL={'Signed All':'#1D9E75','Signed by User':'var(--pink)','Sent to User':'var(--amber)','Available':'#888'};
   const BG={'Signed All':'#EDFAF4','Signed by User':'#FBEAF0','Sent to User':'#FAEEDA','Available':'#F5F5F5'};
   document.getElementById('so-sub').textContent=so.length+' divisi · 2026';
+  const OS=D.orgstruct||{};
   document.getElementById('so-list').innerHTML=so.map(d=>{
     const col=COL[d.effective_status]||'#888',bg=BG[d.effective_status]||'#F5F5F5';
-    return '<div class="so-row"><div><div style="font-size:12px;font-weight:500">'+d.divisi+'</div></div><span class="pill" style="background:'+bg+';color:'+col+'">'+(d.effective_status||'-')+'</span></div>';
+    const os=OS[d.divisi];
+    const meta=os
+      ? os.count+' posisi'+(os.vacant?' · '+os.vacant+' vacant':'')+(os.updated_by?' · update: '+os.updated_by:'')
+      : 'Belum ada data struktur';
+    const metaCol=os?'var(--tx3)':'var(--amber)';
+    return '<div class="so-row">'+
+      '<div><div style="font-size:12px;font-weight:500">'+d.divisi+'</div>'+
+      '<div style="font-size:10px;color:'+metaCol+';margin-top:2px">'+meta+'</div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span class="pill" style="background:'+bg+';color:'+col+'">'+(d.effective_status||'-')+'</span>'+
+        '<a href="'+SO_GENERATOR_URL+'?div='+encodeURIComponent(d.divisi)+'" '+
+          'style="font-size:10px;font-weight:600;color:var(--pink);text-decoration:none;border:1px solid var(--pink);'+
+          'border-radius:999px;padding:3px 10px;white-space:nowrap">'+(os?'Buka SO':'Buat SO')+' \u203A</a>'+
+      '</div></div>';
   }).join('');
   const tot=so.length;
   const counts={'Signed All':so.filter(d=>d.effective_status==='Signed All').length,'Signed by User':so.filter(d=>d.effective_status==='Signed by User').length,'Sent to User':so.filter(d=>d.effective_status==='Sent to User').length,'Available':so.filter(d=>!d.effective_status||d.effective_status==='Available').length};
@@ -1605,7 +1624,7 @@ async function fetchJDTarget(){
   }
 }
 async function fetchAllData(){
-  const sheetNames=['FPTK KJ 3Up','MPP','SO','Job Description','KPI','Master Karyawan'];
+  const sheetNames=['FPTK KJ 3Up','MPP','SO','Job Description','KPI','Master Karyawan',SO_SHEET];
   const urls=sheetNames.map(s=>'https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent(s)+'?key='+API_KEY);
   const responses=await Promise.all(urls.map(u=>fetch(u)));
   const jsons=await Promise.all(responses.map(r=>r.json()));
@@ -1664,6 +1683,27 @@ async function fetchAllData(){
   // ── SO ──
   const soRows=(jsons[2]?.values||[]).slice(1);
   fresh.so=soRows.filter(r=>r[2]).map(r=>({divisi:(r[2]||'').trim().replace(/\b\w/g,c=>c.toUpperCase()),no_name:(r[3]||'').toLowerCase()==='v',name:(r[4]||'').toLowerCase()==='v',signed:(r[5]||'').trim(),effective_status:(r[5]||'').trim()}));
+
+  // ── ORG STRUCTURE (SO Generator) ──
+  fresh.orgstruct={};
+  try{
+    const osAll=jsons[6]?.values||[];
+    if(osAll.length>1){
+      const h=osAll[0].map(x=>String(x||'').trim().toLowerCase());
+      const iDiv=h.indexOf('divisi'),iNam=h.indexOf('nama'),iSta=h.indexOf('status'),
+            iUpd=h.indexOf('updated_at'),iBy=h.indexOf('updated_by');
+      osAll.slice(1).forEach(r=>{
+        const dv=String(r[iDiv]||'').trim(); if(!dv)return;
+        const key=dv.replace(/\b\w/g,c=>c.toUpperCase());
+        if(!fresh.orgstruct[key])fresh.orgstruct[key]={count:0,vacant:0,updated_at:'',updated_by:''};
+        const o=fresh.orgstruct[key];
+        o.count++;
+        if(!String(r[iNam]||'').trim()||String(r[iSta]||'').trim().toUpperCase()==='VAC')o.vacant++;
+        const u=r[iUpd]?String(r[iUpd]):'';
+        if(u&&u>o.updated_at){o.updated_at=u;o.updated_by=String(r[iBy]||'').trim();}
+      });
+    }
+  }catch(e){console.warn('orgstruct parse:',e);}
 
   // ── JD ──
   const jdRows=(jsons[3]?.values||[]).slice(1);
