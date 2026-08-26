@@ -106,11 +106,13 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
   html,body{background:#fff!important}
   header,#tabs,#hint,#toast,#overlay,#loading,#viewport,.quick{display:none!important}
   body{overflow:visible;display:block}
-  #printRoot{display:block!important}
+  #printRoot{position:static!important;left:auto!important;width:auto!important;height:auto!important}
 }
 
 /* ── halaman cetak ── */
-#printRoot{display:none}
+/* Dipindah ke luar layar (bukan display:none) supaya lebar/tingginya
+   tetap terukur saat menghitung skala halaman. */
+#printRoot{position:absolute;left:-100000px;top:0;width:0;height:0;overflow:visible}
 .page{
   position:relative;page-break-after:always;break-after:page;
   padding:0;overflow:hidden;
@@ -791,9 +793,12 @@ function preparePrint(){
     drawChart(chart, pg.nodes, false);
 
     // skala hanya bila memang tidak muat, supaya ukuran huruf konsisten
-    const need = { w: inner.scrollWidth, h: inner.scrollHeight };
-    const sc = Math.min(1, paper.w/need.w, (paper.h-22)/need.h);
+    const needW = Math.max(inner.scrollWidth, chart.offsetWidth, 1);
+    const needH = Math.max(inner.scrollHeight, 1);
+    let sc = Math.min(1, paper.w/needW, (paper.h-24)/needH);
+    if(!isFinite(sc) || sc<=0) sc = 1;
     inner.style.transform = 'scale('+sc+')';
+    inner.style.width = needW+'px';
     foot.style.position='absolute'; foot.style.bottom='2px'; foot.style.right='6px';
   });
 }
