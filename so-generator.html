@@ -132,6 +132,7 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
   <button class="btn" id="nameToggle" title="Beralih antara SO dengan nama dan tanpa nama">👤 Dengan Nama</button>
   <button class="btn" id="printBtn">🖨 PDF</button>
   <button class="btn" id="exportBtn" title="Backup ke file JSON">⤓ JSON</button>
+  <button class="btn" id="importBtn" title="Buka struktur dari file JSON">⤒ Buka JSON</button>
   <input type="file" id="fileInput" accept=".json" hidden>
   <button class="btn" id="reloadBtn" title="Muat ulang dari Google Sheets">⟳</button>
   <button class="btn primary" id="saveBtn2">💾 Simpan ke Sheets</button>
@@ -574,6 +575,28 @@ $('#exportBtn').addEventListener('click',()=>{
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='struktur-organisasi-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
   toast('Backup JSON terunduh');
+});
+$('#importBtn').addEventListener('click',()=>$('#fileInput').click());
+$('#fileInput').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      if(!Array.isArray(d.divisions)) throw 0;
+      snapshot();
+      d.divisions.forEach(nd=>{
+        const i=divisions.findIndex(x=>x.name.toLowerCase()===nd.name.toLowerCase());
+        if(i>=0) divisions[i]=nd; else divisions.push(nd);
+        dirtySet.add(nd.id);
+      });
+      if(d.title) $('#orgTitle').value=d.title;
+      activeDiv=d.divisions[0].id;
+      collapsed.clear(); updateDirtyBadge(); saveDraft(); renderTabs(); render(); fit();
+      toast('Struktur dimuat — cek dulu, lalu klik Simpan ke Sheets');
+    }catch{ toast('⚠️ File tidak valid — gunakan file JSON hasil export tool ini'); }
+  };
+  rd.readAsText(f); e.target.value='';
 });
 $('#reloadBtn').addEventListener('click',()=>{
   if(dirtySet.size&&!confirm('Ada perubahan belum disimpan. Muat ulang dari Sheets dan buang perubahan itu?')) return;
