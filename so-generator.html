@@ -104,13 +104,41 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
 
 @media print{
   html,body{background:#fff!important}
-  header,#tabs,#hint,#toast,#overlay,#loading,.quick{display:none!important}
+  header,#tabs,#hint,#toast,#overlay,#loading,#viewport,.quick{display:none!important}
   body{overflow:visible;display:block}
-  #viewport{overflow:visible;background:#fff;position:static}
-  #stage{position:static;padding:0;transform:none!important}
-  #sheet{border:none;box-shadow:none;padding:0;transform-origin:top left}
-  .node{box-shadow:none!important;border-color:#7a7a7a!important}
+  #printRoot{display:block!important}
 }
+
+/* ── halaman cetak ── */
+#printRoot{display:none}
+.page{
+  position:relative;page-break-after:always;break-after:page;
+  padding:0;overflow:hidden;
+}
+.page:last-child{page-break-after:auto;break-after:auto}
+.page-inner{transform-origin:top left}
+.wm{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-30deg);
+  font-size:120px;font-weight:800;letter-spacing:.14em;
+  color:rgba(214,0,0,.16);
+  border:9px solid rgba(214,0,0,.16);border-radius:18px;
+  padding:14px 46px;white-space:nowrap;pointer-events:none;z-index:9;
+}
+/* ── blok header / tanda tangan ── */
+.sigblock{display:flex;border:1px solid #000;margin-bottom:10px;font-size:9.5px;line-height:1.35}
+.sigblock>div{border-right:1px solid #000;padding:7px 9px}
+.sigblock>div:last-child{border-right:none}
+.sig-ent{width:230px;display:flex;flex-direction:column;justify-content:flex-end}
+.sig-ent b{font-size:11px;font-weight:700}
+.sig-doc{width:230px}
+.sig-doc .t{font-weight:700;font-size:10px;margin-bottom:6px}
+.sig-doc .r{margin-bottom:2px}
+.sig-col{flex:1;min-width:190px;display:flex;flex-direction:column}
+.sig-col .lbl{font-weight:400;margin-bottom:44px}
+.sig-col .nm{font-weight:400;text-transform:uppercase}
+.sig-col .jb{font-weight:400}
+.page-foot{font-size:8.5px;color:#666;margin-top:6px;text-align:right}
 </style>
 </head>
 <body>
@@ -130,6 +158,7 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
     <option value="a3" selected>A3</option><option value="a4">A4</option><option value="a2">A2</option>
   </select>
   <button class="btn" id="nameToggle" title="Beralih antara SO dengan nama dan tanpa nama">👤 Dengan Nama</button>
+  <button class="btn" id="metaBtn" title="Isi entitas, tanggal efektif, dan penanda tangan">✍ Header &amp; TTD</button>
   <button class="btn" id="printBtn">🖨 PDF</button>
   <button class="btn" id="exportBtn" title="Backup ke file JSON">⤓ JSON</button>
   <button class="btn" id="importBtn" title="Buka struktur dari file JSON">⤒ Buka JSON</button>
@@ -175,6 +204,36 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
     </div>
   </div>
 </div>
+<div id="printRoot"></div>
+
+<div id="metaOverlay" style="position:fixed;inset:0;background:rgba(82,66,69,.45);display:none;place-items:center;z-index:60">
+  <div class="modal" style="width:min(480px,94vw)">
+    <h3><span class="dot"></span>Header &amp; Tanda Tangan — <span id="metaDiv"></span></h3>
+    <div class="two">
+      <div class="field"><label>Entitas</label><select id="mEnt">
+        <option>PT. TRI ADI BERSAMA</option><option>ADI SARANA LOGISTIK</option></select></div>
+      <div class="field"><label>Tanggal Efektif</label><input id="mEff" placeholder="01-Jan-26"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label>Dibuat oleh — Nama</label><input id="mS1n" placeholder="NAMA DIVISION HEAD"></div>
+      <div class="field"><label>Jabatan</label><input id="mS1j" placeholder="... Division Head"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label>Diketahui oleh — Nama</label><input id="mS2n" placeholder="FAISAL TAMBUNAN"></div>
+      <div class="field"><label>Jabatan</label><input id="mS2j" value="Human Capital Deputy Division Head"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label>Disetujui oleh — Nama</label><input id="mS3n" placeholder="HANDY WIDIYA"></div>
+      <div class="field"><label>Jabatan</label><input id="mS3j" value="CEO"></div>
+    </div>
+    <div class="hintline">Kolom “Disetujui oleh” hanya dicetak pada SO <b>Tanpa Nama</b> (3 kolom TTD). SO <b>Dengan Nama</b> dicetak dengan 2 kolom.</div>
+    <div class="actions">
+      <button class="btn" id="mCancel">Batal</button>
+      <button class="btn primary" id="mSave">Simpan</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -183,10 +242,12 @@ const SHEET_ID = '1Y4okept6ADvk-KZVU8qgkBkTaCvH8dwkhDVSYaOnTuQ';
 const API_KEY = 'AIzaSyA_K5XPnnvGvPzt08Bvdg9vmcW-gWJJt8k';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1IZ-_WghcQU0ZPMHQt3dcbN7SGencFrb4rPj18YJuoos_CwHF4CR-lfGPd6Xa5zc2/exec';
 const SO_SHEET = 'Org Structure';
+const META_SHEET = 'Org Structure Meta';
 const OD_HUB_URL = 'index.html';
 const DRAFT_KEY = 'so_generator_draft';
 
 const LAYERS = [
+  {id:'director',label:'Director',group:6,color:'#92D050'},
   {id:'division',label:'Division',group:6,color:'#92D050'},
   {id:'subdivision',label:'Sub Division',group:5,color:'#ED0677'},
   {id:'dept',label:'Department Head',group:4,color:'#FFCB05'},
@@ -274,6 +335,28 @@ async function loadFromSheets(){
       });
       divisions=Object.values(map);
     }
+    try{
+      const mu='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+
+               encodeURIComponent(META_SHEET)+'?key='+API_KEY;
+      const mr=await fetch(mu);
+      if(mr.ok){
+        const md=await mr.json(); const mrows=md.values||[];
+        if(mrows.length>1){
+          const mh=mrows[0].map(x=>String(x||'').trim().toLowerCase());
+          const gi=n=>mh.indexOf(n);
+          mrows.slice(1).forEach(r0=>{
+            const dv=String(r0[gi('divisi')]||'').trim();
+            const tgt=divisions.find(x=>x.name.toLowerCase()===dv.toLowerCase());
+            if(!tgt) return;
+            tgt.meta={entitas:r0[gi('entitas')]||'PT. TRI ADI BERSAMA',
+                      efektif:r0[gi('efektif')]||'01-Jan-26',
+                      s1n:r0[gi('s1n')]||'', s1j:r0[gi('s1j')]||'',
+                      s2n:r0[gi('s2n')]||'', s2j:r0[gi('s2j')]||'',
+                      s3n:r0[gi('s3n')]||'', s3j:r0[gi('s3j')]||''};
+          });
+        }
+      }
+    }catch(e){ console.warn('meta:',e); }
     dirtySet.clear();
     restoreDraftIfAny();
   }catch(e){
@@ -326,7 +409,7 @@ async function saveToSheets(){
     }));
     try{
       const resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({
-        action:'saveOrgStructure', divisi:d.name, updated_by:editorName, rows
+        action:'saveOrgStructure', divisi:d.name, updated_by:editorName, meta:metaOf(d), rows
       })});
       const res=await resp.json();
       if(!res.success) throw new Error(res.error||'gagal');
@@ -387,44 +470,48 @@ function render(){
     '<small>People &amp; Culture · digenerate '+new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})+'</small>';
   renderRibbon(); layoutAndDraw();
 }
-function renderRibbon(){
-  const r=$('#ribbon'); r.innerHTML='';
-  const k=document.createElement('div'); k.className='rib-key';
-  k.innerHTML='<div>Kelompok Jabatan</div><div>Layer</div>'; r.appendChild(k);
-  LAYERS.forEach(l=>{
-    const d=document.createElement('div'); d.className='rib';
-    d.innerHTML='<div class="g" style="background:'+l.color+';color:'+(l.id==='admin'?'#fff':'#2b2b2b')+'">'+l.group+'</div><div class="l">'+l.label+'</div>';
-    r.appendChild(d);
-  });
+function renderRibbon(){ $('#ribbon').innerHTML = ribbonHTML(); }
+function defaultMeta(name){
+  return {entitas:'PT. TRI ADI BERSAMA', efektif:'01-Jan-26',
+          s1n:'', s1j:name+' Division Head',
+          s2n:'FAISAL TAMBUNAN', s2j:'Human Capital Deputy Division Head',
+          s3n:'HANDY WIDIYA', s3j:'CEO'};
 }
-function layoutAndDraw(){
-  const chart=$('#chart');
-  [...chart.querySelectorAll('.node')].forEach(e=>e.remove());
-  const svg=$('#wires'); svg.innerHTML='';
-  const list=nodes(), pos={};
-  let cursorY=0;
-  const roots=list.filter(n=>!n.parentId).sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+function metaOf(d){ if(!d.meta) d.meta = defaultMeta(d.name); return d.meta; }
+
+/* Menggambar chart dari sekumpulan node ke dalam sebuah container.
+   interactive=true untuk tampilan layar (ada handler klik/drag). */
+function drawChart(chartEl, list, interactive){
+  chartEl.innerHTML = '<svg class="wires" style="position:absolute;inset:0;overflow:visible"></svg>';
+  const svg = chartEl.querySelector('.wires');
+  const ids = new Set(list.map(n=>n.id));
+  const byIdL = id => list.find(n=>n.id===id);
+  const kids = id => list.filter(n=>n.parentId===id).sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+  const roots = list.filter(n=>!n.parentId || !ids.has(n.parentId))
+                    .sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+  const pos = {};
+  let cursorY = 0;
   (function place(arr){
     arr.forEach(n=>{
-      const kids=kidsOf(n.id);
-      if(!kids.length||collapsed.has(n.id)){ pos[n.id]=cursorY; cursorY+=NODE_H+ROW_GAP; }
-      else{ place(kids); pos[n.id]=(pos[kids[0].id]+pos[kids[kids.length-1].id])/2; }
+      const kk = kids(n.id);
+      if(!kk.length || (interactive && collapsed.has(n.id))){ pos[n.id]=cursorY; cursorY+=NODE_H+ROW_GAP; }
+      else { place(kk); pos[n.id]=(pos[kk[0].id]+pos[kk[kk.length-1].id])/2; }
     });
   })(roots);
 
   const OFFSET=134;
-  const xOf=n=>OFFSET+layerIndex(n.layer)*(COL_W+COL_GAP);
-  let maxX=0,maxY=0;
+  const xOf = n => OFFSET + layerIndex(n.layer)*(COL_W+COL_GAP);
+  let maxX=0, maxY=0;
   list.forEach(n=>{
     if(pos[n.id]===undefined) return;
-    const x=xOf(n),y=pos[n.id];
+    const x=xOf(n), y=pos[n.id];
     maxX=Math.max(maxX,x+COL_W); maxY=Math.max(maxY,y+NODE_H);
-    chart.appendChild(makeCard(n,x,y));
+    chartEl.appendChild(makeCard(n,x,y,interactive,kids(n.id).length));
   });
   list.forEach(n=>{
-    if(!n.parentId||pos[n.id]===undefined) return;
-    const p=byId(n.parentId); if(!p||pos[p.id]===undefined) return;
-    const sx=xOf(p)+COL_W, sy=pos[p.id]+NODE_H/2, cx=xOf(n), ey=pos[n.id]+NODE_H/2;
+    if(!n.parentId || pos[n.id]===undefined) return;
+    const pn = byIdL(n.parentId); if(!pn || pos[pn.id]===undefined) return;
+    const sx=xOf(pn)+COL_W, sy=pos[pn.id]+NODE_H/2, cx=xOf(n), ey=pos[n.id]+NODE_H/2;
     const mid=sx+COL_GAP/2;
     const d=(Math.abs(sy-ey)<0.5)?'M'+sx+','+sy+' H'+cx:'M'+sx+','+sy+' H'+mid+' V'+ey+' H'+cx;
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -433,14 +520,36 @@ function layoutAndDraw(){
     svg.appendChild(path);
   });
   const cw=Math.max(maxX+20,600), ch=Math.max(maxY+16,160);
-  chart.style.width=cw+'px'; chart.style.height=ch+'px';
+  chartEl.style.width=cw+'px'; chartEl.style.height=ch+'px'; chartEl.style.position='relative';
   svg.setAttribute('width',cw); svg.setAttribute('height',ch);
   svg.setAttribute('viewBox','0 0 '+cw+' '+ch);
+  return {w:cw, h:ch};
 }
-function makeCard(n,x,y){
+
+function layoutAndDraw(){ drawChart($('#chart'), nodes(), true); }
+
+function ribbonHTML(){
+  let h='<div class="rib-key"><div>Kelompok Jabatan</div><div>Layer</div></div>';
+  LAYERS.forEach(l=>{
+    h+='<div class="rib"><div class="g" style="background:'+l.color+';color:'+
+       (l.id==='admin'?'#fff':'#2b2b2b')+'">'+l.group+'</div><div class="l">'+l.label+'</div></div>';
+  });
+  return h;
+}
+
+function makeCard(n,x,y,interactive,nKids){
   const el=document.createElement('div');
   el.className='node'; el.style.left=x+'px'; el.style.top=y+'px';
-  el.dataset.id=n.id; el.draggable=n.parentId!==null;
+  el.dataset.id=n.id;
+  if(interactive===false){
+    el.innerHTML=(n.status?'<span class="badge">'+esc(n.status)+'</span>':'')+
+      '<div class="t">'+esc(n.title||'(tanpa jabatan)')+'</div>'+
+      '<div class="p'+((showNames&&n.name)?'':' vac')+'">'+
+      (showNames ? (n.name?esc(n.name):'&nbsp;') : '&nbsp;')+'</div>';
+    el.style.cursor='default';
+    return el;
+  }
+  el.draggable=n.parentId!==null;
   const kids=kidsOf(n.id), isCol=collapsed.has(n.id);
   el.innerHTML=(n.status?'<span class="badge">'+esc(n.status)+'</span>':'')+
     '<div class="t">'+esc(n.title||'(tanpa jabatan)')+'</div>'+
@@ -559,17 +668,121 @@ window.addEventListener('mousemove',e=>{if(!pd)return;panX=e.clientX-pd.x;panY=e
 window.addEventListener('mouseup',()=>{pd=null;viewport.classList.remove('panning');});
 
 /* ════════ PDF / JSON / NAV ════════ */
-const PAPERS={a3:{css:'A3 landscape',w:1520,h:1020},a4:{css:'A4 landscape',w:1060,h:700},a2:{css:'A2 landscape',w:2170,h:1500}};
-function preparePrint(){
-  collapsed.clear(); render();
-  const sh=$('#sheet'); sh.style.zoom='';
-  const paper=PAPERS[$('#paper').value];
-  $('#pageRule').textContent='@page{size:'+paper.css+';margin:8mm}';
-  sh.style.zoom=Math.min(1,paper.w/sh.scrollWidth,paper.h/sh.scrollHeight);
+const PAPERS={a3:{css:'A3 landscape',w:1520,h:1010},a4:{css:'A4 landscape',w:1055,h:690},a2:{css:'A2 landscape',w:2170,h:1480}};
+
+/* ── kelompokkan node menjadi halaman: satu halaman per Department Head ── */
+function buildPages(){
+  const list = nodes();
+  const byI = id => list.find(n=>n.id===id);
+  const chainUp = n => { const out=[]; let c=byI(n.parentId); while(c){ out.unshift(c); c=byI(c.parentId); } return out; };
+  const subtree = n => { const out=[n]; const rec=p=>list.filter(x=>x.parentId===p.id)
+        .sort((a,b)=>(a.urutan||0)-(b.urutan||0)).forEach(k=>{out.push(k);rec(k);}); rec(n); return out; };
+
+  const topDepts = list.filter(n=>{
+    if(n.layer!=='dept') return false;
+    let c=byI(n.parentId); while(c){ if(c.layer==='dept') return false; c=byI(c.parentId); }
+    return true;
+  }).sort((a,b)=>(a.urutan||0)-(b.urutan||0));
+
+  const pages = [], used = new Set();
+  topDepts.forEach(d=>{
+    const st = subtree(d);
+    st.forEach(x=>used.add(x.id));
+    pages.push({label:d.title, nodes:[...chainUp(d), ...st]});
+  });
+  // sisa node yang tidak berada di bawah Department Head mana pun
+  const rest = list.filter(n=>!used.has(n.id));
+  const restLeaf = rest.filter(n=>!['division','subdivision','director'].includes(n.layer));
+  if(restLeaf.length) pages.push({label:'Lainnya', nodes:rest});
+  if(!pages.length) pages.push({label:'', nodes:list});
+  return pages;
 }
-$('#printBtn').addEventListener('click',()=>{preparePrint();setTimeout(()=>window.print(),60);});
+
+function sigHTML(d){
+  const m = metaOf(d);
+  const col = (lbl,nm,jb) =>
+    '<div class="sig-col"><div class="lbl">'+lbl+'</div>'+
+    '<div class="nm">'+esc(nm||'')+'</div><div class="jb">'+esc(jb||'')+'</div></div>';
+  let h = '<div class="sigblock">'+
+    '<div class="sig-ent"><b>'+esc(m.entitas)+'</b></div>'+
+    '<div class="sig-doc"><div class="t">STRUKTUR ORGANISASI</div>'+
+      '<div class="r">Divisi : '+esc(d.name)+'</div>'+
+      '<div class="r">EFEKTIF : <b>'+esc(m.efektif)+'</b></div>'+
+      '<div class="r">'+(showNames?'CONFIDENTIAL':'INTERNAL')+'</div></div>'+
+    col('DIBUAT OLEH,', m.s1n, m.s1j) +
+    col('DIKETAHUI OLEH,', m.s2n, m.s2j);
+  if(!showNames) h += col('DISETUJUI OLEH,', m.s3n, m.s3j);
+  return h + '</div>';
+}
+
+function preparePrint(){
+  const d = cur();
+  const paper = PAPERS[$('#paper').value];
+  $('#pageRule').textContent = '@page{size:'+paper.css+';margin:8mm}';
+  const root = $('#printRoot');
+  root.innerHTML = '';
+  const pages = buildPages();
+  const stampText = showNames ? 'CONFIDENTIAL' : 'INTERNAL';
+
+  pages.forEach((pg,i)=>{
+    const page = document.createElement('div');
+    page.className = 'page';
+    page.style.width  = paper.w+'px';
+    page.style.height = paper.h+'px';
+
+    const inner = document.createElement('div');
+    inner.className = 'page-inner';
+    inner.innerHTML = sigHTML(d) + '<div id="rb'+i+'" style="display:flex;margin-bottom:14px"></div>';
+    const chart = document.createElement('div');
+    inner.appendChild(chart);
+    page.appendChild(inner);
+
+    const wm = document.createElement('div');
+    wm.className = 'wm'; wm.textContent = stampText;
+    page.appendChild(wm);
+
+    const foot = document.createElement('div');
+    foot.className = 'page-foot';
+    foot.textContent = (pg.label ? pg.label + ' · ' : '') + 'Halaman ' + (i+1) + ' dari ' + pages.length;
+    page.appendChild(foot);
+
+    root.appendChild(page);
+    inner.querySelector('#rb'+i).innerHTML = ribbonHTML();
+    drawChart(chart, pg.nodes, false);
+
+    // skala hanya bila memang tidak muat, supaya ukuran huruf konsisten
+    const need = { w: inner.scrollWidth, h: inner.scrollHeight };
+    const sc = Math.min(1, paper.w/need.w, (paper.h-22)/need.h);
+    inner.style.transform = 'scale('+sc+')';
+    foot.style.position='absolute'; foot.style.bottom='2px'; foot.style.right='6px';
+  });
+}
+$('#printBtn').addEventListener('click',()=>{ preparePrint(); setTimeout(()=>window.print(),80); });
 window.addEventListener('beforeprint',preparePrint);
-window.addEventListener('afterprint',()=>{$('#sheet').style.zoom='';});
+window.addEventListener('afterprint',()=>{ $('#printRoot').innerHTML=''; });
+
+/* ── modal Header & TTD ── */
+$('#metaBtn').addEventListener('click',()=>{
+  const d=cur(), m=metaOf(d);
+  $('#metaDiv').textContent = d.name;
+  $('#mEnt').value=m.entitas; $('#mEff').value=m.efektif;
+  $('#mS1n').value=m.s1n; $('#mS1j').value=m.s1j;
+  $('#mS2n').value=m.s2n; $('#mS2j').value=m.s2j;
+  $('#mS3n').value=m.s3n; $('#mS3j').value=m.s3j;
+  $('#metaOverlay').style.display='grid';
+});
+$('#mCancel').addEventListener('click',()=>$('#metaOverlay').style.display='none');
+$('#metaOverlay').addEventListener('click',e=>{ if(e.target===$('#metaOverlay')) $('#metaOverlay').style.display='none'; });
+$('#mSave').addEventListener('click',()=>{
+  const d=cur(); snapshot();
+  d.meta={entitas:$('#mEnt').value, efektif:$('#mEff').value.trim(),
+          s1n:$('#mS1n').value.trim(), s1j:$('#mS1j').value.trim(),
+          s2n:$('#mS2n').value.trim(), s2j:$('#mS2j').value.trim(),
+          s3n:$('#mS3n').value.trim(), s3j:$('#mS3j').value.trim()};
+  $('#metaOverlay').style.display='none';
+  markDirty(); toast('Header tersimpan di draft — klik Simpan ke Sheets untuk permanen');
+});
+
 $('#exportBtn').addEventListener('click',()=>{
   const blob=new Blob([JSON.stringify({title:$('#orgTitle').value,divisions,savedAt:new Date().toISOString()},null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
