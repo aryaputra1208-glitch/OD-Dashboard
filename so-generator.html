@@ -115,10 +115,10 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
 #printRoot{position:absolute;left:-100000px;top:0;width:0;height:0;overflow:visible}
 .page{
   position:relative;page-break-after:always;break-after:page;
-  padding:0;overflow:hidden;
+  padding:0;overflow:visible;
 }
 .page:last-child{page-break-after:auto;break-after:auto}
-.page-inner{transform-origin:top left}
+.page-inner{display:inline-block;position:relative}
 .wm{
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%) rotate(-30deg);
@@ -140,7 +140,7 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
 .sig-col .lbl{font-weight:400;margin-bottom:44px}
 .sig-col .nm{font-weight:400;text-transform:uppercase}
 .sig-col .jb{font-weight:400}
-.page-foot{font-size:8.5px;color:#666;margin-top:6px;text-align:right}
+.page-foot{font-size:8.5px;color:#999;margin-top:10px;text-align:right}
 </style>
 </head>
 <body>
@@ -769,8 +769,6 @@ function preparePrint(){
   pages.forEach((pg,i)=>{
     const page = document.createElement('div');
     page.className = 'page';
-    page.style.width  = paper.w+'px';
-    page.style.height = paper.h+'px';
 
     const inner = document.createElement('div');
     inner.className = 'page-inner';
@@ -779,27 +777,28 @@ function preparePrint(){
     inner.appendChild(chart);
     page.appendChild(inner);
 
-    const wm = document.createElement('div');
-    wm.className = 'wm'; wm.textContent = stampText;
-    page.appendChild(wm);
-
     const foot = document.createElement('div');
     foot.className = 'page-foot';
-    foot.textContent = (pg.label ? pg.label + ' · ' : '') + 'Halaman ' + (i+1) + ' dari ' + pages.length;
-    page.appendChild(foot);
+    foot.textContent = (i+1) + ' / ' + pages.length;
+    inner.appendChild(foot);
+
+    // watermark diletakkan di dalam inner supaya melintang tepat di atas chart
+    const wm = document.createElement('div');
+    wm.className = 'wm'; wm.textContent = stampText;
+    inner.appendChild(wm);
 
     root.appendChild(page);
     inner.querySelector('#rb'+i).innerHTML = ribbonHTML();
     drawChart(chart, pg.nodes, false);
 
-    // skala hanya bila memang tidak muat, supaya ukuran huruf konsisten
-    const needW = Math.max(inner.scrollWidth, chart.offsetWidth, 1);
-    const needH = Math.max(inner.scrollHeight, 1);
-    let sc = Math.min(1, paper.w/needW, (paper.h-24)/needH);
-    if(!isFinite(sc) || sc<=0) sc = 1;
-    inner.style.transform = 'scale('+sc+')';
-    inner.style.width = needW+'px';
-    foot.style.position='absolute'; foot.style.bottom='2px'; foot.style.right='6px';
+    // Skala pakai zoom: ikut mengubah kotak layout, jadi tidak ada sisa ruang
+    // kosong dan tidak ada bagian yang terpotong. 100% bila memang sudah muat.
+    inner.style.zoom = '';
+    const w = Math.max(inner.scrollWidth, chart.offsetWidth, 1);
+    const h = Math.max(inner.scrollHeight, 1);
+    let z = Math.min(1, paper.w / w, (paper.h - 26) / h);
+    if (!isFinite(z) || z <= 0) z = 1;
+    inner.style.zoom = z;
   });
 }
 $('#printBtn').addEventListener('click',()=>{ preparePrint(); setTimeout(()=>window.print(),80); });
