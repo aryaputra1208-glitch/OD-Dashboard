@@ -314,26 +314,66 @@ async function loadFromSheets(){
     const rows=d.values||[];
     if(!rows.length){ divisions=[]; }
     else{
-      const head=rows[0].map(h=>String(h||'').trim().toLowerCase());
-      const ix=n=>head.indexOf(n);
-      const cId=ix('id'),cDiv=ix('divisi'),cPar=ix('parent_id'),cLay=ix('layer'),
+      /* Normalisasi header: buang spasi, underscore, tanda baca, non-breaking space */
+      const norm=h=>String(h||'').replace(/\u00a0/g,' ').trim().toLowerCase().replace(/[\s_\-.]+/g,'');
+      const head=rows[0].map(norm);
+      const ALIAS={
+        id:['id','nodeid','kode'],
+        divisi:['divisi','division','divisijabatan'],
+        parentid:['parentid','parent','atasan','idatasan'],
+        layer:['layer','level','kelompokjabatan','layerjabatan'],
+        jabatan:['jabatan','posisi','namajabatan','position'],
+        nama:['nama','namakaryawan','pemegangjabatan'],
+        status:['status','ket','keterangan'],
+        urutan:['urutan','order','urut','sort']
+      };
+      const ix=key=>{ for(const a of ALIAS[key]){ const i=head.indexOf(a); if(i>=0) return i; } return -1; };
+      const cId=ix('id'),cDiv=ix('divisi'),cPar=ix('parentid'),cLay=ix('layer'),
             cJab=ix('jabatan'),cNam=ix('nama'),cSta=ix('status'),cUru=ix('urutan');
-      const map={};
+
+      /* Kolom wajib harus ada — jangan diam-diam pakai nilai default */
+      const missing=[];
+      if(cId<0) missing.push('id');
+      if(cDiv<0) missing.push('divisi');
+      if(cPar<0) missing.push('parent_id');
+      if(cLay<0) missing.push('layer');
+      if(cJab<0) missing.push('jabatan');
+      if(missing.length){
+        $('#loading').innerHTML='<div style="text-align:center;max-width:520px;line-height:1.6">'+
+          '<b style="color:#D94A4A">Kolom berikut tidak ditemukan di sheet '+SO_SHEET+':</b><br>'+
+          '<code>'+missing.join(', ')+'</code><br><br>'+
+          'Header yang terbaca: <code>'+esc(rows[0].join(' | '))+'</code><br><br>'+
+          'Perbaiki baris header di sheet, lalu muat ulang halaman ini.</div>';
+        return;
+      }
+
+      /* Nilai layer boleh ditulis sebagai kode (dept) atau label (Department Head) */
+      const LBL={}; LAYERS.forEach(l=>{ LBL[norm(l.label)]=l.id; LBL[l.id]=l.id; });
+      const toLayer=v=>{
+        const raw=String(v==null?'':v).trim();
+        if(!raw) return '';
+        return LBL[norm(raw)] || LBL[raw.toLowerCase()] || raw.toLowerCase();
+      };
+
+      const map={}; let unknownLayer=0;
       rows.slice(1).forEach(r0=>{
         const div=String(r0[cDiv]||'').trim();
         if(!div||!String(r0[cId]||'').trim()) return;
+        const lay=toLayer(r0[cLay]);
+        if(!LAYERS.some(l=>l.id===lay)) unknownLayer++;
         if(!map[div]) map[div]={id:'div_'+div.replace(/\W+/g,'_'),name:div,nodes:[]};
         map[div].nodes.push({
           id:String(r0[cId]).trim(),
           parentId:String(r0[cPar]||'').trim()||null,
-          layer:String(r0[cLay]||'staff').trim(),
+          layer:lay,
           title:String(r0[cJab]||'').trim(),
-          name:String(r0[cNam]||'').trim(),
-          status:String(r0[cSta]||'').trim(),
-          urutan:parseInt(r0[cUru])||0
+          name:cNam>=0?String(r0[cNam]||'').trim():'',
+          status:cSta>=0?String(r0[cSta]||'').trim():'',
+          urutan:cUru>=0?(parseInt(r0[cUru])||0):0
         });
       });
       divisions=Object.values(map);
+      if(unknownLayer) setTimeout(()=>toast('⚠️ '+unknownLayer+' posisi punya nilai layer yang tidak dikenal — cek kolom layer di sheet'),900);
     }
     try{
       const mu='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+
