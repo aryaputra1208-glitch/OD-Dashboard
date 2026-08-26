@@ -495,7 +495,7 @@ function drawChart(chartEl, list, interactive){
     arr.forEach(n=>{
       const kk = kids(n.id);
       if(!kk.length || (interactive && collapsed.has(n.id))){ pos[n.id]=cursorY; cursorY+=NODE_H+ROW_GAP; }
-      else { place(kk); pos[n.id]=(pos[kk[0].id]+pos[kk[kk.length-1].id])/2; }
+      else { place(kk); pos[n.id]=pos[kk[0].id]; }   /* sejajar anak pertama (top-aligned) */
     });
   })(roots);
 
