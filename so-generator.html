@@ -129,6 +129,7 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
   <select id="paper" class="btn" title="Ukuran kertas PDF">
     <option value="a3" selected>A3</option><option value="a4">A4</option><option value="a2">A2</option>
   </select>
+  <button class="btn" id="nameToggle" title="Beralih antara SO dengan nama dan tanpa nama">👤 Dengan Nama</button>
   <button class="btn" id="printBtn">🖨 PDF</button>
   <button class="btn" id="exportBtn" title="Backup ke file JSON">⤓ JSON</button>
   <input type="file" id="fileInput" accept=".json" hidden>
@@ -208,6 +209,7 @@ const undoStack = [];
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
 let editorName = localStorage.getItem('so_editor_name') || '';
+let showNames = localStorage.getItem('so_show_names') !== '0';
 
 const cur = () => divisions.find(d=>d.id===activeDiv) || {name:'',nodes:[]};
 const nodes = () => cur().nodes;
@@ -380,6 +382,7 @@ function renameDiv(d){
 /* ════════ RENDER ════════ */
 function render(){
   $('#sheetTitle').innerHTML=esc($('#orgTitle').value)+' — '+esc(cur().name)+
+    ' <span style="font-weight:600;color:#a08e93">('+(showNames?'Dengan Nama':'Tanpa Nama')+')</span>'+
     '<small>People &amp; Culture · digenerate '+new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})+'</small>';
   renderRibbon(); layoutAndDraw();
 }
@@ -440,7 +443,8 @@ function makeCard(n,x,y){
   const kids=kidsOf(n.id), isCol=collapsed.has(n.id);
   el.innerHTML=(n.status?'<span class="badge">'+esc(n.status)+'</span>':'')+
     '<div class="t">'+esc(n.title||'(tanpa jabatan)')+'</div>'+
-    '<div class="p'+(n.name?'':' vac')+'">'+(n.name?esc(n.name):(n.status==='VAC'?'vacant':'—'))+'</div>'+
+    '<div class="p'+((showNames&&n.name)?'':' vac')+'">'+
+      (showNames ? (n.name?esc(n.name):(n.status==='VAC'?'vacant':'—')) : '&nbsp;')+'</div>'+
     '<div class="quick">'+
       '<button class="mv up" title="Naikkan urutan">▲</button>'+
       '<button class="add" title="Tambah bawahan">+</button>'+
@@ -573,11 +577,21 @@ $('#exportBtn').addEventListener('click',()=>{
 });
 $('#reloadBtn').addEventListener('click',()=>{
   if(dirtySet.size&&!confirm('Ada perubahan belum disimpan. Muat ulang dari Sheets dan buang perubahan itu?')) return;
-  dirtySet.clear(); clearDraft(); loadFromSheets();
+  dirtySet.clear(); clearDraft(); $('#nameToggle').textContent = showNames ? '👤 Dengan Nama' : '👥 Tanpa Nama';
+$('#nameToggle').classList.toggle('primary', !showNames);
+loadFromSheets();
 });
 $('#backBtn').addEventListener('click',()=>{
   if(dirtySet.size&&!confirm('Ada perubahan belum disimpan ke Sheets. Tetap kembali ke OD Hub?')) return;
   location.href=OD_HUB_URL;
+});
+$('#nameToggle').addEventListener('click',()=>{
+  showNames=!showNames;
+  localStorage.setItem('so_show_names', showNames?'1':'0');
+  $('#nameToggle').textContent = showNames ? '👤 Dengan Nama' : '👥 Tanpa Nama';
+  $('#nameToggle').classList.toggle('primary', !showNames);
+  render();
+  toast(showNames?'Mode: SO dengan nama pemegang jabatan':'Mode: SO tanpa nama — kotak nama dikosongkan');
 });
 $('#saveBtn2').addEventListener('click',saveToSheets);
 $('#orgTitle').addEventListener('input',render);
