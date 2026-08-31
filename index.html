@@ -1158,6 +1158,16 @@ function renderSO(){
     '<div class="ins '+(counts['Signed All']===tot?'ok':'warn')+'">'+(counts['Signed All']===tot?'Semua divisi sudah Signed All!':(tot-counts['Signed All'])+' divisi belum Signed All. Target: 100% Signed All.')+'</div>';}
 
 // JD
+// Hitung target per divisi murni dari baris yang ada di sheet Job Description.
+function jdTargetsFromSheet(jd){
+  const t={};
+  (jd||[]).forEach(function(r){
+    const d=(r.divisi||'').trim();
+    if(d) t[d]=(t[d]||0)+1;
+  });
+  return t;
+}
+
 async function renderJD(){
   // Fetch JD data fresh from Google Sheets
   let jd=D.jd||[];
@@ -1192,10 +1202,10 @@ async function renderJD(){
   const jdfd=document.getElementById('jd-filter-divisi');
   if(jdfd){jdfd.innerHTML='<option value="">Semua Divisi</option>'+divs.map(d=>'<option>'+d+'</option>').join('');}
 
-  // KPI cards - fetch target total from JD Target sheet first
-  fetchJDTarget().then(function(targets){
-    const totalTarget=Object.values(targets).reduce((s,v)=>s+v,0)||JD_TOTAL_TARGET;
-    window.JD_TOTAL_TARGET=totalTarget;
+  // Target keseluruhan = JD_TOTAL_TARGET (552), satu-satunya angka yang
+  // sengaja dipatok. Target per divisi dihitung dari isi sheet.
+  Promise.resolve(jdTargetsFromSheet(jd)).then(function(targets){
+    const totalTarget=JD_TOTAL_TARGET;
     const kpiEl=document.getElementById('jd-kpi-row');
     if(kpiEl){
       function gc(lbl,val,sub,grad,col){
@@ -1215,7 +1225,7 @@ async function renderJD(){
     // Render divisi breakdown with targets
     renderJDDivisi(jd,targets);
   }).catch(function(e){
-    console.warn('JD Target fetch failed, using fallback:',e);
+    console.warn('Render JD divisi gagal:',e);
     // Fallback: show KPI with JD_TOTAL_TARGET
     const kpiEl=document.getElementById('jd-kpi-row');
     if(kpiEl){
@@ -1227,13 +1237,13 @@ async function renderJD(){
         '</div>';
       }
       kpiEl.innerHTML=
-        gc2('Total Job Description',JD_TOTAL_TARGET,divs.length+' divisi','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
+        gc2('Total Target',JD_TOTAL_TARGET,divs.length+' divisi','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
         gc2('Completed',completed,pc(completed,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#DBEAFE,#BFDBFE)','#1d6fa8')+
         gc2('Signing',signing,pc(signing,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#D1FAE5,#A7F3D0)','#065f46')+
         gc2('Review By User',review,pc(review,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d')+
         gc2('On Progress',prog,pc(prog,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e');
     }
-    renderJDDivisi(jd,{});
+    renderJDDivisi(jd,jdTargetsFromSheet(jd));
   });
 }
 
@@ -1417,7 +1427,7 @@ function renderJDDivisi(jd, targets){
   // Match JD rows to target divisi case-insensitively
   function normD(s){return (s||'').trim().toUpperCase();}
   const targetDivs=Object.keys(targets); // canonical names
-  const totalTarget=Object.values(targets).reduce((s,v)=>s+v,0)||JD_TOTAL_TARGET;
+  const totalTarget=JD_TOTAL_TARGET;  // footer pakai target perusahaan
 
   // Build lookup: normalized name -> canonical name
   const normToCanon={};
@@ -1479,7 +1489,7 @@ function renderJDDivisi(jd, targets){
     ' &nbsp;·&nbsp; Total target: <b style="color:var(--tx);font-weight:500">'+totalTarget+'</b>'+
     ' &nbsp;·&nbsp; Overall progress: <b style="color:var(--blue);font-weight:500">'+overallPct+'%</b>';
 
-  if(totalTarget>0)window.JD_TOTAL_TARGET=totalTarget;
+
 }
 
 
@@ -1846,7 +1856,7 @@ async function exportPPT(){
     const sumCards=[
       {label:'MPP & Realisasi',color:PK,val:pct(plA,mT||1)+'%',sub:'Achievement Rate YTD',detail:'Plan '+mT+' / FPTK '+plA},
       {label:'Struktur Organisasi',color:GR,val:pct(soSA+soSU,so.length||1)+'%',sub:'Divisi sudah Signed',detail:(soSA+soSU)+' dari '+so.length+' divisi'},
-      {label:'Job Description',color:BL,val:pct(jdC,433)+'%',sub:'Completion dari 433 jabatan',detail:jdC+' jabatan selesai'},
+      {label:'Job Description',color:BL,val:pct(jdC,JD_TOTAL_TARGET)+'%',sub:'Completion dari '+JD_TOTAL_TARGET+' jabatan',detail:jdC+' jabatan selesai'},
       {label:'Performance Mgmt',color:PU,val:pct(ippA,kpi.length||1)+'%',sub:'IPP Approved',detail:ippA+' dari '+kpi.length+' karyawan'},
     ];
     sumCards.forEach((c,i)=>{
@@ -1982,7 +1992,7 @@ async function exportPPT(){
     const jdSgn=jd.filter(r=>r.status==='Signing').length;
     const jdR=jd.filter(r=>r.status==='Review by User').length;
     const jdPr=jd.filter(r=>r.status==='On Progress').length;
-    const jdTotal=window.JD_TOTAL_TARGET||JD_TOTAL_TARGET;
+    const jdTotal=JD_TOTAL_TARGET;
     const jdCards2=[
       {l:'Total Target',v:jdTotal,c:DK,bg:'F8F6F0'},
       {l:'Completed',v:jdC,c:BL,bg:'DBEAFE'},
@@ -1995,7 +2005,7 @@ async function exportPPT(){
       sld.addShape(pres.ShapeType.roundRect,{x,y:1.3,w:2.3,h:1.8,fill:{color:c.bg},line:{color:c.c+'44',width:.5},rectRadius:.12});
       sld.addText(String(c.v),{x,y:1.42,w:2.3,h:.8,fontSize:32,bold:true,color:c.c,align:'center',fontFace:FONT});
       sld.addText(c.l,{x,y:2.22,w:2.3,h:.3,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
-      if(i>0)sld.addText(pct(c.v,433)+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
+      if(i>0)sld.addText(pct(c.v,jdTotal)+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
     });
     // Progress bar
     const pctJD=pct(jdC+jdSgn,jdTotal);
@@ -2003,8 +2013,8 @@ async function exportPPT(){
     sld.addShape(pres.ShapeType.roundRect,{x:.5,y:3.7,w:12,h:.2,fill:{color:BORDER},line:{color:BORDER},rectRadius:.1});
     if(pctJD>0)sld.addShape(pres.ShapeType.roundRect,{x:.5,y:3.7,w:Math.max(.05,12*pctJD/100),h:.2,fill:{color:BL},line:{color:BL},rectRadius:.1});
     // Divisi breakdown
-    // Per divisi using JD_TARGET_FALLBACK as master
-    const jdTgts=typeof JD_TARGET_FALLBACK!=='undefined'?JD_TARGET_FALLBACK:{};
+    // Per divisi: target dihitung dari isi sheet, bukan angka hardcoded
+    const jdTgts=jdTargetsFromSheet(jd);
     function normDD(s){return (s||'').trim().toUpperCase();}
     const normToCanonPPT={};
     Object.keys(jdTgts).forEach(k=>normToCanonPPT[normDD(k)]=k);
