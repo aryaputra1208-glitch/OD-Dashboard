@@ -155,7 +155,7 @@ canvas{display:block;width:100%}
 <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z"/><path d="M12 16h.01"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></symbol>
 <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6l9 -6"/></symbol>
-</defs></svg>
+<symbol id="i-overlap" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></symbol></defs></svg>
 <div class="topbar">
   <div class="topbar-logo"><span class="logo">anteraja</span><span class="logo-sub">OD Hub</span></div>
   <div style="padding:0 16px;display:flex;align-items:center;gap:8px">
@@ -184,6 +184,7 @@ canvas{display:block;width:100%}
   <a class="nav-item" id="nav-mpp" onclick="goTo('mpp')"><span class="nav-icon"><svg class="ic"><use href="#i-clip"/></svg></span><span>MPP & Realisasi</span></a>
   <a class="nav-item" id="nav-so" onclick="goTo('so')"><span class="nav-icon"><svg class="ic"><use href="#i-bldg"/></svg></span><span>Struktur Organisasi</span></a>
   <a class="nav-item" id="nav-jd" onclick="goTo('jd')"><span class="nav-icon"><svg class="ic"><use href="#i-file"/></svg></span><span>Job Description</span></a>
+  <a class="nav-item" id="nav-overlap" onclick="goTo('overlap')"><span class="nav-icon"><svg class="ic"><use href="#i-overlap"/></svg></span><span>Analisis Overlap</span></a>
   <a class="nav-item" id="nav-pm" onclick="goTo('pm')"><span class="nav-icon"><svg class="ic"><use href="#i-target"/></svg></span><span>Performance Management</span></a>
   <div class="sidebar-divider"></div>
   <div class="sidebar-section">Info</div>
@@ -517,6 +518,31 @@ canvas{display:block;width:100%}
 </div>
 
 <!-- PM -->
+<div class="page" id="page-overlap">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Analisis Overlap</div>
+      <div style="font-size:11px;color:var(--tx3)">Tumpang tindih tanggung jawab antar jabatan &middot; diperbarui otomatis dari JD Generator</div>
+    </div>
+    <a href="https://jd-generator.arya-putra1208.workers.dev/" target="_blank" class="btn btn-pink" style="text-decoration:none">Buka JD Generator</a>
+  </div>
+
+  <div id="ovh-kpi-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px"></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="chdr"><div><div class="ct">Sebaran per Jenis</div><div class="cs">Dihitung per relasi antar jabatan</div></div></div>
+    <div id="ovh-jenis-rows"></div>
+  </div>
+
+  <div class="card">
+    <div class="chdr">
+      <div><div class="ct">Jabatan</div><div class="cs">Klik untuk lihat KRA mana yang bersinggungan</div></div>
+      <select class="tf" id="ovh-filter-jenis" onchange="paintOverlapHub()"><option value="">Semua Jenis</option></select>
+    </div>
+    <div id="ovh-list"></div>
+  </div>
+</div>
+
 <div class="page" id="page-pm">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
     <div>
@@ -622,6 +648,221 @@ document.addEventListener('click',e=>{const m=document.getElementById('export-me
 function exportCSV(){const h=['Posisi','Divisi','Level','Jml','Tgl Diajukan','SLA','PIC','Jenis','Buy/Build','Status'];const rows=FP.map(r=>[r.posisi,r.divisi,r.level,r.jml_approved,r.tgl_diajukan,r.sla||'',r.pic,r.planned,r.buy_build,r.status]);const csv=[h,...rows].map(r=>r.map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='MPP_FPTK.csv';a.click();}
 
 // NAVIGATION
+// ─── ANALISIS OVERLAP ────────────────────────────────────────────────
+// Baca tab "JD Overlap" (A:L) yang diisi dari JD Generator.
+let OVH=[];
+let OVH_TOTALS={};
+let OVH_ATASAN={};
+let OVH_OPEN=null;
+
+async function fetchOverlap(){
+  const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent('JD Overlap')+'?key='+API_KEY;
+  const r=await fetch(url);
+  const d=await r.json();
+  const rows=(d.values||[]).slice(1);
+  const sp=s=>(s||'').split(';').map(x=>x.trim()).filter(Boolean);
+  return rows.filter(r=>r[1]&&r[2]).map(r=>({
+    scope:(r[0]||'').trim(), a:(r[1]||'').trim(), b:(r[2]||'').trim(),
+    jenis:(r[3]||'').trim()||'Tidak diketahui',
+    pctA:parseInt(r[4])||0, pctB:parseInt(r[5])||0,
+    kraA:sp(r[6]), kraB:sp(r[7]),
+    area:(r[8]||'').trim(), bukti:(r[9]||'').trim(),
+    penjelasan:(r[10]||'').trim(), rekomendasi:(r[11]||'').trim(), tanggal:(r[12]||'').trim()
+  })).map(o=>Object.assign(o,{pctMax:Math.max(o.pctA,o.pctB)}));
+}
+
+// Total KRA per jabatan, dari tab JD Repository — penyebut untuk
+// persentase akumulasi per jabatan.
+async function fetchRepoTotals(){
+  const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent('JD Repository')+'?key='+API_KEY;
+  const r=await fetch(url);
+  const d=await r.json();
+  const t={};
+  OVH_ATASAN={};
+  (d.values||[]).slice(1).forEach(function(row){
+    const j=(row[4]||'').trim();
+    if(!j)return;
+    t[j]=(t[j]||0)+1;
+    if(row[5]&&!OVH_ATASAN[j])OVH_ATASAN[j]=row[5];
+  });
+  return t;
+}
+
+// Singgungan antara atasan dan bawahan langsung memang wajar, jadi tidak
+// dihitung sebagai overlap. Disaring juga di sini supaya temuan lama yang
+// tersimpan sebelum aturan ini ada tidak ikut terhitung.
+function ovhBuangGarisKomando(rows){
+  const n=function(s){return (s||'').trim().toLowerCase();};
+  return rows.filter(function(o){
+    return !(n(OVH_ATASAN[o.a])&&n(OVH_ATASAN[o.a])===n(o.b))
+        && !(n(OVH_ATASAN[o.b])&&n(OVH_ATASAN[o.b])===n(o.a));
+  });
+}
+
+// Akumulasi per jabatan: KRA unik yang bersinggungan dengan siapa pun,
+// dibagi total KRA jabatan itu. Satu jabatan muncul tepat sekali,
+// jadi tidak ada penghitungan ganda seperti kalau dihitung per pasangan.
+function ovhAgregat(){
+  const per={};
+  function tambah(nama,kraList,lawan,jenis){
+    if(!nama)return;
+    if(!per[nama])per[nama]={nama:nama,kra:{},lawan:new Set(),jenis:new Set()};
+    (kraList||[]).forEach(function(k){
+      if(!k)return;
+      if(!per[nama].kra[k])per[nama].kra[k]=[];
+      per[nama].kra[k].push({lawan:lawan,jenis:jenis});
+    });
+    per[nama].lawan.add(lawan);
+    if(jenis)per[nama].jenis.add(jenis);
+  }
+  OVH.forEach(function(o){
+    tambah(o.a,o.kraA,o.b,o.jenis);
+    tambah(o.b,o.kraB,o.a,o.jenis);
+  });
+  return Object.values(per).map(function(p){
+    const n=Object.keys(p.kra).length, tot=OVH_TOTALS[p.nama]||0;
+    return Object.assign(p,{n_kra:n,total:tot,pct:tot?Math.round(n/tot*100):0});
+  }).sort(function(x,y){return y.pct-x.pct||y.n_kra-x.n_kra;});
+}
+
+function ovhColor(p){return p>=60?'#B03030':p>=30?'#A86B00':'var(--tx3)';}
+
+async function renderOverlapHub(){
+  try{
+    const res=await Promise.all([fetchOverlap(),fetchRepoTotals().catch(function(){return {};})]);
+    OVH_TOTALS=res[1];
+    OVH=ovhBuangGarisKomando(res[0]);
+  }catch(e){ console.warn('Gagal fetch JD Overlap:',e); OVH=[]; OVH_TOTALS={}; }
+  OVH_OPEN=null;
+  paintOverlapHub();
+}
+
+function paintOverlapHub(){
+  const kpi=document.getElementById('ovh-kpi-row');
+  const jr=document.getElementById('ovh-jenis-rows');
+  const list=document.getElementById('ovh-list');
+  if(!kpi)return;
+
+  if(!OVH.length){
+    kpi.innerHTML=''; if(jr)jr.innerHTML='';
+    if(list)list.innerHTML='<div style="text-align:center;color:var(--tx3);font-size:12px;padding:32px 0">Belum ada hasil analisis. Generate JD atau drop file di JD Generator \u2014 pengecekan overlap berjalan otomatis.</div>';
+    return;
+  }
+
+  const agg=ovhAgregat();
+  const fungsi={};
+  OVH.forEach(function(o){
+    o.kraA.concat(o.kraB).forEach(function(k){ if(k) fungsi[k]=(fungsi[k]||0)+1; });
+  });
+  const nFungsi=Object.keys(fungsi).length;
+  const diperebutkan=Object.keys(fungsi).filter(function(k){return fungsi[k]>1;}).length;
+  const lintasDiv=agg.filter(function(a){
+    return [...a.jenis].some(function(x){return (x||'').toLowerCase().indexOf('divisi')>=0;});
+  }).length;
+  const tinggi=agg.filter(function(a){return a.pct>=60;}).length;
+
+  function gcard(lbl,val,sub,grad,col){
+    return '<div class="gc-mini" style="background:'+grad+';text-align:center">'+
+      '<div style="font-size:10px;color:rgba(0,0,0,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">'+lbl+'</div>'+
+      '<div style="font-size:28px;font-weight:700;color:'+col+'">'+val+'</div>'+
+      '<div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:4px">'+sub+'</div></div>';
+  }
+  kpi.innerHTML=
+    gcard('Jabatan Bersinggungan',agg.length,'dari '+Object.keys(OVH_TOTALS).length+' di repository','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
+    gcard('Overlap Tinggi',tinggi,'60% KRA ke atas','linear-gradient(135deg,#FDECEC,#F9D5D5)','#B03030')+
+    gcard('Fungsi Diperebutkan',diperebutkan,'dari '+nFungsi+' fungsi bersinggungan','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e')+
+    gcard('Menyentuh Lintas Divisi',lintasDiv,'isu struktural','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d');
+
+  // Sebaran per jenis \u2014 dihitung per pasangan, karena jenis melekat pada relasi
+  const jenisList=[...new Set(OVH.map(function(o){return o.jenis;}))];
+  const maxJ=Math.max.apply(null,jenisList.map(function(j){return OVH.filter(function(o){return o.jenis===j;}).length;}));
+  if(jr){
+    jr.innerHTML=jenisList.map(function(j,i){
+      const sub=OVH.filter(function(o){return o.jenis===j;});
+      const avg=Math.round(sub.reduce(function(s,o){return s+o.pctMax;},0)/sub.length);
+      const border=i<jenisList.length-1?'border-bottom:.5px solid var(--border)':'';
+      return '<div style="display:grid;grid-template-columns:200px 1fr 90px;gap:12px;padding:9px 8px;'+border+'">'+
+        '<div><div style="font-size:11px;font-weight:500;color:var(--tx)">'+j+'</div>'+
+        '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+sub.length+' relasi</div></div>'+
+        '<div style="display:flex;align-items:center"><div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden">'+
+        '<div style="width:'+pc(sub.length,maxJ)+'%;height:100%;background:'+ovhColor(avg)+'"></div></div></div>'+
+        '<div style="text-align:right;font-size:11px;font-weight:600;color:'+ovhColor(avg)+'">rata2 '+avg+'%</div></div>';
+    }).join('');
+  }
+
+  const fs=document.getElementById('ovh-filter-jenis');
+  if(fs&&fs.options.length<=1){
+    fs.innerHTML='<option value="">Semua Jenis</option>'+jenisList.map(function(j){return '<option>'+j+'</option>';}).join('');
+  }
+  const jf=fs?fs.value:'';
+  const shown=jf?agg.filter(function(a){return a.jenis.has(jf);}):agg;
+
+  list.innerHTML=shown.map(function(a,idx){
+    const buka=OVH_OPEN===a.nama, warna=ovhColor(a.pct);
+    const detail=a.total?a.n_kra+' dari '+a.total+' KRA bersinggungan'
+                        :a.n_kra+' KRA bersinggungan (total tidak diketahui)';
+    return '<div style="border-bottom:'+((idx<shown.length-1||buka)?'.5px solid var(--border)':'none')+'">'+
+      '<div onclick="ovhToggle('+JSON.stringify(a.nama).replace(/"/g,'&quot;')+')" style="padding:11px 8px;cursor:pointer">'+
+        '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:5px">'+
+          '<span style="font-size:12px;font-weight:600;color:var(--tx)">'+a.nama+'</span>'+
+          '<span style="font-size:12px;font-weight:600;color:'+warna+'">'+a.pct+'%</span></div>'+
+        '<div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:5px">'+
+          '<div style="width:'+a.pct+'%;height:100%;background:'+warna+';border-radius:4px"></div></div>'+
+        '<div style="font-size:10px;color:var(--tx3)">'+detail+' \u00b7 '+a.lawan.size+' jabatan lain</div>'+
+      '</div>'+(buka?ovhDetail(a):'')+'</div>';
+  }).join('');
+}
+
+function ovhToggle(nama){
+  OVH_OPEN=(OVH_OPEN===nama)?null:nama;
+  paintOverlapHub();
+}
+
+// Tingkat 2: dikelompokkan per KRA. Satu KRA yang diperebutkan beberapa
+// jabatan tampil sebagai satu blok, bukan beberapa temuan terpisah.
+function ovhDetail(a){
+  const blok=Object.entries(a.kra).sort(function(x,y){return y[1].length-x[1].length;}).map(function(e){
+    const kra=e[0], list=e[1], banyak=list.length>1;
+    return '<div style="border-left:3px solid '+(banyak?'#B03030':'#A86B00')+';border-radius:0;padding-left:11px;margin-bottom:12px">'+
+      '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px">'+
+        '<span style="font-size:11px;font-weight:600;color:var(--tx)">'+kra+'</span>'+
+        (banyak?'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FDECEC;color:#B03030">diperebutkan '+(list.length+1)+' jabatan</span>':'')+
+      '</div>'+
+      list.map(function(l){
+        return '<div onclick="event.stopPropagation();ovhPair('+JSON.stringify(a.nama).replace(/"/g,'&quot;')+','+JSON.stringify(l.lawan).replace(/"/g,'&quot;')+')" '+
+          'style="display:flex;justify-content:space-between;gap:10px;font-size:11px;padding:3px 0;cursor:pointer">'+
+          '<span style="color:var(--tx2);text-decoration:underline;text-decoration-color:var(--border)">'+l.lawan+'</span>'+
+          '<span style="color:var(--tx3);white-space:nowrap">'+(l.jenis||'')+'</span></div>';
+      }).join('')+'</div>';
+  }).join('');
+  return '<div style="padding:2px 8px 12px;background:var(--bg)">'+
+    '<div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;padding:8px 0">Per KRA yang bersinggungan</div>'+
+    blok+'<div id="ovh-pair"></div></div>';
+}
+
+// Tingkat 3: kartu pasangan dengan penjelasan dan rekomendasi
+function ovhPair(a,b){
+  const n=function(s){return (s||'').trim().toLowerCase();};
+  const o=OVH.find(function(x){
+    return (n(x.a)===n(a)&&n(x.b)===n(b))||(n(x.a)===n(b)&&n(x.b)===n(a));
+  });
+  const el=document.getElementById('ovh-pair');
+  if(!el)return;
+  if(!o){el.innerHTML='';return;}
+  el.innerHTML='<div style="background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:4px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">'+
+      '<span style="font-size:12px;font-weight:600;color:var(--tx)">'+o.a+' <span style="color:var(--tx3);font-weight:400">\u2194</span> '+o.b+'</span>'+
+      '<span style="font-size:10px;padding:2px 9px;border-radius:20px;background:var(--bg);color:'+ovhColor(o.pctMax)+';white-space:nowrap">'+o.pctMax+'%</span>'+
+    '</div>'+
+    (o.area?'<div style="font-size:11px;color:var(--accent);font-weight:500;margin-bottom:6px">'+o.area+'</div>':'')+
+    (o.bukti?'<div style="font-size:11px;color:var(--tx2);margin-bottom:6px"><span style="color:var(--tx3)">Bukti:</span> '+o.bukti+'</div>':'')+
+    '<div style="font-size:11px;color:var(--tx2);line-height:1.65">'+(o.penjelasan||'')+'</div>'+
+    (o.rekomendasi?'<div style="font-size:11px;color:var(--tx2);line-height:1.65;background:var(--bg);border-radius:8px;padding:9px 11px;margin-top:8px">'+
+      '<span style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px">Rekomendasi</span>'+o.rekomendasi+'</div>':'')+
+    (o.tanggal?'<div style="font-size:10px;color:var(--tx3);margin-top:8px">Diperiksa '+o.tanggal+'</div>':'')+
+    '</div>';
+}
+
 function goTo(page){
   currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -637,6 +878,7 @@ function goTo(page){
   if(page==='mpp')switchMPPTab(currentMPPTab);
   if(page==='so')renderSO();
   if(page==='jd'){renderJD().catch(console.error);renderJDWeekly().catch(console.error);}
+  if(page==='overlap')renderOverlapHub().catch(console.error);
   if(page==='pm'){renderPM();renderReminder();}
 }
 function switchDetailTab(tab){
