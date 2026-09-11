@@ -155,7 +155,7 @@ canvas{display:block;width:100%}
 <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z"/><path d="M12 16h.01"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></symbol>
 <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6l9 -6"/></symbol>
-<symbol id="i-overlap" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></symbol></defs></svg>
+</defs></svg>
 <div class="topbar">
   <div class="topbar-logo"><span class="logo">anteraja</span><span class="logo-sub">OD Hub</span></div>
   <div style="padding:0 16px;display:flex;align-items:center;gap:8px">
@@ -184,7 +184,6 @@ canvas{display:block;width:100%}
   <a class="nav-item" id="nav-mpp" onclick="goTo('mpp')"><span class="nav-icon"><svg class="ic"><use href="#i-clip"/></svg></span><span>MPP & Realisasi</span></a>
   <a class="nav-item" id="nav-so" onclick="goTo('so')"><span class="nav-icon"><svg class="ic"><use href="#i-bldg"/></svg></span><span>Struktur Organisasi</span></a>
   <a class="nav-item" id="nav-jd" onclick="goTo('jd')"><span class="nav-icon"><svg class="ic"><use href="#i-file"/></svg></span><span>Job Description</span></a>
-  <a class="nav-item" id="nav-overlap" onclick="goTo('overlap')"><span class="nav-icon"><svg class="ic"><use href="#i-overlap"/></svg></span><span>Analisis Overlap</span></a>
   <a class="nav-item" id="nav-pm" onclick="goTo('pm')"><span class="nav-icon"><svg class="ic"><use href="#i-target"/></svg></span><span>Performance Management</span></a>
   <div class="sidebar-divider"></div>
   <div class="sidebar-section">Info</div>
@@ -424,10 +423,7 @@ canvas{display:block;width:100%}
 <!-- SO -->
 <div class="page" id="page-so">
   <div style="font-size:16px;font-weight:700;margin-bottom:4px">Struktur Organisasi</div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-    <div style="font-size:11px;color:var(--tx3)">Status SO per divisi · 2026</div>
-    <a href="so-generator.html" class="btn btn-pink" style="text-decoration:none">+ SO Generator</a>
-  </div>
+  <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Status SO per divisi · 2026</div>
   <div class="r2">
     <div class="card"><div class="chdr"><div><div class="ct">Status SO per Divisi</div><div class="cs" id="so-sub"></div></div></div><div id="so-list"></div></div>
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -442,16 +438,8 @@ canvas{display:block;width:100%}
 
 <!-- JD -->
 <div class="page" id="page-jd">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-    <div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
-      <div style="font-size:11px;color:var(--tx3)">Tracking status JD per jabatan · 2026</div>
-    </div>
-    <a href="https://jd-generator.arya-putra1208.workers.dev/" target="_blank" class="btn btn-pink" style="text-decoration:none;display:flex;align-items:center;gap:6px">
-      <svg class="ic" style="width:14px;height:14px"><use href="#i-file"/></svg>
-      JD Generator
-    </a>
-  </div>
+  <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
+  <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Tracking status JD per jabatan · 2026</div>
 
   <!-- JD KPI -->
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px" id="jd-kpi-row"></div>
@@ -518,31 +506,6 @@ canvas{display:block;width:100%}
 </div>
 
 <!-- PM -->
-<div class="page" id="page-overlap">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-    <div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Analisis Overlap</div>
-      <div style="font-size:11px;color:var(--tx3)">Tumpang tindih tanggung jawab antar jabatan &middot; diperbarui otomatis dari JD Generator</div>
-    </div>
-    <a href="https://jd-generator.arya-putra1208.workers.dev/" target="_blank" class="btn btn-pink" style="text-decoration:none">Buka JD Generator</a>
-  </div>
-
-  <div id="ovh-kpi-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px"></div>
-
-  <div class="card" style="margin-bottom:16px">
-    <div class="chdr"><div><div class="ct">Sebaran per Jenis</div><div class="cs">Dihitung per relasi antar jabatan</div></div></div>
-    <div id="ovh-jenis-rows"></div>
-  </div>
-
-  <div class="card">
-    <div class="chdr">
-      <div><div class="ct">Jabatan</div><div class="cs">Klik untuk lihat KRA mana yang bersinggungan</div></div>
-      <select class="tf" id="ovh-filter-jenis" onchange="paintOverlapHub()"><option value="">Semua Jenis</option></select>
-    </div>
-    <div id="ovh-list"></div>
-  </div>
-</div>
-
 <div class="page" id="page-pm">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
     <div>
@@ -618,8 +581,6 @@ canvas{display:block;width:100%}
 const SHEET_ID='1Y4okept6ADvk-KZVU8qgkBkTaCvH8dwkhDVSYaOnTuQ';
 const API_KEY='AIzaSyA_K5XPnnvGvPzt08Bvdg9vmcW-gWJJt8k';
 const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbz1IZ-_WghcQU0ZPMHQt3dcbN7SGencFrb4rPj18YJuoos_CwHF4CR-lfGPd6Xa5zc2/exec';
-const SO_GENERATOR_URL='so-generator.html';
-const SO_SHEET='Org Structure';
 const EMBEDDED={fptk:[],match_results:[],mpp_positions:{},mpp_plan_buy:{},mpp_plan_build:{},mpp_detail:{},so:[],jd:[],kpi:[],months:["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"],generated:"Memuat..."}
 let D=EMBEDDED;
 let FP=[];
@@ -648,221 +609,6 @@ document.addEventListener('click',e=>{const m=document.getElementById('export-me
 function exportCSV(){const h=['Posisi','Divisi','Level','Jml','Tgl Diajukan','SLA','PIC','Jenis','Buy/Build','Status'];const rows=FP.map(r=>[r.posisi,r.divisi,r.level,r.jml_approved,r.tgl_diajukan,r.sla||'',r.pic,r.planned,r.buy_build,r.status]);const csv=[h,...rows].map(r=>r.map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='MPP_FPTK.csv';a.click();}
 
 // NAVIGATION
-// ─── ANALISIS OVERLAP ────────────────────────────────────────────────
-// Baca tab "JD Overlap" (A:L) yang diisi dari JD Generator.
-let OVH=[];
-let OVH_TOTALS={};
-let OVH_ATASAN={};
-let OVH_OPEN=null;
-
-async function fetchOverlap(){
-  const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent('JD Overlap')+'?key='+API_KEY;
-  const r=await fetch(url);
-  const d=await r.json();
-  const rows=(d.values||[]).slice(1);
-  const sp=s=>(s||'').split(';').map(x=>x.trim()).filter(Boolean);
-  return rows.filter(r=>r[1]&&r[2]).map(r=>({
-    scope:(r[0]||'').trim(), a:(r[1]||'').trim(), b:(r[2]||'').trim(),
-    jenis:(r[3]||'').trim()||'Tidak diketahui',
-    pctA:parseInt(r[4])||0, pctB:parseInt(r[5])||0,
-    kraA:sp(r[6]), kraB:sp(r[7]),
-    area:(r[8]||'').trim(), bukti:(r[9]||'').trim(),
-    penjelasan:(r[10]||'').trim(), rekomendasi:(r[11]||'').trim(), tanggal:(r[12]||'').trim()
-  })).map(o=>Object.assign(o,{pctMax:Math.max(o.pctA,o.pctB)}));
-}
-
-// Total KRA per jabatan, dari tab JD Repository — penyebut untuk
-// persentase akumulasi per jabatan.
-async function fetchRepoTotals(){
-  const url='https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent('JD Repository')+'?key='+API_KEY;
-  const r=await fetch(url);
-  const d=await r.json();
-  const t={};
-  OVH_ATASAN={};
-  (d.values||[]).slice(1).forEach(function(row){
-    const j=(row[4]||'').trim();
-    if(!j)return;
-    t[j]=(t[j]||0)+1;
-    if(row[5]&&!OVH_ATASAN[j])OVH_ATASAN[j]=row[5];
-  });
-  return t;
-}
-
-// Singgungan antara atasan dan bawahan langsung memang wajar, jadi tidak
-// dihitung sebagai overlap. Disaring juga di sini supaya temuan lama yang
-// tersimpan sebelum aturan ini ada tidak ikut terhitung.
-function ovhBuangGarisKomando(rows){
-  const n=function(s){return (s||'').trim().toLowerCase();};
-  return rows.filter(function(o){
-    return !(n(OVH_ATASAN[o.a])&&n(OVH_ATASAN[o.a])===n(o.b))
-        && !(n(OVH_ATASAN[o.b])&&n(OVH_ATASAN[o.b])===n(o.a));
-  });
-}
-
-// Akumulasi per jabatan: KRA unik yang bersinggungan dengan siapa pun,
-// dibagi total KRA jabatan itu. Satu jabatan muncul tepat sekali,
-// jadi tidak ada penghitungan ganda seperti kalau dihitung per pasangan.
-function ovhAgregat(){
-  const per={};
-  function tambah(nama,kraList,lawan,jenis){
-    if(!nama)return;
-    if(!per[nama])per[nama]={nama:nama,kra:{},lawan:new Set(),jenis:new Set()};
-    (kraList||[]).forEach(function(k){
-      if(!k)return;
-      if(!per[nama].kra[k])per[nama].kra[k]=[];
-      per[nama].kra[k].push({lawan:lawan,jenis:jenis});
-    });
-    per[nama].lawan.add(lawan);
-    if(jenis)per[nama].jenis.add(jenis);
-  }
-  OVH.forEach(function(o){
-    tambah(o.a,o.kraA,o.b,o.jenis);
-    tambah(o.b,o.kraB,o.a,o.jenis);
-  });
-  return Object.values(per).map(function(p){
-    const n=Object.keys(p.kra).length, tot=OVH_TOTALS[p.nama]||0;
-    return Object.assign(p,{n_kra:n,total:tot,pct:tot?Math.round(n/tot*100):0});
-  }).sort(function(x,y){return y.pct-x.pct||y.n_kra-x.n_kra;});
-}
-
-function ovhColor(p){return p>=60?'#B03030':p>=30?'#A86B00':'var(--tx3)';}
-
-async function renderOverlapHub(){
-  try{
-    const res=await Promise.all([fetchOverlap(),fetchRepoTotals().catch(function(){return {};})]);
-    OVH_TOTALS=res[1];
-    OVH=ovhBuangGarisKomando(res[0]);
-  }catch(e){ console.warn('Gagal fetch JD Overlap:',e); OVH=[]; OVH_TOTALS={}; }
-  OVH_OPEN=null;
-  paintOverlapHub();
-}
-
-function paintOverlapHub(){
-  const kpi=document.getElementById('ovh-kpi-row');
-  const jr=document.getElementById('ovh-jenis-rows');
-  const list=document.getElementById('ovh-list');
-  if(!kpi)return;
-
-  if(!OVH.length){
-    kpi.innerHTML=''; if(jr)jr.innerHTML='';
-    if(list)list.innerHTML='<div style="text-align:center;color:var(--tx3);font-size:12px;padding:32px 0">Belum ada hasil analisis. Generate JD atau drop file di JD Generator \u2014 pengecekan overlap berjalan otomatis.</div>';
-    return;
-  }
-
-  const agg=ovhAgregat();
-  const fungsi={};
-  OVH.forEach(function(o){
-    o.kraA.concat(o.kraB).forEach(function(k){ if(k) fungsi[k]=(fungsi[k]||0)+1; });
-  });
-  const nFungsi=Object.keys(fungsi).length;
-  const diperebutkan=Object.keys(fungsi).filter(function(k){return fungsi[k]>1;}).length;
-  const lintasDiv=agg.filter(function(a){
-    return [...a.jenis].some(function(x){return (x||'').toLowerCase().indexOf('divisi')>=0;});
-  }).length;
-  const tinggi=agg.filter(function(a){return a.pct>=60;}).length;
-
-  function gcard(lbl,val,sub,grad,col){
-    return '<div class="gc-mini" style="background:'+grad+';text-align:center">'+
-      '<div style="font-size:10px;color:rgba(0,0,0,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">'+lbl+'</div>'+
-      '<div style="font-size:28px;font-weight:700;color:'+col+'">'+val+'</div>'+
-      '<div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:4px">'+sub+'</div></div>';
-  }
-  kpi.innerHTML=
-    gcard('Jabatan Bersinggungan',agg.length,'dari '+Object.keys(OVH_TOTALS).length+' di repository','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
-    gcard('Overlap Tinggi',tinggi,'60% KRA ke atas','linear-gradient(135deg,#FDECEC,#F9D5D5)','#B03030')+
-    gcard('Fungsi Diperebutkan',diperebutkan,'dari '+nFungsi+' fungsi bersinggungan','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e')+
-    gcard('Menyentuh Lintas Divisi',lintasDiv,'isu struktural','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d');
-
-  // Sebaran per jenis \u2014 dihitung per pasangan, karena jenis melekat pada relasi
-  const jenisList=[...new Set(OVH.map(function(o){return o.jenis;}))];
-  const maxJ=Math.max.apply(null,jenisList.map(function(j){return OVH.filter(function(o){return o.jenis===j;}).length;}));
-  if(jr){
-    jr.innerHTML=jenisList.map(function(j,i){
-      const sub=OVH.filter(function(o){return o.jenis===j;});
-      const avg=Math.round(sub.reduce(function(s,o){return s+o.pctMax;},0)/sub.length);
-      const border=i<jenisList.length-1?'border-bottom:.5px solid var(--border)':'';
-      return '<div style="display:grid;grid-template-columns:200px 1fr 90px;gap:12px;padding:9px 8px;'+border+'">'+
-        '<div><div style="font-size:11px;font-weight:500;color:var(--tx)">'+j+'</div>'+
-        '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+sub.length+' relasi</div></div>'+
-        '<div style="display:flex;align-items:center"><div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden">'+
-        '<div style="width:'+pc(sub.length,maxJ)+'%;height:100%;background:'+ovhColor(avg)+'"></div></div></div>'+
-        '<div style="text-align:right;font-size:11px;font-weight:600;color:'+ovhColor(avg)+'">rata2 '+avg+'%</div></div>';
-    }).join('');
-  }
-
-  const fs=document.getElementById('ovh-filter-jenis');
-  if(fs&&fs.options.length<=1){
-    fs.innerHTML='<option value="">Semua Jenis</option>'+jenisList.map(function(j){return '<option>'+j+'</option>';}).join('');
-  }
-  const jf=fs?fs.value:'';
-  const shown=jf?agg.filter(function(a){return a.jenis.has(jf);}):agg;
-
-  list.innerHTML=shown.map(function(a,idx){
-    const buka=OVH_OPEN===a.nama, warna=ovhColor(a.pct);
-    const detail=a.total?a.n_kra+' dari '+a.total+' KRA bersinggungan'
-                        :a.n_kra+' KRA bersinggungan (total tidak diketahui)';
-    return '<div style="border-bottom:'+((idx<shown.length-1||buka)?'.5px solid var(--border)':'none')+'">'+
-      '<div onclick="ovhToggle('+JSON.stringify(a.nama).replace(/"/g,'&quot;')+')" style="padding:11px 8px;cursor:pointer">'+
-        '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:5px">'+
-          '<span style="font-size:12px;font-weight:600;color:var(--tx)">'+a.nama+'</span>'+
-          '<span style="font-size:12px;font-weight:600;color:'+warna+'">'+a.pct+'%</span></div>'+
-        '<div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:5px">'+
-          '<div style="width:'+a.pct+'%;height:100%;background:'+warna+';border-radius:4px"></div></div>'+
-        '<div style="font-size:10px;color:var(--tx3)">'+detail+' \u00b7 '+a.lawan.size+' jabatan lain</div>'+
-      '</div>'+(buka?ovhDetail(a):'')+'</div>';
-  }).join('');
-}
-
-function ovhToggle(nama){
-  OVH_OPEN=(OVH_OPEN===nama)?null:nama;
-  paintOverlapHub();
-}
-
-// Tingkat 2: dikelompokkan per KRA. Satu KRA yang diperebutkan beberapa
-// jabatan tampil sebagai satu blok, bukan beberapa temuan terpisah.
-function ovhDetail(a){
-  const blok=Object.entries(a.kra).sort(function(x,y){return y[1].length-x[1].length;}).map(function(e){
-    const kra=e[0], list=e[1], banyak=list.length>1;
-    return '<div style="border-left:3px solid '+(banyak?'#B03030':'#A86B00')+';border-radius:0;padding-left:11px;margin-bottom:12px">'+
-      '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px">'+
-        '<span style="font-size:11px;font-weight:600;color:var(--tx)">'+kra+'</span>'+
-        (banyak?'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FDECEC;color:#B03030">diperebutkan '+(list.length+1)+' jabatan</span>':'')+
-      '</div>'+
-      list.map(function(l){
-        return '<div onclick="event.stopPropagation();ovhPair('+JSON.stringify(a.nama).replace(/"/g,'&quot;')+','+JSON.stringify(l.lawan).replace(/"/g,'&quot;')+')" '+
-          'style="display:flex;justify-content:space-between;gap:10px;font-size:11px;padding:3px 0;cursor:pointer">'+
-          '<span style="color:var(--tx2);text-decoration:underline;text-decoration-color:var(--border)">'+l.lawan+'</span>'+
-          '<span style="color:var(--tx3);white-space:nowrap">'+(l.jenis||'')+'</span></div>';
-      }).join('')+'</div>';
-  }).join('');
-  return '<div style="padding:2px 8px 12px;background:var(--bg)">'+
-    '<div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;padding:8px 0">Per KRA yang bersinggungan</div>'+
-    blok+'<div id="ovh-pair"></div></div>';
-}
-
-// Tingkat 3: kartu pasangan dengan penjelasan dan rekomendasi
-function ovhPair(a,b){
-  const n=function(s){return (s||'').trim().toLowerCase();};
-  const o=OVH.find(function(x){
-    return (n(x.a)===n(a)&&n(x.b)===n(b))||(n(x.a)===n(b)&&n(x.b)===n(a));
-  });
-  const el=document.getElementById('ovh-pair');
-  if(!el)return;
-  if(!o){el.innerHTML='';return;}
-  el.innerHTML='<div style="background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:4px">'+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">'+
-      '<span style="font-size:12px;font-weight:600;color:var(--tx)">'+o.a+' <span style="color:var(--tx3);font-weight:400">\u2194</span> '+o.b+'</span>'+
-      '<span style="font-size:10px;padding:2px 9px;border-radius:20px;background:var(--bg);color:'+ovhColor(o.pctMax)+';white-space:nowrap">'+o.pctMax+'%</span>'+
-    '</div>'+
-    (o.area?'<div style="font-size:11px;color:var(--accent);font-weight:500;margin-bottom:6px">'+o.area+'</div>':'')+
-    (o.bukti?'<div style="font-size:11px;color:var(--tx2);margin-bottom:6px"><span style="color:var(--tx3)">Bukti:</span> '+o.bukti+'</div>':'')+
-    '<div style="font-size:11px;color:var(--tx2);line-height:1.65">'+(o.penjelasan||'')+'</div>'+
-    (o.rekomendasi?'<div style="font-size:11px;color:var(--tx2);line-height:1.65;background:var(--bg);border-radius:8px;padding:9px 11px;margin-top:8px">'+
-      '<span style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px">Rekomendasi</span>'+o.rekomendasi+'</div>':'')+
-    (o.tanggal?'<div style="font-size:10px;color:var(--tx3);margin-top:8px">Diperiksa '+o.tanggal+'</div>':'')+
-    '</div>';
-}
-
 function goTo(page){
   currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -878,7 +624,6 @@ function goTo(page){
   if(page==='mpp')switchMPPTab(currentMPPTab);
   if(page==='so')renderSO();
   if(page==='jd'){renderJD().catch(console.error);renderJDWeekly().catch(console.error);}
-  if(page==='overlap')renderOverlapHub().catch(console.error);
   if(page==='pm'){renderPM();renderReminder();}
 }
 function switchDetailTab(tab){
@@ -1363,23 +1108,9 @@ function renderSO(){
   const COL={'Signed All':'#1D9E75','Signed by User':'var(--pink)','Sent to User':'var(--amber)','Available':'#888'};
   const BG={'Signed All':'#EDFAF4','Signed by User':'#FBEAF0','Sent to User':'#FAEEDA','Available':'#F5F5F5'};
   document.getElementById('so-sub').textContent=so.length+' divisi · 2026';
-  const OS=D.orgstruct||{};
   document.getElementById('so-list').innerHTML=so.map(d=>{
     const col=COL[d.effective_status]||'#888',bg=BG[d.effective_status]||'#F5F5F5';
-    const os=OS[d.divisi];
-    const meta=os
-      ? os.count+' posisi'+(os.vacant?' · '+os.vacant+' vacant':'')+(os.updated_by?' · update: '+os.updated_by:'')
-      : 'Belum ada data struktur';
-    const metaCol=os?'var(--tx3)':'var(--amber)';
-    return '<div class="so-row">'+
-      '<div><div style="font-size:12px;font-weight:500">'+d.divisi+'</div>'+
-      '<div style="font-size:10px;color:'+metaCol+';margin-top:2px">'+meta+'</div></div>'+
-      '<div style="display:flex;align-items:center;gap:8px">'+
-        '<span class="pill" style="background:'+bg+';color:'+col+'">'+(d.effective_status||'-')+'</span>'+
-        '<a href="'+SO_GENERATOR_URL+'?div='+encodeURIComponent(d.divisi)+'" '+
-          'style="font-size:10px;font-weight:600;color:var(--pink);text-decoration:none;border:1px solid var(--pink);'+
-          'border-radius:999px;padding:3px 10px;white-space:nowrap">'+(os?'Buka SO':'Buat SO')+' \u203A</a>'+
-      '</div></div>';
+    return '<div class="so-row"><div><div style="font-size:12px;font-weight:500">'+d.divisi+'</div></div><span class="pill" style="background:'+bg+';color:'+col+'">'+(d.effective_status||'-')+'</span></div>';
   }).join('');
   const tot=so.length;
   const counts={'Signed All':so.filter(d=>d.effective_status==='Signed All').length,'Signed by User':so.filter(d=>d.effective_status==='Signed by User').length,'Sent to User':so.filter(d=>d.effective_status==='Sent to User').length,'Available':so.filter(d=>!d.effective_status||d.effective_status==='Available').length};
@@ -1400,16 +1131,6 @@ function renderSO(){
     '<div class="ins '+(counts['Signed All']===tot?'ok':'warn')+'">'+(counts['Signed All']===tot?'Semua divisi sudah Signed All!':(tot-counts['Signed All'])+' divisi belum Signed All. Target: 100% Signed All.')+'</div>';}
 
 // JD
-// Hitung target per divisi murni dari baris yang ada di sheet Job Description.
-function jdTargetsFromSheet(jd){
-  const t={};
-  (jd||[]).forEach(function(r){
-    const d=(r.divisi||'').trim();
-    if(d) t[d]=(t[d]||0)+1;
-  });
-  return t;
-}
-
 async function renderJD(){
   // Fetch JD data fresh from Google Sheets
   let jd=D.jd||[];
@@ -1444,10 +1165,10 @@ async function renderJD(){
   const jdfd=document.getElementById('jd-filter-divisi');
   if(jdfd){jdfd.innerHTML='<option value="">Semua Divisi</option>'+divs.map(d=>'<option>'+d+'</option>').join('');}
 
-  // Target keseluruhan = JD_TOTAL_TARGET (552), satu-satunya angka yang
-  // sengaja dipatok. Target per divisi dihitung dari isi sheet.
-  Promise.resolve(jdTargetsFromSheet(jd)).then(function(targets){
-    const totalTarget=JD_TOTAL_TARGET;
+  // KPI cards - fetch target total from JD Target sheet first
+  fetchJDTarget().then(function(targets){
+    const totalTarget=Object.values(targets).reduce((s,v)=>s+v,0)||JD_TOTAL_TARGET;
+    window.JD_TOTAL_TARGET=totalTarget;
     const kpiEl=document.getElementById('jd-kpi-row');
     if(kpiEl){
       function gc(lbl,val,sub,grad,col){
@@ -1467,7 +1188,7 @@ async function renderJD(){
     // Render divisi breakdown with targets
     renderJDDivisi(jd,targets);
   }).catch(function(e){
-    console.warn('Render JD divisi gagal:',e);
+    console.warn('JD Target fetch failed, using fallback:',e);
     // Fallback: show KPI with JD_TOTAL_TARGET
     const kpiEl=document.getElementById('jd-kpi-row');
     if(kpiEl){
@@ -1479,13 +1200,13 @@ async function renderJD(){
         '</div>';
       }
       kpiEl.innerHTML=
-        gc2('Total Target',JD_TOTAL_TARGET,divs.length+' divisi','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
+        gc2('Total Job Description',JD_TOTAL_TARGET,divs.length+' divisi','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
         gc2('Completed',completed,pc(completed,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#DBEAFE,#BFDBFE)','#1d6fa8')+
         gc2('Signing',signing,pc(signing,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#D1FAE5,#A7F3D0)','#065f46')+
         gc2('Review By User',review,pc(review,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d')+
         gc2('On Progress',prog,pc(prog,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,#FEF3C7,#FDE68A)','#92400e');
     }
-    renderJDDivisi(jd,jdTargetsFromSheet(jd));
+    renderJDDivisi(jd,{});
   });
 }
 
@@ -1669,7 +1390,7 @@ function renderJDDivisi(jd, targets){
   // Match JD rows to target divisi case-insensitively
   function normD(s){return (s||'').trim().toUpperCase();}
   const targetDivs=Object.keys(targets); // canonical names
-  const totalTarget=JD_TOTAL_TARGET;  // footer pakai target perusahaan
+  const totalTarget=Object.values(targets).reduce((s,v)=>s+v,0)||JD_TOTAL_TARGET;
 
   // Build lookup: normalized name -> canonical name
   const normToCanon={};
@@ -1731,7 +1452,7 @@ function renderJDDivisi(jd, targets){
     ' &nbsp;·&nbsp; Total target: <b style="color:var(--tx);font-weight:500">'+totalTarget+'</b>'+
     ' &nbsp;·&nbsp; Overall progress: <b style="color:var(--blue);font-weight:500">'+overallPct+'%</b>';
 
-
+  if(totalTarget>0)window.JD_TOTAL_TARGET=totalTarget;
 }
 
 
@@ -1884,7 +1605,7 @@ async function fetchJDTarget(){
   }
 }
 async function fetchAllData(){
-  const sheetNames=['FPTK KJ 3Up','MPP','SO','Job Description','KPI','Master Karyawan',SO_SHEET];
+  const sheetNames=['FPTK KJ 3Up','MPP','SO','Job Description','KPI','Master Karyawan'];
   const urls=sheetNames.map(s=>'https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent(s)+'?key='+API_KEY);
   const responses=await Promise.all(urls.map(u=>fetch(u)));
   const jsons=await Promise.all(responses.map(r=>r.json()));
@@ -1943,27 +1664,6 @@ async function fetchAllData(){
   // ── SO ──
   const soRows=(jsons[2]?.values||[]).slice(1);
   fresh.so=soRows.filter(r=>r[2]).map(r=>({divisi:(r[2]||'').trim().replace(/\b\w/g,c=>c.toUpperCase()),no_name:(r[3]||'').toLowerCase()==='v',name:(r[4]||'').toLowerCase()==='v',signed:(r[5]||'').trim(),effective_status:(r[5]||'').trim()}));
-
-  // ── ORG STRUCTURE (SO Generator) ──
-  fresh.orgstruct={};
-  try{
-    const osAll=jsons[6]?.values||[];
-    if(osAll.length>1){
-      const h=osAll[0].map(x=>String(x||'').trim().toLowerCase());
-      const iDiv=h.indexOf('divisi'),iNam=h.indexOf('nama'),iSta=h.indexOf('status'),
-            iUpd=h.indexOf('updated_at'),iBy=h.indexOf('updated_by');
-      osAll.slice(1).forEach(r=>{
-        const dv=String(r[iDiv]||'').trim(); if(!dv)return;
-        const key=dv.replace(/\b\w/g,c=>c.toUpperCase());
-        if(!fresh.orgstruct[key])fresh.orgstruct[key]={count:0,vacant:0,updated_at:'',updated_by:''};
-        const o=fresh.orgstruct[key];
-        o.count++;
-        if(!String(r[iNam]||'').trim()||String(r[iSta]||'').trim().toUpperCase()==='VAC')o.vacant++;
-        const u=r[iUpd]?String(r[iUpd]):'';
-        if(u&&u>o.updated_at){o.updated_at=u;o.updated_by=String(r[iBy]||'').trim();}
-      });
-    }
-  }catch(e){console.warn('orgstruct parse:',e);}
 
   // ── JD ──
   const jdRows=(jsons[3]?.values||[]).slice(1);
@@ -2098,7 +1798,7 @@ async function exportPPT(){
     const sumCards=[
       {label:'MPP & Realisasi',color:PK,val:pct(plA,mT||1)+'%',sub:'Achievement Rate YTD',detail:'Plan '+mT+' / FPTK '+plA},
       {label:'Struktur Organisasi',color:GR,val:pct(soSA+soSU,so.length||1)+'%',sub:'Divisi sudah Signed',detail:(soSA+soSU)+' dari '+so.length+' divisi'},
-      {label:'Job Description',color:BL,val:pct(jdC,JD_TOTAL_TARGET)+'%',sub:'Completion dari '+JD_TOTAL_TARGET+' jabatan',detail:jdC+' jabatan selesai'},
+      {label:'Job Description',color:BL,val:pct(jdC,433)+'%',sub:'Completion dari 433 jabatan',detail:jdC+' jabatan selesai'},
       {label:'Performance Mgmt',color:PU,val:pct(ippA,kpi.length||1)+'%',sub:'IPP Approved',detail:ippA+' dari '+kpi.length+' karyawan'},
     ];
     sumCards.forEach((c,i)=>{
@@ -2118,42 +1818,39 @@ async function exportPPT(){
       sld.addText(c.val+' tercapai',{x:x+.1,y:y+2.55,w:w-.2,h:.25,fontSize:8,color:GY,align:'center',fontFace:FONT});
     });
 
-    // ── SLIDE 3: MPP & FPTK ──
+    // ── SLIDE 3: MPP & Realisasi ──
     sld=pres.addSlide();sld.background={color:BG};
-    sld.addText('MPP & Realisasi',{x:.5,y:.3,w:12,h:.6,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('MPP & Realisasi',{x:.5,y:.25,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
 
-    // MPP Card
-    card(sld,.4,1.0,6.0,2.3);
-    sld.addShape(pres.ShapeType.rect,{x:.4,y:1.0,w:.1,h:2.3,fill:{color:PK},line:{color:PK}});
-    sld.addText('MPP Plan 2026',{x:.65,y:1.1,w:4,h:.4,fontSize:13,bold:true,color:DK,fontFace:FONT});
+    // ── ROW 1: MPP Plan card (left) + FPTK Summary card (right) ──
+    // MPP Plan card: x=0.4, y=0.9, w=6.0, h=2.0
+    card(sld,.4,.9,5.9,2.05);
+    sld.addShape(pres.ShapeType.rect,{x:.4,y:.9,w:.1,h:2.05,fill:{color:PK},line:{color:PK}});
+    sld.addText('MPP Plan 2026',{x:.6,y:.95,w:4,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
+
+    // 4 number boxes in MPP card
     [{l:'Total Plan',v:mT,c:DK},{l:'Gap Planned',v:gap3,c:AM},{l:'Plan Buy',v:mBu,c:GR},{l:'Plan Build',v:mBl,c:BL}].forEach((n,i)=>{
-      const x=.7+i*1.4;
-      sld.addText(String(n.v),{x,y:1.55,w:1.3,h:.65,fontSize:28,bold:true,color:n.c,align:'center',fontFace:FONT});
-      sld.addText(n.l,{x,y:2.2,w:1.3,h:.28,fontSize:9,color:GY,align:'center',fontFace:FONT});
-      // Buy/Build bar
-      if(n.l==='Plan Buy'||n.l==='Plan Build'){
-        const tot4=mBu+mBl||1;
-        const bw=(mT>0)?Math.max(.01,4.2*n.v/tot4):0;
-        const bx=.7+(n.l==='Plan Build'?4.2*mBu/tot4:0);
-      }
-    })
-    // Gap breakdown info box
+      const x=.6+i*1.42;
+      sld.addShape(pres.ShapeType.roundRect,{x,y:1.35,w:1.32,h:.9,fill:{color:BG},line:{color:BORDER,width:.3},rectRadius:.06});
+      sld.addText(String(n.v),{x,y:1.38,w:1.32,h:.55,fontSize:24,bold:true,color:n.c,align:'center',fontFace:FONT});
+      sld.addText(n.l,{x,y:1.92,w:1.32,h:.24,fontSize:8.5,color:GY,align:'center',fontFace:FONT});
+    });
+
+    // Gap breakdown text below boxes
     const actualBuyPPT=fptk.filter(r=>r.planned==='Planned'&&r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);
     const actualBuildPPT=fptk.filter(r=>r.planned==='Planned'&&r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);
     const gapBuyPPT=Math.max(0,mBu-actualBuyPPT);
     const gapBuildPPT=Math.max(0,mBl-actualBuildPPT);
-    sld.addShape(pres.ShapeType.roundRect,{x:.6,y:2.6,w:5.5,h:.72,fill:{color:AM+'18'},line:{color:AM+'55',width:.5},rectRadius:.08});
-    sld.addText('Gap Breakdown — Buy: '+gapBuyPPT+' (Plan '+mBu+' / Realized '+actualBuyPPT+')     Build: '+gapBuildPPT+' (Plan '+mBl+' / Realized '+actualBuildPPT+')',{x:.75,y:2.68,w:5.2,h:.55,fontSize:9,color:DK,fontFace:FONT});;
-    // Buy/Build bar full
-    sld.addText('Buy / Build',{x:.65,y:2.55,w:5,h:.25,fontSize:9,color:GY,fontFace:FONT});
-    sld.addShape(pres.ShapeType.roundRect,{x:.65,y:2.8,w:5.5,h:.14,fill:{color:BORDER},line:{color:BORDER},rectRadius:.07});
-    const totBB=mBu+mBl||1;
-    if(mBu>0)sld.addShape(pres.ShapeType.roundRect,{x:.65,y:2.8,w:Math.max(.05,5.5*mBu/totBB),h:.14,fill:{color:GR},line:{color:GR},rectRadius:.07});
-    sld.addText('Buy '+mBu+' ('+pct(mBu,totBB)+'%)',{x:.65,y:3.0,w:2.5,h:.22,fontSize:9,color:GR,fontFace:FONT});
-    sld.addText('Build '+mBl+' ('+pct(mBl,totBB)+'%)',{x:3.2,y:3.0,w:2.5,h:.22,fontSize:9,color:BL,fontFace:FONT});
+    sld.addText('Gap: Buy '+gapBuyPPT+' (Plan '+mBu+'/Real '+actualBuyPPT+')  |  Build '+gapBuildPPT+' (Plan '+mBl+'/Real '+actualBuildPPT+')',{x:.6,y:2.35,w:5.6,h:.28,fontSize:8,color:AM,fontFace:FONT});
 
-    // FPTK Card
-    // MP per kategori (jml_approved sum)
+    // Buy/Build bar
+    const totBB2=mBu+mBl||1;
+    sld.addShape(pres.ShapeType.roundRect,{x:.6,y:2.65,w:5.5,h:.12,fill:{color:BORDER},line:{color:BORDER},rectRadius:.06});
+    if(mBu>0)sld.addShape(pres.ShapeType.roundRect,{x:.6,y:2.65,w:Math.max(.05,5.5*mBu/totBB2),h:.12,fill:{color:GR},line:{color:GR},rectRadius:.06});
+    sld.addText('Buy '+pct(mBu,totBB2)+'%',{x:.6,y:2.79,w:2.5,h:.2,fontSize:8,color:GR,fontFace:FONT});
+    sld.addText('Build '+pct(mBl,totBB2)+'%',{x:3.5,y:2.79,w:2.5,h:.2,fontSize:8,color:BL,fontFace:FONT});
+
+    // FPTK Summary card: x=6.5, y=0.9, w=6.3, h=2.0
     const plMP=fptk.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||0),0);
     const rpMP=fptk.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||0),0);
     const unMP=fptk.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||0),0);
@@ -2162,41 +1859,68 @@ async function exportPPT(){
     const slaArr=fptk.filter(r=>r.sla!=null);
     const slaAvg=slaArr.length?Math.round(slaArr.reduce((s,r)=>s+r.sla,0)/slaArr.length):0;
 
-    card(sld,6.9,1.0,6.0,2.3);
-    sld.addShape(pres.ShapeType.rect,{x:6.9,y:1.0,w:.1,h:2.3,fill:{color:GR},line:{color:GR}});
-    sld.addText('FPTK Realisasi YTD',{x:7.15,y:1.1,w:4,h:.4,fontSize:13,bold:true,color:DK,fontFace:FONT});
+    card(sld,6.5,.9,6.3,2.05);
+    sld.addShape(pres.ShapeType.rect,{x:6.5,y:.9,w:.1,h:2.05,fill:{color:GR},line:{color:GR}});
+    sld.addText('FPTK Realisasi YTD',{x:6.7,y:.95,w:4,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
+
+    // 4 FPTK numbers
     [{l:'Total FPTK',v:fptk.length,c:BL},{l:'MP Approved',v:hcA,c:GR},{l:'Completed',v:cmpF,c:GR},{l:'Rata SLA',v:slaAvg+'hr',c:AM}].forEach((n,i)=>{
-      const x=7.15+i*1.4;
-      sld.addText(String(n.v),{x,y:1.55,w:1.3,h:.65,fontSize:28,bold:true,color:n.c,align:'center',fontFace:FONT});
-      sld.addText(n.l,{x,y:2.2,w:1.3,h:.28,fontSize:9,color:GY,align:'center',fontFace:FONT});
+      const x=6.7+i*1.5;
+      sld.addShape(pres.ShapeType.roundRect,{x,y:1.35,w:1.4,h:.9,fill:{color:BG},line:{color:BORDER,width:.3},rectRadius:.06});
+      sld.addText(String(n.v),{x,y:1.38,w:1.4,h:.55,fontSize:24,bold:true,color:n.c,align:'center',fontFace:FONT});
+      sld.addText(n.l,{x,y:1.92,w:1.4,h:.24,fontSize:8.5,color:GY,align:'center',fontFace:FONT});
     });
-    // Komposisi MP bar (by jml_approved)
-    sld.addText('Komposisi MP (orang)',{x:7.15,y:2.55,w:5,h:.25,fontSize:9,color:GY,fontFace:FONT});
-    sld.addShape(pres.ShapeType.roundRect,{x:7.15,y:2.8,w:5.5,h:.14,fill:{color:BORDER},line:{color:BORDER},rectRadius:.07});
+
+    // Komposisi MP bar (Planned/Replacement/Unplanned)
     const totMP=plMP+rpMP+unMP||1;
-    let xbar=7.15;
-    [[plMP,PK],[rpMP,AM],[unMP,BL]].forEach(([v,c])=>{const w=5.5*(v||0)/totMP;if(w>0.01){sld.addShape(pres.ShapeType.roundRect,{x:xbar,y:2.8,w:Math.max(.02,w),h:.14,fill:{color:c},line:{color:c},rectRadius:.07});xbar+=w;}});
-    sld.addText('Planned '+plMP,{x:7.15,y:3.0,w:1.7,h:.22,fontSize:9,color:PK,fontFace:FONT});
-    sld.addText('Replacement '+rpMP,{x:9.0,y:3.0,w:1.8,h:.22,fontSize:9,color:AM,fontFace:FONT});
-    sld.addText('Unplanned '+unMP,{x:10.9,y:3.0,w:1.8,h:.22,fontSize:9,color:BL,fontFace:FONT});
+    sld.addText('Komposisi MP: Planned '+plMP+' | Replacement '+rpMP+' | Unplanned '+unMP,{x:6.7,y:2.35,w:5.9,h:.25,fontSize:8,color:GY,fontFace:FONT});
+    sld.addShape(pres.ShapeType.roundRect,{x:6.7,y:2.62,w:5.9,h:.14,fill:{color:BORDER},line:{color:BORDER},rectRadius:.07});
+    let xbar2=6.7;
+    [[plMP,PK],[rpMP,AM],[unMP,BL]].forEach(([v,c])=>{const w=5.9*(v||0)/totMP;if(w>0.01){sld.addShape(pres.ShapeType.roundRect,{x:xbar2,y:2.62,w:Math.max(.02,w),h:.14,fill:{color:c},line:{color:c},rectRadius:.07});xbar2+=w;}});
+    sld.addText('Planned '+pct(plMP,totMP)+'%',{x:6.7,y:2.78,w:2,h:.2,fontSize:8,color:PK,fontFace:FONT});
+    sld.addText('Replacement '+pct(rpMP,totMP)+'%',{x:8.7,y:2.78,w:2.2,h:.2,fontSize:8,color:AM,fontFace:FONT});
+    sld.addText('Unplanned '+pct(unMP,totMP)+'%',{x:10.9,y:2.78,w:1.8,h:.2,fontSize:8,color:BL,fontFace:FONT});
 
-    // HC per bulan chart
-    card(sld,.4,3.4,12.5,3.6);
-    sld.addText('Headcount Masuk per Bulan',{x:.7,y:3.55,w:8,h:.4,fontSize:13,bold:true,color:DK,fontFace:FONT});
-    const bMo=MF.map((_,i2)=>fptk.filter(r=>r.bulan===i2+1).reduce((s,r)=>s+(r.jml_approved||0),0));
-    const mxH=Math.max(...bMo,1);
-    const chartX=.6,chartY=4.0,chartW=12.1,chartH=2.6;
-    const slotW2=chartW/12;
-    bMo.forEach((v,i)=>{
-      const bw=slotW2*.7,bx=chartX+i*slotW2+(slotW2-bw)/2;
-      const bh=v>0?Math.max(.05,chartH*(v/mxH)):.04;
-      const by=chartY+chartH-bh;
-      sld.addShape(pres.ShapeType.roundRect,{x:bx,y:by,w:bw,h:bh,fill:{color:v>0?GR:'D3D1C7'},line:{color:v>0?GR:'D3D1C7'},rectRadius:.04});
-      if(v>0)sld.addText(String(v),{x:bx,y:by-.25,w:bw,h:.22,fontSize:9,bold:true,color:GR,align:'center',fontFace:FONT});
-      sld.addText(MF[i],{x:bx,y:chartY+chartH+.05,w:bw,h:.22,fontSize:9,color:GY,align:'center',fontFace:FONT});
+    // ── ROW 2: HC per bulan chart (full width) ──
+    card(sld,.4,3.15,12.5,4.1);
+    sld.addText('Headcount Masuk per Bulan',{x:.65,y:3.22,w:8,h:.38,fontSize:12,bold:true,color:DK,fontFace:FONT});
+
+    // FPTK breakdown per bulan: Planned / Replacement / Unplanned bars (stacked)
+    const bPlanned=MF.map((_,i)=>fptk.filter(r=>r.bulan===i+1&&r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||0),0));
+    const bRepl=MF.map((_,i)=>fptk.filter(r=>r.bulan===i+1&&r.planned==='Replacement').reduce((s,r)=>s+(r.jml_approved||0),0));
+    const bUnpl=MF.map((_,i)=>fptk.filter(r=>r.bulan===i+1&&r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||0),0));
+    const bTotal=bPlanned.map((v,i)=>v+bRepl[i]+bUnpl[i]);
+    const mxHC=Math.max(...bTotal,1);
+    const cX=.6,cY=3.7,cW=12.1,cH=3.2;
+    const slW=cW/12;
+
+    MF.forEach((m,i)=>{
+      const bw=slW*.72,bx=cX+i*slW+(slW-bw)/2;
+      const totV=bTotal[i];
+      const by=cY+cH;
+
+      // Stacked bars: Planned (pink) bottom, Replacement (amber) middle, Unplanned (blue) top
+      let yOff=by;
+      [[bPlanned[i],PK],[bRepl[i],AM],[bUnpl[i],BL]].forEach(([v,c])=>{
+        if(v>0){
+          const bh=Math.max(.04,cH*v/mxHC);
+          yOff-=bh;
+          sld.addShape(pres.ShapeType.roundRect,{x:bx,y:yOff,w:bw,h:bh,fill:{color:c},line:{color:c},rectRadius:.03});
+        }
+      });
+      // Total label on top
+      if(totV>0)sld.addText(String(totV),{x:bx,y:yOff-.22,w:bw,h:.2,fontSize:8.5,bold:true,color:DK,align:'center',fontFace:FONT});
+      // Month label
+      sld.addText(m,{x:bx,y:cY+cH+.06,w:bw,h:.2,fontSize:8.5,color:GY,align:'center',fontFace:FONT});
     });
 
-    // ── SLIDE 4: SO ──
+    // Legend for HC chart
+    [{l:'Planned',c:PK},{l:'Replacement',c:AM},{l:'Unplanned',c:BL}].forEach((lg,i)=>{
+      sld.addShape(pres.ShapeType.roundRect,{x:.7+i*2.1,y:7.0,w:.14,h:.14,fill:{color:lg.c},line:{color:lg.c},rectRadius:.03});
+      sld.addText(lg.l,{x:.88+i*2.1,y:6.98,w:1.8,h:.18,fontSize:8.5,color:GY,fontFace:FONT});
+    });
+
+    // ──  SLIDE 4: SO ──
     sld=pres.addSlide();sld.background={color:BG};
     sld.addText('Struktur Organisasi',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
     sld.addText('Status pengesahan struktur organisasi per divisi',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
@@ -2234,7 +1958,7 @@ async function exportPPT(){
     const jdSgn=jd.filter(r=>r.status==='Signing').length;
     const jdR=jd.filter(r=>r.status==='Review by User').length;
     const jdPr=jd.filter(r=>r.status==='On Progress').length;
-    const jdTotal=JD_TOTAL_TARGET;
+    const jdTotal=window.JD_TOTAL_TARGET||JD_TOTAL_TARGET;
     const jdCards2=[
       {l:'Total Target',v:jdTotal,c:DK,bg:'F8F6F0'},
       {l:'Completed',v:jdC,c:BL,bg:'DBEAFE'},
@@ -2247,7 +1971,7 @@ async function exportPPT(){
       sld.addShape(pres.ShapeType.roundRect,{x,y:1.3,w:2.3,h:1.8,fill:{color:c.bg},line:{color:c.c+'44',width:.5},rectRadius:.12});
       sld.addText(String(c.v),{x,y:1.42,w:2.3,h:.8,fontSize:32,bold:true,color:c.c,align:'center',fontFace:FONT});
       sld.addText(c.l,{x,y:2.22,w:2.3,h:.3,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
-      if(i>0)sld.addText(pct(c.v,jdTotal)+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
+      if(i>0)sld.addText(pct(c.v,433)+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
     });
     // Progress bar
     const pctJD=pct(jdC+jdSgn,jdTotal);
@@ -2255,8 +1979,8 @@ async function exportPPT(){
     sld.addShape(pres.ShapeType.roundRect,{x:.5,y:3.7,w:12,h:.2,fill:{color:BORDER},line:{color:BORDER},rectRadius:.1});
     if(pctJD>0)sld.addShape(pres.ShapeType.roundRect,{x:.5,y:3.7,w:Math.max(.05,12*pctJD/100),h:.2,fill:{color:BL},line:{color:BL},rectRadius:.1});
     // Divisi breakdown
-    // Per divisi: target dihitung dari isi sheet, bukan angka hardcoded
-    const jdTgts=jdTargetsFromSheet(jd);
+    // Per divisi using JD_TARGET_FALLBACK as master
+    const jdTgts=typeof JD_TARGET_FALLBACK!=='undefined'?JD_TARGET_FALLBACK:{};
     function normDD(s){return (s||'').trim().toUpperCase();}
     const normToCanonPPT={};
     Object.keys(jdTgts).forEach(k=>normToCanonPPT[normDD(k)]=k);
