@@ -11,7 +11,7 @@
 :root{
   --magenta:#ED0677; --yellow:#FFCB05; --pink:#FF84A1; --blue:#7ECCEE;
   --blush:#FFECF0; --dark:#524245; --soft:#d9cfd2; --green:#1D9E75; --amber:#D98A0B; --red:#D94A4A;
-  --col-w:200px; --node-h:56px;
+  --col-w:200px; --node-h:56px; --name-row-h:20px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 html,body{height:100%}
@@ -68,12 +68,12 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
 
 #chart{position:relative}
 #wires{position:absolute;inset:0;pointer-events:none;overflow:visible}
-.node{position:absolute;width:var(--col-w);height:var(--node-h);border:1px solid #7a7a7a;background:#fff;cursor:pointer;display:flex;flex-direction:column;transition:box-shadow .12s,border-color .12s}
+.node{position:absolute;width:var(--col-w);height:auto;min-height:var(--node-h);border:1px solid #7a7a7a;background:#fff;cursor:pointer;display:flex;flex-direction:column;transition:box-shadow .12s,border-color .12s}
 .node:hover{box-shadow:0 4px 14px rgba(237,6,119,.2);border-color:var(--magenta);z-index:5}
 .node.dragging{opacity:.35}
 .node.drop-ok{border-color:var(--magenta);box-shadow:0 0 0 3px var(--blush)}
-.node .t{flex:1;background:#D9D9D9;border-bottom:1px solid #7a7a7a;display:grid;place-items:center;text-align:center;font-size:10.5px;font-weight:600;line-height:1.25;padding:2px 6px;overflow:hidden}
-.node .p{height:20px;display:grid;place-items:center;font-size:10px;font-weight:500;color:#6b5c60;padding:0 6px;overflow:hidden}
+.node .t{flex:0 0 36px;background:#D9D9D9;border-bottom:1px solid #7a7a7a;display:grid;place-items:center;text-align:center;font-size:10.5px;font-weight:600;line-height:1.25;padding:2px 6px;overflow:hidden}
+.node .p{min-height:20px;height:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#6b5c60;padding:0 6px;overflow:hidden}.node .p .name-row{height:var(--name-row-h);min-height:var(--name-row-h);display:flex;align-items:center;justify-content:center;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.node .p .name-row.vac{color:#b3a1a6;font-style:italic}
 .node .p.vac{color:#b3a1a6;font-style:italic}
 .node .badge{position:absolute;top:-8px;right:-6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--magenta);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .node .quick{position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);display:none;gap:3px;z-index:6}
@@ -94,6 +94,10 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
 .two{display:flex;gap:10px}.two .field{flex:1}
 .modal .actions{display:flex;gap:8px;margin-top:16px}
 .modal .actions .btn{flex:1;justify-content:center}
+.name-editor-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.name-editor-row input{flex:1;min-width:0}
+.name-editor-row .remove-name{width:34px;height:36px;padding:0;border:1.5px solid var(--soft);border-radius:9px;background:#fff;color:#a08e93;cursor:pointer;font-size:15px;font-weight:700}
+.name-editor-row .remove-name:hover{border-color:var(--red);color:var(--red);background:#fdeaea}
 .hintline{font-size:10.5px;color:#b3a1a6;margin-top:-6px;margin-bottom:12px}
 
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dark);color:#fff;font-size:12.5px;padding:10px 18px;border-radius:999px;transition:transform .25s;z-index:70;pointer-events:none;max-width:90vw;text-align:center}
@@ -187,7 +191,11 @@ header{display:flex;align-items:center;gap:9px;padding:9px 14px;background:#fff;
   <div class="modal">
     <h3><span class="dot"></span><span id="modalTitle">Edit Posisi</span></h3>
     <div class="field"><label>Nama Jabatan / Posisi</label><input id="fTitle" placeholder="cth: Head of People &amp; Organization Dev"></div>
-    <div class="field"><label>Nama Pemegang Jabatan</label><input id="fName" placeholder="kosongkan jika belum terisi"></div>
+    <div class="field">
+      <label>Nama Pemegang Jabatan</label>
+      <div id="nameList"></div>
+      <button type="button" class="btn" id="addNameBtn" style="width:100%;justify-content:center;margin-top:7px">＋ Tambah Nama</button>
+    </div>
     <div class="two">
       <div class="field"><label>Layer</label><select id="fLayer"></select></div>
       <div class="field"><label>Status</label><select id="fStatus">
@@ -283,6 +291,31 @@ const kidsOf = id => nodes().filter(n=>n.parentId===id).sort((a,b)=>(a.urutan||0
 function isDesc(id,ancId){let c=byId(id);while(c&&c.parentId){if(c.parentId===ancId)return true;c=byId(c.parentId);}return false;}
 function subCount(id){let c=0;for(const k of kidsOf(id))c+=1+subCount(k.id);return c;}
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function parseNames(raw){
+  return String(raw==null?'':raw)
+    .split(/\r?\n|;\s*/)
+    .map(x=>x.trim())
+    .filter(Boolean);
+}
+function getNames(n){
+  if(Array.isArray(n.names)) return n.names.map(x=>String(x==null?'':x).trim()).filter(Boolean);
+  return parseNames(n.name||'');
+}
+function syncNames(n,names){
+  n.names = names.map(x=>String(x==null?'':x).trim()).filter(Boolean);
+  n.name = n.names.join('; ');
+}
+function namesCell(n){ return getNames(n).join('; '); }
+function nodeHeight(n){
+  const count=Math.max(1,getNames(n).length);
+  return 36 + count*20;
+}
+function namesHTML(n){
+  if(!showNames) return '&nbsp;';
+  const names=getNames(n);
+  if(names.length) return names.map(x=>'<div class="name-row">'+esc(x)+'</div>').join('');
+  return '<div class="name-row vac">'+(n.status==='VAC'?'vacant':'—')+'</div>';
+}
 
 function markDirty(){ if(activeDiv) dirtySet.add(activeDiv); updateDirtyBadge(); saveDraft(); renderTabs(); }
 function updateDirtyBadge(){
@@ -370,6 +403,7 @@ async function loadFromSheets(){
           layer:lay,
           title:String(r0[cJab]||'').trim(),
           name:cNam>=0?String(r0[cNam]||'').trim():'',
+          names:cNam>=0?parseNames(r0[cNam]):[],
           status:cSta>=0?String(r0[cSta]||'').trim():'',
           urutan:cUru>=0?(parseInt(r0[cUru])||0):0
         });
@@ -447,7 +481,7 @@ async function saveToSheets(){
   for(const d of targets){
     const rows=d.nodes.map(n=>({
       id:n.id, divisi:d.name, parent_id:n.parentId||'', layer:n.layer,
-      jabatan:n.title||'', nama:n.name||'', status:n.status||'', urutan:n.urutan||0
+      jabatan:n.title||'', nama:namesCell(n), status:n.status||'', urutan:n.urutan||0
     }));
     try{
       const resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({
@@ -536,8 +570,15 @@ function drawChart(chartEl, list, interactive){
   (function place(arr){
     arr.forEach(n=>{
       const kk = kids(n.id);
-      if(!kk.length || (interactive && collapsed.has(n.id))){ pos[n.id]=cursorY; cursorY+=NODE_H+ROW_GAP; }
-      else { place(kk); pos[n.id]=pos[kk[0].id]; }   /* sejajar anak pertama (top-aligned) */
+      const nh = nodeHeight(n);
+      if(!kk.length || (interactive && collapsed.has(n.id))){
+        pos[n.id]=cursorY;
+        cursorY+=nh+ROW_GAP;
+      } else {
+        place(kk);
+        pos[n.id]=pos[kk[0].id];   /* sejajar anak pertama (top-aligned) */
+        cursorY=Math.max(cursorY,pos[n.id]+nh+ROW_GAP);
+      }
     });
   })(roots);
 
@@ -546,14 +587,15 @@ function drawChart(chartEl, list, interactive){
   let maxX=0, maxY=0;
   list.forEach(n=>{
     if(pos[n.id]===undefined) return;
-    const x=xOf(n), y=pos[n.id];
-    maxX=Math.max(maxX,x+COL_W); maxY=Math.max(maxY,y+NODE_H);
+    const x=xOf(n), y=pos[n.id], nh=nodeHeight(n);
+    maxX=Math.max(maxX,x+COL_W); maxY=Math.max(maxY,y+nh);
     chartEl.appendChild(makeCard(n,x,y,interactive,kids(n.id).length));
   });
   list.forEach(n=>{
     if(!n.parentId || pos[n.id]===undefined) return;
     const pn = byIdL(n.parentId); if(!pn || pos[pn.id]===undefined) return;
-    const sx=xOf(pn)+COL_W, sy=pos[pn.id]+NODE_H/2, cx=xOf(n), ey=pos[n.id]+NODE_H/2;
+    const sx=xOf(pn)+COL_W, sy=pos[pn.id]+nodeHeight(pn)/2;
+    const cx=xOf(n), ey=pos[n.id]+nodeHeight(n)/2;
     const mid=sx+COL_GAP/2;
     const d=(Math.abs(sy-ey)<0.5)?'M'+sx+','+sy+' H'+cx:'M'+sx+','+sy+' H'+mid+' V'+ey+' H'+cx;
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -583,11 +625,11 @@ function makeCard(n,x,y,interactive,nKids){
   const el=document.createElement('div');
   el.className='node'; el.style.left=x+'px'; el.style.top=y+'px';
   el.dataset.id=n.id;
+  const nameMarkup=namesHTML(n);
   if(interactive===false){
     el.innerHTML=(n.status?'<span class="badge">'+esc(n.status)+'</span>':'')+
       '<div class="t">'+esc(n.title||'(tanpa jabatan)')+'</div>'+
-      '<div class="p'+((showNames&&n.name)?'':' vac')+'">'+
-      (showNames ? (n.name?esc(n.name):'&nbsp;') : '&nbsp;')+'</div>';
+      '<div class="p">'+nameMarkup+'</div>';
     el.style.cursor='default';
     return el;
   }
@@ -595,8 +637,7 @@ function makeCard(n,x,y,interactive,nKids){
   const kids=kidsOf(n.id), isCol=collapsed.has(n.id);
   el.innerHTML=(n.status?'<span class="badge">'+esc(n.status)+'</span>':'')+
     '<div class="t">'+esc(n.title||'(tanpa jabatan)')+'</div>'+
-    '<div class="p'+((showNames&&n.name)?'':' vac')+'">'+
-      (showNames ? (n.name?esc(n.name):(n.status==='VAC'?'vacant':'—')) : '&nbsp;')+'</div>'+
+    '<div class="p">'+nameMarkup+'</div>'+
     '<div class="quick">'+
       '<button class="mv up" title="Naikkan urutan">▲</button>'+
       '<button class="add" title="Tambah bawahan">+</button>'+
@@ -641,15 +682,66 @@ function addChild(parentId){
   snapshot();
   const p=byId(parentId);
   const next=LAYERS[Math.min(layerIndex(p.layer)+1,LAYERS.length-1)].id;
-  const n={id:uid(),parentId,layer:next,title:'Posisi Baru',name:'',status:'',urutan:kidsOf(parentId).length};
+  const n={id:uid(),parentId,layer:next,title:'Posisi Baru',name:'',names:[],status:'',urutan:kidsOf(parentId).length};
   nodes().push(n); collapsed.delete(parentId);
   markDirty(); render(); openModal(n.id,true);
+}
+function renderNameInputs(names){
+  const box=$('#nameList');
+  box.innerHTML='';
+  const list=names.length?names:[''];
+  list.forEach((name,i)=>{
+    const row=document.createElement('div');
+    row.className='name-editor-row';
+    const input=document.createElement('input');
+    input.type='text';
+    input.className='name-input';
+    input.placeholder=i===0?'kosongkan jika belum terisi':'nama pemegang jabatan berikutnya';
+    input.value=name||'';
+    const remove=document.createElement('button');
+    remove.type='button';
+    remove.className='remove-name';
+    remove.title='Hapus nama ini';
+    remove.textContent='×';
+    remove.addEventListener('click',()=>{
+      const rows=[...box.querySelectorAll('.name-input')];
+      if(rows.length<=1){ input.value=''; return; }
+      row.remove();
+    });
+    row.append(input,remove);
+    box.appendChild(row);
+  });
+}
+function readModalNames(){
+  return [...document.querySelectorAll('#nameList .name-input')]
+    .map(input=>input.value.trim())
+    .filter(Boolean);
+}
+function addModalNameInput(){
+  const box=$('#nameList');
+  const row=document.createElement('div');
+  row.className='name-editor-row';
+  const input=document.createElement('input');
+  input.type='text';
+  input.className='name-input';
+  input.placeholder='nama pemegang jabatan berikutnya';
+  const remove=document.createElement('button');
+  remove.type='button';
+  remove.className='remove-name';
+  remove.title='Hapus nama ini';
+  remove.textContent='×';
+  remove.addEventListener('click',()=>row.remove());
+  row.append(input,remove);
+  box.appendChild(row);
+  input.focus();
 }
 let editingId=null;
 function openModal(id,isNew){
   editingId=id; const n=byId(id);
   $('#modalTitle').textContent=isNew?'Tambah Posisi':'Edit Posisi';
-  $('#fTitle').value=n.title||''; $('#fName').value=n.name||''; $('#fStatus').value=n.status||'';
+  $('#fTitle').value=n.title||'';
+  renderNameInputs(getNames(n));
+  $('#fStatus').value=n.status||'';
   const sel=$('#fLayer'); sel.innerHTML='';
   LAYERS.forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.group+' · '+l.label;sel.appendChild(o);});
   sel.value=n.layer;
@@ -658,10 +750,12 @@ function openModal(id,isNew){
   setTimeout(()=>{$('#fTitle').focus();$('#fTitle').select();},50);
 }
 function closeModal(){ $('#overlay').classList.remove('show'); editingId=null; }
+$('#addNameBtn').addEventListener('click',addModalNameInput);
 $('#saveModalBtn').addEventListener('click',()=>{
   const n=byId(editingId); if(!n) return closeModal();
   snapshot();
-  n.title=$('#fTitle').value.trim(); n.name=$('#fName').value.trim();
+  n.title=$('#fTitle').value.trim();
+  syncNames(n,readModalNames());
   n.layer=$('#fLayer').value; n.status=$('#fStatus').value;
   closeModal(); markDirty(); render();
 });
