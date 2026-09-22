@@ -1873,6 +1873,36 @@ function renderTracker(){
   }).join('');
 }
 
+// ── POST ke Apps Script: aman terhadap respons HTML & timeout ──
+async function asPost(payload,timeoutMs){
+  const ctrl=new AbortController();const tm=setTimeout(()=>ctrl.abort(),timeoutMs||45000);
+  let resp;
+  try{resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(payload),signal:ctrl.signal});}
+  catch(e){throw new Error(e.name==='AbortError'?'Server tidak merespons (timeout)':'Koneksi gagal: '+e.message);}
+  finally{clearTimeout(tm);}
+  const txt=await resp.text();
+  try{return JSON.parse(txt);}
+  catch(_){
+    // Halaman error Google: ambil pesan aslinya
+    const doc=new DOMParser().parseFromString(txt,'text/html');
+    const msg=(doc.querySelector('.errorMessage,#errorMessage')||{}).textContent||(doc.title||'')+' '+(doc.body?doc.body.textContent:'');
+    const e=new Error('Respons server tidak valid (HTTP '+resp.status+'): '+msg.replace(/\s+/g,' ').trim().slice(0,180));
+    e.nonJson=true;throw e;
+  }
+}
+// Cek langsung ke sheet apakah tanggal approval sudah tertulis
+async function trkVerify(no,stage,date){
+  const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent('FPTK KJ 3Up')+'?key='+API_KEY+'&_='+Date.now());
+  const v=(await r.json()).values||[];if(v.length<2)return false;
+  const hd=v[0].map(x=>(x||'').toString().trim().toLowerCase().replace(/\s+/g,' '));
+  const cNo=hd.findIndex(x=>x.includes('fptk')&&(/\bno\b/.test(x)||x.includes('nomor')||x.includes('no.')));
+  const cC=hd.findIndex(x=>x.includes('approv')&&(stage==='dh'?/\bdh\b/.test(x):x.includes('vp')));
+  if(cNo<0||cC<0)return false;
+  const rows=v.slice(1).filter(x=>(x[cNo]||'').toString().trim().toLowerCase()===no.toLowerCase());
+  if(!rows.length)return false;
+  return rows.every(x=>{const cell=(x[cC]||'').toString().trim();return date?(cell===date||trkIsoDay(cell)===date):cell==='';});
+}
+
 // ── Klik untuk approve (tulis ke sheet via Apps Script) ──
 let trkEdit=null;
 function trkIsoDay(iso){if(!iso)return '';const d=new Date(iso);if(isNaN(d))return '';const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
@@ -1892,20 +1922,30 @@ function trkOpen(no,si){
 function trkClose(){document.getElementById('trk-modal').style.display='none';trkEdit=null;}
 async function trkSave(clear){
   if(!trkEdit)return;
+  const ed=trkEdit;
   const date=clear?'':document.getElementById('trk-m-date').value;
   const m=document.getElementById('trk-m-msg');
   if(!clear&&!date){m.style.display='block';m.style.color='var(--red)';m.textContent='Pilih tanggal dulu.';return;}
-  if(clear&&!confirm('Batalkan '+TRK_STAGES[trkEdit.si]+' untuk FPTK '+trkEdit.no+'?'))return;
-  const btn=document.getElementById('trk-m-save');btn.disabled=true;
+  if(clear&&!confirm('Batalkan '+TRK_STAGES[ed.si]+' untuk FPTK '+ed.no+'?'))return;
+  const btn=document.getElementById('trk-m-save');const clr=document.getElementById('trk-m-clear');
+  btn.disabled=true;clr.disabled=true;
   m.style.display='block';m.style.color='var(--tx3)';m.textContent='Menyimpan ke Google Sheets...';
+  const stage=ed.si===1?'dh':'vp';
+  const apply=()=>{const iso=date?new Date(date+'T00:00:00').toISOString():'';(D.fptk||[]).forEach(r=>{if(r.no_fptk===ed.no)r[ed.key]=iso;});trkClose();renderTracker();};
   try{
-    const resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'setFPTKApproval',no_fptk:trkEdit.no,stage:trkEdit.si===1?'dh':'vp',date})});
-    const res=await resp.json();
+    const res=await asPost({action:'setFPTKApproval',no_fptk:ed.no,stage,date});
     if(!res.success)throw new Error(res.error||'Gagal menyimpan');
-    const iso=date?new Date(date+'T00:00:00').toISOString():'';
-    (D.fptk||[]).forEach(r=>{if(r.no_fptk===trkEdit.no)r[trkEdit.key]=iso;});
-    trkClose();renderTracker();
-  }catch(e){m.style.color='var(--red)';m.textContent='Gagal: '+e.message;btn.disabled=false;}
+    apply();
+  }catch(e){
+    // Respons rusak/timeout belum tentu gagal — cek isi sheet
+    if(e.nonJson||/timeout|Koneksi/.test(e.message)){
+      m.textContent='Respons server bermasalah, mengecek langsung ke sheet...';
+      try{if(await trkVerify(ed.no,stage,date)){apply();return;}}catch(_){}
+    }
+    console.error('FPTK approval gagal:',e);
+    m.style.color='var(--red)';m.textContent='Gagal: '+e.message;
+    btn.disabled=false;clr.disabled=false;
+  }
 }
 
 // ══════════ OD PLANNER ══════════
@@ -2000,8 +2040,7 @@ function plOpenForm(t){
 function plCloseForm(){document.getElementById('pl-form').style.display='none';}
 function plEdit(id){const t=PL.find(x=>x.id===id);if(t)plOpenForm(t);}
 async function plPost(payload){
-  const resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)});
-  const res=await resp.json();
+  const res=await asPost(payload);
   if(!res.success)throw new Error(res.error||'Gagal menyimpan');
   return res;
 }
