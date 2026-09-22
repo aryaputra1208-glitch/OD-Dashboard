@@ -1683,8 +1683,8 @@ async function fetchAllData(){
   const fptkHead=(fptkAll[0]||[]).map(x=>(x||'').toString().trim().toLowerCase().replace(/\s+/g,' '));
   const fptkRows=fptkAll.slice(1);
   const hFind=fn=>fptkHead.findIndex(fn);
-  const cDH=hFind(x=>x.includes('approve')&&/\bdh\b/.test(x));
-  const cVP=hFind(x=>x.includes('approve')&&x.includes('vp'));
+  const cDH=hFind(x=>x.includes('approv')&&/\bdh\b/.test(x));
+  const cVP=hFind(x=>x.includes('approv')&&x.includes('vp'));
   const cNo=hFind(x=>x.includes('fptk')&&(/\bno\b/.test(x)||x.includes('nomor')||x.includes('no.')));
   // Kolom lama dibaca pakai indeks tetap; kalau kolom baru disisipkan di tengah, indeks setelahnya digeser
   const inserted=[cDH,cVP].filter(x=>x>=0).sort((a,b)=>a-b);
