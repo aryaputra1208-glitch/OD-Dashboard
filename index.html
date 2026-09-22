@@ -1849,8 +1849,13 @@ function renderTracker(){
     const steps=TRK_STAGES.map((s,si)=>{
       const ok=t.done[si];const cur=si===t.stage;
       const col=cur?(late?'var(--red)':'var(--amber)'):'var(--border)';
-      const dot=ok?'<div style="width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;line-height:22px;margin:0 auto">✓</div>'
-                 :'<div style="width:22px;height:22px;border-radius:50%;border:2px solid '+col+';margin:0 auto;box-sizing:border-box"></div>';
+      // DH/VP HC bisa diklik: tahap yang sedang menunggu (approve), atau tahap selesai terakhir (ubah/batalkan)
+      const lastDone=ok&&(si===2||!t.done[si+1]);
+      const clickable=si>0&&r.no_fptk&&(cur||lastDone);
+      const act=clickable?' onclick="trkOpen(\''+plEsc(r.no_fptk).replace(/\\/g,'\\\\')+'\','+si+')" title="'+(cur?'Klik untuk approve':'Klik untuk ubah atau batalkan')+'"':'';
+      const cs=clickable?'cursor:pointer;':'';
+      const dot=ok?'<div'+act+' class="'+(clickable?'trk-dot':'')+'" style="'+cs+'width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;line-height:22px;margin:0 auto">✓</div>'
+                 :'<div'+act+' class="'+(clickable?'trk-dot trk-dot-wait':'')+'" style="'+cs+'width:22px;height:22px;border-radius:50%;border:2px solid '+col+';margin:0 auto;box-sizing:border-box;'+(clickable?'font-size:10px;line-height:18px;color:'+col+';font-weight:700':'')+'">'+(clickable?'+':'')+'</div>';
       const sub=ok?dates[si]:(cur?'menunggu':'—');
       const sc=cur&&!ok?(late?'var(--red)':'var(--amber)'):'var(--tx3)';
       const line=si<2?'<div style="flex:.7;height:2px;background:'+(t.done[si]?'var(--green)':'var(--border)')+';margin-bottom:22px"></div>':'';
@@ -1866,6 +1871,41 @@ function renderTracker(){
       '<div style="display:flex;align-items:flex-start">'+steps+'</div>'+
       '<div style="text-align:right">'+right+'</div></div>';
   }).join('');
+}
+
+// ── Klik untuk approve (tulis ke sheet via Apps Script) ──
+let trkEdit=null;
+function trkIsoDay(iso){if(!iso)return '';const d=new Date(iso);if(isNaN(d))return '';const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function trkOpen(no,si){
+  const rows=(D.fptk||[]).filter(r=>r.no_fptk===no);if(!rows.length)return;
+  const r=rows[0];const key=si===1?'d_dh':'d_vp';const cur=r[key];
+  trkEdit={no,si,key};
+  document.getElementById('trk-m-title').textContent=(cur?'Ubah ':'')+TRK_STAGES[si];
+  document.getElementById('trk-m-sub').textContent=r.posisi+' · '+r.divisi+' · No. '+no;
+  document.getElementById('trk-m-date').value=cur?trkIsoDay(cur):trkIsoDay(new Date().toISOString());
+  document.getElementById('trk-m-clear').style.display=cur?'':'none';
+  document.getElementById('trk-m-note').textContent=rows.length>1?'Nomor FPTK ini dipakai '+rows.length+' baris posisi — semuanya ikut ter-update.':'Tanggal akan ditulis ke sheet FPTK.';
+  const m=document.getElementById('trk-m-msg');m.style.display='none';
+  document.getElementById('trk-m-save').disabled=false;
+  document.getElementById('trk-modal').style.display='flex';
+}
+function trkClose(){document.getElementById('trk-modal').style.display='none';trkEdit=null;}
+async function trkSave(clear){
+  if(!trkEdit)return;
+  const date=clear?'':document.getElementById('trk-m-date').value;
+  const m=document.getElementById('trk-m-msg');
+  if(!clear&&!date){m.style.display='block';m.style.color='var(--red)';m.textContent='Pilih tanggal dulu.';return;}
+  if(clear&&!confirm('Batalkan '+TRK_STAGES[trkEdit.si]+' untuk FPTK '+trkEdit.no+'?'))return;
+  const btn=document.getElementById('trk-m-save');btn.disabled=true;
+  m.style.display='block';m.style.color='var(--tx3)';m.textContent='Menyimpan ke Google Sheets...';
+  try{
+    const resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'setFPTKApproval',no_fptk:trkEdit.no,stage:trkEdit.si===1?'dh':'vp',date})});
+    const res=await resp.json();
+    if(!res.success)throw new Error(res.error||'Gagal menyimpan');
+    const iso=date?new Date(date+'T00:00:00').toISOString():'';
+    (D.fptk||[]).forEach(r=>{if(r.no_fptk===trkEdit.no)r[trkEdit.key]=iso;});
+    trkClose();renderTracker();
+  }catch(e){m.style.color='var(--red)';m.textContent='Gagal: '+e.message;btn.disabled=false;}
 }
 
 // ══════════ OD PLANNER ══════════
@@ -2338,6 +2378,22 @@ async function exportPPT(){
   }
 }
 </script>
+<div id="trk-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9998;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:14px;padding:20px;width:340px;max-width:92vw;box-shadow:0 12px 32px rgba(0,0,0,.25)">
+    <div style="font-size:14px;font-weight:700;color:var(--tx)" id="trk-m-title">Approve</div>
+    <div style="font-size:11px;color:var(--tx3);margin:4px 0 14px" id="trk-m-sub"></div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Tanggal approve</div>
+    <input type="date" class="tf" id="trk-m-date" style="width:100%;margin-bottom:10px">
+    <div id="trk-m-note" style="font-size:10px;color:var(--tx3);margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-pink" id="trk-m-save" onclick="trkSave(false)">Simpan</button>
+      <button class="btn" onclick="trkClose()">Batal</button>
+      <button class="btn" id="trk-m-clear" onclick="trkSave(true)" style="margin-left:auto;color:var(--red);border-color:var(--red)">Batalkan approval</button>
+    </div>
+    <div id="trk-m-msg" style="font-size:11px;margin-top:10px;display:none"></div>
+  </div>
+</div>
+<style>.trk-dot{transition:transform .15s,box-shadow .15s}.trk-dot:hover{transform:scale(1.18);box-shadow:0 0 0 4px rgba(29,158,117,.15)}.trk-dot-wait:hover{box-shadow:0 0 0 4px rgba(232,160,32,.2)}</style>
 <div id="gap-tooltip" style="position:fixed;display:none;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;line-height:1.8;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.3)"></div>
 </body>
 </html>
