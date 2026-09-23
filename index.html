@@ -532,13 +532,13 @@ canvas{display:block;width:100%}
       <select class="tf" id="pl-f-status" onchange="renderPlanner()"><option value="open">Belum selesai</option><option value="">Semua Status</option><option>To Do</option><option>In Progress</option><option>Done</option></select>
       <button class="btn btn-pink" onclick="plOpenForm()">+ Tambah Task</button>
     </div></div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px" id="pl-kpi"></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px" id="pl-kpi"></div>
   <div class="card" id="pl-form" style="display:none;margin-bottom:14px">
     <div class="ct" style="margin-bottom:10px" id="pl-form-title">Tambah Task</div>
     <input type="hidden" id="pl-id">
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px">
       <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Task</div><input class="tf" id="pl-task" style="width:100%" placeholder="Contoh: Finalisasi SO divisi Finance"></div>
-      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">PIC</div><input class="tf" id="pl-pic" list="pl-pic-list" style="width:100%" placeholder="Nama anggota"><datalist id="pl-pic-list"></datalist></div>
+      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">PIC</div><input class="tf" id="pl-pic" list="pl-pic-list" style="width:100%" placeholder="Nama sesuai tab Nama"><datalist id="pl-pic-list"></datalist></div>
       <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Kategori</div><input class="tf" id="pl-kat" list="pl-kat-list" style="width:100%" placeholder="MPP, SO, JD, PM..."><datalist id="pl-kat-list"><option>MPP</option><option>Struktur Organisasi</option><option>Job Description</option><option>Performance Management</option><option>Culture</option><option>Lainnya</option></datalist></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:10px;margin-bottom:12px">
@@ -1994,8 +1994,17 @@ function renderPlanner(){
   const fPic=pEl.value,fSt=document.getElementById('pl-f-status').value;
   const base=PL.filter(t=>!fPic||t.pic===fPic);
   const overdue=base.filter(t=>t.status!=='Done'&&(plDaysLeft(t.deadline)??1)<0).length;
-  const k=[['To Do',base.filter(t=>t.status==='To Do').length,'var(--tx)'],['In Progress',base.filter(t=>t.status==='In Progress').length,'var(--blue)'],['Done',base.filter(t=>t.status==='Done').length,'var(--green)'],['Lewat Deadline',overdue,overdue?'var(--red)':'var(--tx3)']];
-  document.getElementById('pl-kpi').innerHTML=k.map(([l,v,c])=>'<div class="card" style="margin:0;text-align:center;padding:14px"><div style="font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">'+l+'</div><div style="font-size:24px;font-weight:700;color:'+c+'">'+v+'</div></div>').join('');
+  const tot=base.length||1;
+  function gcMini(l,v,s,grad,col){return '<div class="gc-mini" style="background:'+grad+';text-align:center"><div style="font-size:10px;color:rgba(0,0,0,.45);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">'+l+'</div><div style="font-size:28px;font-weight:700;color:'+col+'">'+v+'</div><div style="font-size:10px;color:rgba(0,0,0,.4);margin-top:4px">'+s+'</div></div>';}
+  const nTodo=base.filter(t=>t.status==='To Do').length;
+  const nProg=base.filter(t=>t.status==='In Progress').length;
+  const nDone=base.filter(t=>t.status==='Done').length;
+  document.getElementById('pl-kpi').innerHTML=
+    gcMini('Total Task',base.length,pics.length+' anggota','linear-gradient(135deg,#F8F6F0,#EFECEA)','rgba(0,0,0,.8)')+
+    gcMini('To Do',nTodo,pc(nTodo,tot)+'%','linear-gradient(135deg,#F3F4F6,#E5E7EB)','rgba(0,0,0,.55)')+
+    gcMini('In Progress',nProg,pc(nProg,tot)+'%','linear-gradient(135deg,#DBEAFE,#BFDBFE)','#1d6fa8')+
+    gcMini('Done',nDone,pc(nDone,tot)+'%','linear-gradient(135deg,#D1FAE5,#A7F3D0)','#065f46')+
+    gcMini('Lewat Deadline',overdue,overdue?'perlu ditindak':'aman','linear-gradient(135deg,#FFE4EF,#FFC8DE)','#9d174d');
   document.getElementById('pl-sub').textContent='Task list tim OD & progres approval FPTK · '+PL.length+' task · '+pics.length+' anggota';
   const list=base.filter(t=>fSt==='open'?t.status!=='Done':(!fSt||t.status===fSt));
   const g=document.getElementById('pl-groups');
@@ -2010,27 +2019,29 @@ function renderPlanner(){
     const pctv=pc(doneN,allMine.length);
     const rows=mine.map(t=>{
       const dl=plDaysLeft(t.deadline);const isDone=t.status==='Done';
-      const dlTxt=!t.deadline?'':(isDone?t.deadline:(dl<0?'Lewat '+(-dl)+' hari':dl===0?'Hari ini':dl+' hari lagi'));
-      const dlCol=isDone?'var(--tx3)':dl==null?'var(--tx3)':dl<0?'var(--red)':dl<=3?'var(--amber)':'var(--tx3)';
+      const dlTxt=!t.deadline?'—':(isDone?t.deadline:(dl<0?'Lewat '+(-dl)+' hari':dl===0?'Hari ini':dl+' hari lagi'));
+      const dlCol=isDone||dl==null?'var(--tx3)':dl<0?'var(--red)':dl<=3?'var(--amber)':'var(--tx3)';
       const prCls=t.prioritas==='High'?'pill-pink':t.prioritas==='Low'?'pill-grey':'pill-amber';
       const stCls=t.status==='Done'?'pill-green':t.status==='In Progress'?'pill-blue':'pill-grey';
-      return '<div style="display:grid;grid-template-columns:24px 1fr 120px 110px 90px 60px;gap:10px;align-items:center;padding:9px 4px;border-top:.5px solid var(--border)">'+
-        '<input type="checkbox" '+(isDone?'checked':'')+' onchange="plToggle(\''+plEsc(t.id)+'\',this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">'+
-        '<div style="min-width:0"><div style="font-size:12px;font-weight:500;color:'+(isDone?'var(--tx3)':'var(--tx)')+';'+(isDone?'text-decoration:line-through;':'')+'">'+plEsc(t.task)+'</div>'+
-        (t.kategori||t.catatan?'<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+plEsc(t.kategori)+(t.kategori&&t.catatan?' · ':'')+plEsc(t.catatan)+'</div>':'')+'</div>'+
-        '<div style="font-size:10px;color:'+dlCol+';font-weight:'+(dl!=null&&dl<0&&!isDone?'600':'400')+'">'+dlTxt+'</div>'+
-        '<div><span class="pill '+stCls+'">'+plEsc(t.status)+'</span></div>'+
-        '<div><span class="pill '+prCls+'">'+plEsc(t.prioritas)+'</span></div>'+
-        '<div style="display:flex;gap:6px;justify-content:flex-end"><a style="cursor:pointer;font-size:11px;color:var(--blue)" onclick="plEdit(\''+plEsc(t.id)+'\')">Edit</a><a style="cursor:pointer;font-size:11px;color:var(--red)" onclick="plDelete(\''+plEsc(t.id)+'\')">Hapus</a></div>'+
-      '</div>';
+      const sub=[t.kategori,t.catatan].filter(Boolean).map(plEsc).join(' · ');
+      return '<tr'+(t._saving?' style="opacity:.55"':'')+'>'+
+        '<td style="width:34px"><input type="checkbox" '+(isDone?'checked':'')+' onchange="plToggle(\''+plEsc(t.id)+'\',this.checked)" style="width:15px;height:15px;cursor:pointer;accent-color:var(--green)"></td>'+
+        '<td><div style="font-size:12px;font-weight:500;color:'+(isDone?'var(--tx3)':'var(--tx)')+';'+(isDone?'text-decoration:line-through':'')+'">'+plEsc(t.task)+'</div>'+
+          (sub?'<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+sub+'</div>':'')+'</td>'+
+        '<td style="font-size:11px;color:'+dlCol+';white-space:nowrap">'+dlTxt+'</td>'+
+        '<td><span class="pill '+stCls+'">'+plEsc(t.status)+'</span></td>'+
+        '<td><span class="pill '+prCls+'">'+plEsc(t.prioritas)+'</span></td>'+
+        '<td style="text-align:right;white-space:nowrap"><a onclick="plEdit(\''+plEsc(t.id)+'\')" style="cursor:pointer;font-size:11px;color:var(--blue)">Edit</a>'+
+          '<a onclick="plDelete(\''+plEsc(t.id)+'\')" style="cursor:pointer;font-size:11px;color:var(--red);margin-left:10px">Hapus</a></td></tr>';
     }).join('');
     return '<div class="card" style="margin-bottom:12px">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
-        '<div><div class="ct">'+plEsc(p)+'</div><div class="cs">'+doneN+' dari '+allMine.length+' task selesai</div></div>'+
-        '<div style="display:flex;align-items:center;gap:8px;width:220px"><div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:'+pctv+'%;height:100%;background:var(--green)"></div></div><span style="font-size:11px;font-weight:600;color:var(--green)">'+pctv+'%</span></div>'+
-      '</div>'+rows+'</div>';
+      '<div class="chdr"><div><div class="ct">'+plEsc(p)+'</div><div class="cs">'+doneN+' dari '+allMine.length+' task selesai</div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px;width:200px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+pctv+'%;height:100%;background:var(--green)"></div></div>'+
+      '<span style="font-size:11px;font-weight:600;color:var(--green)">'+pctv+'%</span></div></div>'+
+      '<table class="tbl"><thead><tr><th></th><th>Task</th><th>Deadline</th><th>Status</th><th>Prioritas</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }).join('');
 }
+
 function plOpenForm(t){
   const f=document.getElementById('pl-form');f.style.display='block';
   document.getElementById('pl-form-title').textContent=t?'Edit Task':'Tambah Task';
@@ -2058,29 +2069,49 @@ async function plSave(){
   const msg=document.getElementById('pl-form-msg');
   if(!t.task){msg.style.color='var(--red)';msg.textContent='Nama task wajib diisi.';return;}
   if(!t.pic){msg.style.color='var(--red)';msg.textContent='PIC wajib diisi.';return;}
-  const btn=document.getElementById('pl-save-btn');btn.disabled=true;btn.textContent='Menyimpan...';
-  msg.style.color='var(--tx3)';msg.textContent='Menyimpan ke Google Sheets...';
+  // Tampilkan dulu, simpan di latar belakang
+  const isNew=!t.id;
+  const tempId=t.id||('tmp'+Date.now());
+  const snapshot=PL.map(x=>({...x}));
+  const local={...t,id:tempId,_saving:true};
+  const ix=PL.findIndex(x=>x.id===tempId);
+  if(ix>=0)PL[ix]=local;else PL.push(local);
+  plCloseForm();renderPlanner();
+  plToast(isNew?'Menyimpan task baru...':'Menyimpan perubahan...');
   try{
-    const res=await plPost({action:'saveODTask',task:t});
-    t.id=res.id||t.id;
-    const ix=PL.findIndex(x=>x.id===t.id);if(ix>=0)PL[ix]=t;else PL.push(t);
-    plCloseForm();renderPlanner();
-  }catch(e){msg.style.color='var(--red)';msg.textContent='Gagal: '+e.message;}
-  finally{btn.disabled=false;btn.textContent='Simpan';}
+    const res=await plPost({action:'saveODTask',task:{...t,id:isNew?'':t.id}});
+    const row=PL.find(x=>x.id===tempId);
+    if(row){row.id=res.id||tempId;delete row._saving;}
+    renderPlanner();
+    plToast('Tersimpan','ok');
+  }catch(e){
+    PL=snapshot;renderPlanner();
+    plToast('Gagal menyimpan: '+e.message,'err');
+    console.error('Planner save gagal:',e);
+  }
 }
+function plToast(text,kind){
+  let el=document.getElementById('pl-toast');
+  if(!el){el=document.createElement('div');el.id='pl-toast';el.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);padding:9px 16px;border-radius:10px;font-size:12px;font-weight:500;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.18);transition:opacity .25s';document.body.appendChild(el);}
+  el.style.background=kind==='err'?'#FBEAF0':kind==='ok'?'#EDFAF4':'#1a1a1a';
+  el.style.color=kind==='err'?'#9d174d':kind==='ok'?'#065f46':'#fff';
+  el.textContent=text;el.style.opacity='1';
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.style.opacity='0';},kind==='err'?6000:2200);
+}
+
 async function plToggle(id,checked){
   const t=PL.find(x=>x.id===id);if(!t)return;
   const prev=t.status;t.status=checked?'Done':(prev==='Done'?'To Do':prev);
   renderPlanner();
   try{await plPost({action:'saveODTask',task:t});}
-  catch(e){t.status=prev;renderPlanner();alert('Gagal update status: '+e.message);}
+  catch(e){t.status=prev;renderPlanner();plToast('Gagal update status: '+e.message,'err');}
 }
 async function plDelete(id){
   const t=PL.find(x=>x.id===id);if(!t)return;
   if(!confirm('Hapus task "'+t.task+'"?'))return;
   const bak=[...PL];PL=PL.filter(x=>x.id!==id);renderPlanner();
   try{await plPost({action:'deleteODTask',id});}
-  catch(e){PL=bak;renderPlanner();alert('Gagal menghapus: '+e.message);}
+  catch(e){PL=bak;renderPlanner();plToast('Gagal menghapus: '+e.message,'err');}
 }
 
 // INIT
