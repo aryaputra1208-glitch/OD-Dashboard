@@ -425,8 +425,13 @@ canvas{display:block;width:100%}
 
 <!-- SO -->
 <div class="page" id="page-so">
-  <div style="font-size:16px;font-weight:700;margin-bottom:4px">Struktur Organisasi</div>
-  <div style="font-size:11px;color:var(--tx3);margin-bottom:16px">Status SO per divisi · 2026</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Struktur Organisasi</div>
+      <div style="font-size:11px;color:var(--tx3)">Status SO per divisi · 2026</div>
+    </div>
+    <a class="btn btn-pink" href="so-generator.html" style="text-decoration:none">Buka SO Generator</a>
+  </div>
   <div class="r2">
     <div class="card"><div class="chdr"><div><div class="ct">Status SO per Divisi</div><div class="cs" id="so-sub"></div></div></div><div id="so-list"></div></div>
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -1170,6 +1175,7 @@ function renderMgmt(f){
   document.getElementById('mgmatch').innerHTML=Object.entries(mCnt).map(([s,c])=>c>0?'<div class="dist-row"><span class="dist-label"><span class="pill '+pillClass(s)+'">'+s+'</span></span><div class="dist-bar-bg"><div class="dist-bar" style="width:'+pc(c,mr.length||1)+'%;background:'+(s==='match'?'var(--green)':s==='mismatch'?'var(--red)':'var(--amber)')+'"></div></div><span class="dist-num">'+c+'</span></div>':'').join('');}
 
 // SO
+const SO_GENERATOR_URL='so-generator.html';
 function renderSO(){
   const so=D.so||[];
   const COL={'Signed All':'#1D9E75','Signed by User':'var(--pink)','Sent to User':'var(--amber)','Available':'#888'};
@@ -1177,7 +1183,10 @@ function renderSO(){
   document.getElementById('so-sub').textContent=so.length+' divisi · 2026';
   document.getElementById('so-list').innerHTML=so.map(d=>{
     const col=COL[d.effective_status]||'#888',bg=BG[d.effective_status]||'#F5F5F5';
-    return '<div class="so-row"><div><div style="font-size:12px;font-weight:500">'+d.divisi+'</div></div><span class="pill" style="background:'+bg+';color:'+col+'">'+(d.effective_status||'-')+'</span></div>';
+    const url=SO_GENERATOR_URL+'?div='+encodeURIComponent(d.divisi);
+    return '<div class="so-row"><div><div style="font-size:12px;font-weight:500">'+d.divisi+'</div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px"><span class="pill" style="background:'+bg+';color:'+col+'">'+(d.effective_status||'-')+'</span>'+
+      '<a href="'+url+'" title="Buka struktur divisi ini di SO Generator" style="font-size:11px;color:var(--accent);cursor:pointer;white-space:nowrap">Buka &rsaquo;</a></div></div>';
   }).join('');
   const tot=so.length;
   const counts={'Signed All':so.filter(d=>d.effective_status==='Signed All').length,'Signed by User':so.filter(d=>d.effective_status==='Signed by User').length,'Sent to User':so.filter(d=>d.effective_status==='Sent to User').length,'Available':so.filter(d=>!d.effective_status||d.effective_status==='Available').length};
