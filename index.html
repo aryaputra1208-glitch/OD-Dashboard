@@ -142,6 +142,23 @@ select.tf{font-size:11px;padding:5px 10px;border-radius:var(--rs);border:.5px so
 #export-menu button{width:100%;text-align:left;padding:9px 14px;font-size:11px;border:none;background:none;cursor:pointer;color:var(--tx);font-family:var(--f)}
 #export-menu button:hover{background:var(--bg)}
 canvas{display:block;width:100%}
+.mp-sec{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.mp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.mp-k{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rc);padding:14px}
+.mp-kl{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.mp-kv{font-size:26px;font-weight:700;margin-top:4px;line-height:1.1}
+.mp-ks{font-size:10px;color:var(--tx3);margin-top:2px}
+.mp-kb{display:flex;gap:12px;font-size:10px;margin-top:8px;border-top:.5px solid var(--border);padding-top:7px}
+.mp-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;display:flex}
+.mp-seg{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:2px}
+.mp-seg button{font-size:10px;border:none;background:none;padding:4px 10px;border-radius:6px;cursor:pointer;color:var(--tx3);font-family:inherit}
+.mp-seg button.on{background:var(--surface);color:var(--tx);font-weight:600;box-shadow:0 0 0 .5px var(--border)}
+.mp-g{display:grid;grid-template-columns:minmax(180px,1.4fr) 60px 70px minmax(120px,1fr) 80px 90px;gap:12px;align-items:center}
+.mp-th{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;padding-bottom:8px;border-bottom:1.5px solid var(--accent)}
+.mp-tr{font-size:12px;padding:10px 4px;border-bottom:.5px solid var(--border);cursor:pointer}
+.mp-tr:hover{background:var(--bg)}
+.mp-pos{display:none;background:var(--bg);border-radius:8px;padding:8px 12px;margin:4px 0 10px 18px}
+.mp-pr{display:grid;grid-template-columns:minmax(160px,1fr) 130px 60px 230px;gap:10px;font-size:11px;padding:5px 0;align-items:center}
 </style>
 </head>
 <body>
@@ -257,168 +274,53 @@ canvas{display:block;width:100%}
 
 <!-- MPP -->
 <div class="page" id="page-mpp">
-  <div class="sub-nav">
-    <button class="sub-nav-btn active" id="mpp-tab-overview" onclick="switchMPPTab('overview')">Overview</button>
-    <button class="sub-nav-btn" id="mpp-tab-tracker" onclick="switchMPPTab('tracker')">FPTK Tracker</button>
-    <button class="sub-nav-btn" id="mpp-tab-buybuild" onclick="switchMPPTab('buybuild')">Buy / Build</button>
-    <button class="sub-nav-btn" id="mpp-tab-matching" onclick="switchMPPTab('matching')">MPP Matching</button>
-    <button class="sub-nav-btn" id="mpp-tab-divisi" onclick="switchMPPTab('divisi')">Per Divisi</button>
-    <button class="sub-nav-btn" id="mpp-tab-management" onclick="switchMPPTab('management')">Management View</button>
-  </div>
-  <div id="mpp-overview">
-    <!-- MPP CARD -->
-    <div class="card" style="margin-bottom:12px;box-sizing:border-box">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></div>
-        <div class="ct">MPP Plan 2026</div>
-      </div>
-      <div style="display:grid;grid-template-columns:220px 1fr;gap:20px">
-        <!-- Left: numbers -->
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--tx)" id="mpp-total-plan">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Total Plan</div>
-            </div>
-            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--amber)" id="mpp-gap-plan">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Gap Planned</div>
-            </div>
-            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--green)" id="mpp-buy-plan">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Plan Buy</div>
-            </div>
-            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--blue)" id="mpp-build-plan">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Plan Build</div>
-            </div>
-          </div>
-          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex" id="mpp-bb-bar">
-            <div style="width:82%;height:100%;background:var(--green);border-radius:3px 0 0 3px" id="mpp-bb-buy"></div>
-            <div style="width:18%;height:100%;background:var(--blue)" id="mpp-bb-build"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:10px">
-            <span style="color:var(--green)" id="mpp-bb-buy-pct">Buy —%</span>
-            <span style="color:var(--blue)" id="mpp-bb-build-pct">Build —%</span>
-          </div>
-          <div class="ins info" id="impp" style="margin-top:4px"></div>
-        </div>
-        <!-- Right: chart -->
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div>
-              <div style="font-size:12px;font-weight:600;color:var(--tx)">MPP vs Realisasi per Bulan</div>
-              <div style="font-size:10px;color:var(--tx3)" id="c1s"></div>
-            </div>
-            <span id="glbl" style="font-size:10px;color:var(--tx3)"></span>
-          </div>
-          <canvas id="mchart" style="height:160px"></canvas>
-          <div style="display:flex;gap:12px;font-size:10px;color:var(--tx3);margin-top:8px;flex-wrap:wrap">
-            <span><span style="width:8px;height:8px;border-radius:2px;background:#D3D1C7;display:inline-block;margin-right:4px"></span>MPP Plan</span>
-            <span><span style="width:8px;height:8px;border-radius:2px;background:var(--pink);display:inline-block;margin-right:4px"></span>Planned</span>
-            <span><span style="width:8px;height:8px;border-radius:2px;background:var(--amber);display:inline-block;margin-right:4px"></span>Replacement</span>
-            <span><span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block;margin-right:4px"></span>Unplanned</span>
-          </div>
-        </div>
-      </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:2px" id="mp-title">MPP & Fulfillment 2026</div>
+      <div style="font-size:11px;color:var(--tx3)" id="mp-sub"></div>
     </div>
+  </div>
 
-    <!-- FPTK CARD -->
-    <div class="card" style="margin-bottom:12px;box-sizing:border-box">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
-        <div class="ct">FPTK Realisasi YTD</div>
-      </div>
-      <div style="display:grid;grid-template-columns:220px 1fr;gap:20px">
-        <!-- Left: numbers -->
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--blue)" id="fptk-total">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Total FPTK</div>
-            </div>
-            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--green)" id="fptk-hc">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">MP Approved</div>
-            </div>
-            <div style="background:#EDFAF4;border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--green)" id="fptk-completed">—</div>
-              <div style="font-size:10px;color:#085041;margin-top:2px">Completed</div>
-            </div>
-            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
-              <div style="font-size:22px;font-weight:700;color:var(--amber)" id="fptk-sla">—</div>
-              <div style="font-size:10px;color:var(--tx3);margin-top:2px">Rata SLA</div>
-            </div>
-          </div>
-          <div style="font-size:10px;color:var(--tx3);margin-top:4px">Komposisi FPTK</div>
-          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex" id="fptk-comp-bar"></div>
-          <div style="display:flex;gap:10px;font-size:10px" id="fptk-comp-legend"></div>
-          <div style="margin-top:4px;font-size:10px;color:var(--tx3)" id="fptk-sla-info"></div>
-        </div>
-        <!-- Right: headcount sparkline -->
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:4px">Headcount Masuk per Bulan</div>
-          <div style="font-size:10px;color:var(--tx3);margin-bottom:10px" id="hcs">Jumlah orang approved per bulan</div>
-          <canvas id="hspk" style="display:block;width:100%;height:120px;margin-bottom:4px;cursor:crosshair"></canvas>
-          
-          <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px">
-            <div style="font-size:22px;font-weight:700;color:var(--green)" id="hnum"></div>
-            <div style="font-size:11px;color:var(--tx3)">MP approved YTD</div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="mp-sec">Are We On Track?</div>
+  <div class="mp-kpis" id="mp-kpis"></div>
 
-    <!-- Detail tabs: FPTK / MPP -->
-    <div class="card">
-      <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--bg);border-radius:var(--rs);padding:4px">
-        <button class="sub-nav-btn active" id="detail-tab-fptk" onclick="switchDetailTab('fptk')">Detail FPTK</button>
-        <button class="sub-nav-btn" id="detail-tab-mpp" onclick="switchDetailTab('mpp')">Detail MPP per Posisi</button>
-      </div>
-      <!-- FPTK detail -->
-      <div id="detail-fptk">
-        <div class="filter-bar" style="margin-bottom:10px">
-          <select class="tf" id="ff-status" onchange="renderFPTKFull()"><option value="">Semua Status</option><option>Completed</option><option>On Process</option><option>Pending</option></select>
-          <select class="tf" id="ff-jenis" onchange="renderFPTKFull()"><option value="">Semua Jenis</option><option>Planned</option><option>Replacement</option><option>Unplanned</option></select>
-          <select class="tf" id="ff-bb" onchange="renderFPTKFull()"><option value="">Buy & Build</option><option>Buy</option><option>Build</option></select>
-          <select class="tf" id="ff-pic" onchange="renderFPTKFull()"><option value="">Semua PIC</option></select>
-        </div>
-        <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>No</th><th>Posisi</th><th>Divisi</th><th>Level</th><th>Jml</th><th>Tgl Diajukan</th><th>Tgl Approved</th><th>SLA</th><th>PIC</th><th>Jenis</th><th>Buy/Build</th><th>Note</th></tr></thead><tbody id="ftbody"></tbody></table></div>
-      </div>
-      <!-- MPP detail -->
-      <div id="detail-mpp" style="display:none">
-        <div style="overflow-x:auto" id="mpp-detail-body"></div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="chdr">
+      <div><div class="ct">Cumulative Plan vs Fulfilled</div><div class="cs">The gap between the lines = unrealized positions</div></div>
+      <div class="mp-seg" id="mp-seg">
+        <button class="on" data-k="total" onclick="mpSetCurve('total')">Total</button>
+        <button data-k="buy" onclick="mpSetCurve('buy')">Buy</button>
+        <button data-k="build" onclick="mpSetCurve('build')">Build</button>
       </div>
     </div>
-  </div>
-  <div id="mpp-tracker" style="display:none">
-    <div class="card">
-      <div class="ins info">Detail FPTK tersedia di tab Overview → "Detail FPTK" di bawah.</div>
+    <svg id="mp-chart" viewBox="0 0 640 190" width="100%" height="190" preserveAspectRatio="xMidYMid meet"></svg>
+    <div style="display:flex;gap:16px;font-size:10px;color:var(--tx3);margin-top:4px">
+      <span><svg width="18" height="6"><line x1="0" y1="3" x2="18" y2="3" stroke="var(--tx3)" stroke-width="2" stroke-dasharray="4 3"/></svg> Plan</span>
+      <span><svg width="18" height="6"><line x1="0" y1="3" x2="18" y2="3" stroke="var(--green)" stroke-width="2.5"/></svg> Fulfilled</span>
     </div>
   </div>
-  <div id="mpp-buybuild" style="display:none">
-    <div class="r2">
-      <div class="card"><div class="chdr"><div class="ct">Realisasi Buy/Build per Divisi</div></div><div id="bb-divisi"></div></div>
-      <div class="card"><div class="chdr"><div class="ct">MPP Plan Detail per Posisi</div></div><div id="mpp-detail-body" style="max-height:500px;overflow-y:auto"></div></div>
-    </div>
+
+  <div class="mp-sec">Which Divisions Have Unrealized Positions? <span style="font-weight:400;text-transform:none;letter-spacing:0">— click a division to see its positions</span></div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="mp-g mp-th"><div>Division</div><div style="text-align:right">Plan</div><div style="text-align:right">Fulfilled</div><div>Progress</div><div style="text-align:right">Unrealized</div><div style="text-align:right">Outside Plan</div></div>
+    <div id="mp-divs"></div>
+    <div id="mp-note" style="font-size:10px;color:var(--tx3);margin-top:10px"></div>
   </div>
-  <div id="mpp-matching" style="display:none">
-    <div class="card">
-      <div class="filter-bar"><select class="tf" id="mfst" onchange="renderMatch()"><option value="">Semua Status</option><option value="match">Match</option><option value="partial">Partial</option><option value="mismatch">Mismatch</option><option value="unplanned">Unplanned</option><option value="replacement">Replacement</option></select></div>
-      <div id="msum" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
-      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Bulan</th><th>Divisi</th><th>Posisi FPTK</th><th>Jenis</th><th>MPP Match</th><th>Score</th><th>Status</th></tr></thead><tbody id="mtbody"></tbody></table></div>
+
+  <div class="mp-sec">FPTK Details</div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="mpToggleDetail()">
+      <div style="font-size:11px;color:var(--tx3)" id="mp-detail-sub">Full FPTK table with filters for status, type, Buy/Build, and PIC</div>
+      <span style="font-size:11px;color:var(--blue);font-weight:600" id="mp-detail-btn">Show Table ▾</span>
     </div>
-  </div>
-  <div id="mpp-divisi" style="display:none"><div class="card"><div id="divisi-body"></div></div></div>
-  <div id="mpp-management" style="display:none">
-    <div class="mkpi-grid" id="mkpis"></div>
-    <div class="r2">
-      <div class="card"><div class="chdr"><div class="ct">Realisasi per Divisi</div></div><div id="mgd"></div></div>
-      <div class="card"><div class="chdr"><div class="ct">Key Highlights</div></div><div id="mghl"></div></div>
-    </div>
-    <div class="r2" style="margin-top:12px">
-      <div class="card"><div class="chdr"><div><div class="ct">Buy / Build Rekap YTD</div><div class="cs" id="mgbbs"></div></div></div><div id="mgbb"></div></div>
-      <div class="card"><div class="chdr"><div class="ct">MPP Matching Summary</div></div><div id="mgmatch"></div></div>
+    <div id="mp-detail" style="display:none;margin-top:12px">
+      <div class="filter-bar" style="margin-bottom:10px">
+        <select class="tf" id="ff-status" onchange="renderFPTKFull()"><option value="">All Status</option><option>Completed</option><option>On Process</option><option>Pending</option></select>
+        <select class="tf" id="ff-jenis" onchange="renderFPTKFull()"><option value="">All Types</option><option>Planned</option><option>Replacement</option><option>Unplanned</option></select>
+        <select class="tf" id="ff-bb" onchange="renderFPTKFull()"><option value="">Buy & Build</option><option>Buy</option><option>Build</option></select>
+        <select class="tf" id="ff-pic" onchange="renderFPTKFull()"><option value="">All PIC</option></select>
+      </div>
+      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>No</th><th>Position</th><th>Division</th><th>Level</th><th>Qty</th><th>Submitted</th><th>Approved</th><th>SLA</th><th>PIC</th><th>Type</th><th>Buy/Build</th><th>Note</th></tr></thead><tbody id="ftbody"></tbody></table></div>
     </div>
   </div>
 </div>
@@ -621,6 +523,7 @@ canvas{display:block;width:100%}
       <div style="font-size:10px;font-weight:600;color:var(--purple)">IPP</div>
       <div style="font-size:10px;font-weight:600;color:var(--blue)">IPE</div>
     </div>
+    <div id="pm-divisi-warn"></div>
     <div id="pm-divisi-rows"></div>
   </div>
 
@@ -729,20 +632,7 @@ function renderMPPDetail(){
     }).join('')+
   '</tbody></table>';
 }
-function switchMPPTab(tab){
-  currentMPPTab=tab;
-  ['overview','tracker','buybuild','matching','divisi','management'].forEach(t=>{
-    const el=document.getElementById('mpp-'+t);if(el)el.style.display=t===tab?'':'none';
-    const btn=document.getElementById('mpp-tab-'+t);if(btn)btn.classList.toggle('active',t===tab);
-  });
-  const f=getF();
-  if(tab==='overview')renderMPPOverview(f);
-  if(tab==='tracker')renderFPTKFull();
-  if(tab==='buybuild')renderBBPage();
-  if(tab==='matching')renderMatch();
-  if(tab==='divisi')renderDivisi(f);
-  if(tab==='management')renderMgmt(f);
-}
+function switchMPPTab(tab){currentMPPTab='overview';renderMPPPage();}
 
 // FILTERS
 function buildFilters(){
@@ -765,16 +655,15 @@ function applyFilters(){
 function renderLanding(){
   const f=getF();
   document.getElementById('landing-date').textContent='Data per '+D.generated;
-  const mT=mppPlan('',- 1);
-  const planned=D.fptk.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
-  const gap=Math.max(0,mT-planned);const ach=pc(planned,mT);
+  const mm=mppModel('',new Date().getMonth());
+  const mT=mm.plan.total,planned=mm.ful.total,gap=mm.unrealized,ach=mm.ach.total;
   document.getElementById('sc-mpp-val').textContent=ach+'%';
-  document.getElementById('sc-mpp-sub').textContent='Achievement Rate YTD';
-  document.getElementById('sc-mpp-bar').style.width=ach+'%';
+  document.getElementById('sc-mpp-sub').textContent='Achievement s/d '+MF[new Date().getMonth()];
+  document.getElementById('sc-mpp-bar').style.width=Math.min(100,ach)+'%';
   document.getElementById('sc-mpp-stats').innerHTML=
-    '<div class="sc-stat"><div class="sc-stat-val" style="color:#E8197D">'+mT+'</div><div class="sc-stat-lbl">MPP Plan</div></div>'+
-    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">'+planned+'</div><div class="sc-stat-lbl">Planned FPTK</div></div>'+
-    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+gap+'</div><div class="sc-stat-lbl">Gap</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:#E8197D">'+mT+'</div><div class="sc-stat-lbl">Plan to Date</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">'+planned+'</div><div class="sc-stat-lbl">Fulfilled</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+gap+'</div><div class="sc-stat-lbl">Unrealized</div></div>'+
     '<div class="sc-stat"><div class="sc-stat-val">'+D.fptk.length+'</div><div class="sc-stat-lbl">Total FPTK</div></div>';
   const so=D.so||[];
   const soSA=so.filter(d=>d.effective_status==='Signed All').length;
@@ -1410,6 +1299,16 @@ function renderPM(){
     }).join('');
   }
 
+  // ── Peringatan data divisi ──
+  const warnEl=document.getElementById('pm-divisi-warn');
+  if(warnEl){
+    const m=D.kpiMeta||{};const noDiv=(D.kpi||[]).filter(r=>!r.divisi);
+    let msg='';
+    if(!m.divCol)msg='Ekspor KPI belum punya kolom Divisi, jadi divisi masih diambil dari Master Karyawan. Tambahkan kolom Divisi di laporan HRIS, lalu Master Karyawan boleh dihapus.';
+    if(noDiv.length)msg+=(msg?' ':'')+noDiv.length+' karyawan tidak punya divisi dan tidak ikut di breakdown ini: '+noDiv.slice(0,5).map(r=>r.nama||r.nik).join(', ')+(noDiv.length>5?', dan '+(noDiv.length-5)+' lainnya':'')+'.';
+    warnEl.innerHTML=msg?'<div class="ins warn" style="margin:0 0 10px">'+msg+'</div>':'';
+  }
+
   // ── SECTION 3: PER DIVISI (sorted by IPP asc) ──
   const divEl=document.getElementById('pm-divisi-rows');
   if(divEl){
@@ -1764,19 +1663,33 @@ async function fetchAllData(){
     return{divisi:(r[0]||'').trim(),dept:(r[2]||'').trim(),jabatan:(r[3]||'').trim(),level:(r[4]||'').trim(),status:status};
   });
 
-  // ── KPI (with divisi lookup from Master Karyawan) ──
-  const masterRows=(jsons[5]?.values||[]).slice(1);
+  // ── KPI (ekspor HRIS, dibaca berdasarkan nama header) ──
+  const kpiAll=(jsons[4]?.values||[]);
+  const kH=(kpiAll[0]||[]).map(x=>(x||'').toString().trim().toLowerCase().replace(/\s+/g,' '));
+  const kFind=(tests,fb)=>{for(const t of tests){const i=kH.findIndex(x=>typeof t==='string'?x===t:t.test(x));if(i>=0)return i;}return fb;};
+  const kc={
+    nik:  kFind(['nik',/\bnik\b/,/employee (id|no)/,/no\.? ?karyawan/],0),
+    nama: kFind(['nama','name','nama karyawan','employee name',/^nama\b/],1),
+    email:kFind(['email',/e-?mail/],2),
+    ipp:  kFind([/\bipp\b/],3),
+    ipe:  kFind([/\bipe\b/],4),
+    level:kFind(['level','job level',/\blevel\b/,/grade/],5),
+    div:  kFind(['divisi','division',/^(?!sub).*\bdivisi\b/,/^(?!sub).*\bdivision\b/],-1)
+  };
+  if(kc.div<0)console.warn('KPI: kolom Divisi tidak ditemukan di ekspor HRIS, memakai Master Karyawan sebagai cadangan. Header:',kpiAll[0]);
+  // Cadangan masa transisi: divisi dari Master Karyawan (boleh sudah dihapus)
   const nikDivMap={};
-  masterRows.forEach(r=>{
-    if(!r[1])return;
-    const nik=r[1].toString().trim();
-    nikDivMap[nik]=(r[3]||'').toString().trim();
+  (jsons[5]?.values||[]).slice(1).forEach(r=>{if(r[1])nikDivMap[r[1].toString().trim()]=(r[3]||'').toString().trim();});
+  // Samakan ejaan divisi dengan daftar resmi (target JD)
+  const divCanon={};Object.keys(typeof JD_TARGET_FALLBACK!=='undefined'?JD_TARGET_FALLBACK:{}).forEach(d=>divCanon[d.trim().toUpperCase()]=d);
+  const canonDiv=d=>{const s=(d||'').toString().trim();return divCanon[s.toUpperCase()]||s;};
+  const cell=(r,i)=>i>=0?(r[i]||'').toString().trim():'';
+  fresh.kpi=kpiAll.slice(1).filter(r=>cell(r,kc.nik)).map(r=>{
+    const nik=cell(r,kc.nik);
+    return{nik:nik,nama:cell(r,kc.nama),email:cell(r,kc.email),ipp:cell(r,kc.ipp),ipe:cell(r,kc.ipe),level:cell(r,kc.level),
+      divisi:canonDiv(cell(r,kc.div)||nikDivMap[nik]||'')};
   });
-  const kpiRows=(jsons[4]?.values||[]).slice(1);
-  fresh.kpi=kpiRows.filter(r=>r[0]).map(r=>{
-    const nik=r[0].toString().trim();
-    return{nik:nik,nama:(r[1]||'').trim(),email:(r[2]||'').trim(),ipp:(r[3]||'').trim(),ipe:(r[4]||'').trim(),level:(r[5]||'').trim(),divisi:nikDivMap[nik]||''};
-  });
+  fresh.kpiMeta={divCol:kc.div>=0,noDiv:fresh.kpi.filter(k=>!k.divisi).length};
 
   // ── Match results (computed from fresh FPTK + MPP) ──
   const NOISE=['of','the','and','head','lead','senior','junior','staff','officer','coordinator','supervisor','manager','analyst'];
@@ -2114,6 +2027,143 @@ async function plDelete(id){
   catch(e){PL=bak;renderPlanner();plToast('Gagal menghapus: '+e.message,'err');}
 }
 
+// ══════════ MPP & FULFILLMENT (satu sumber hitung) ══════════
+const MP_MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let mpCurve='total';
+function mpNorm(s){return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' ');}
+function mpCanonDiv(d){const k=mpNorm(d);const m=Object.keys(typeof JD_TARGET_FALLBACK!=='undefined'?JD_TARGET_FALLBACK:{}).find(x=>mpNorm(x)===k);return m||(d||'').toString().trim();}
+function mpAsOf(){const el=document.getElementById('fbln');const b=el?parseInt(el.value)||0:0;return b>0?b-1:new Date().getMonth();}
+function mpQty(r){return parseInt(r.jml_approved)||0;}   // Qty Approved kosong = 0
+
+/* Semua angka MPP dihitung di sini. asOf = indeks bulan (0-11) batas "to date". */
+function mppModel(divF,asOf){
+  const dF=divF?mpNorm(mpCanonDiv(divF)):'';
+  const pos={};
+  Object.entries(D.mpp_detail||{}).forEach(([div,list])=>{
+    const cd=mpCanonDiv(div);if(dF&&mpNorm(cd)!==dF)return;
+    (list||[]).forEach(p=>{
+      const k=mpNorm(cd)+'|'+mpNorm(p.pos);
+      if(!pos[k])pos[k]={key:k,div:cd,pos:p.pos,level:p.level,months:[],buy:0,build:0,fptk:[]};
+      const o=pos[k];o.buy+=p.total_buy||0;o.build+=p.total_build||0;
+      MF_KEYS.forEach((m,i)=>{const v=p.months&&p.months[m];if(v&&(v.buy||v.build))o.months.push({mi:i,buy:v.buy||0,build:v.build||0});});
+    });
+  });
+  const fp=(D.fptk||[]).filter(r=>!dF||mpNorm(mpCanonDiv(r.divisi))===dF);
+  const inRange=r=>!(r.bulan>=1&&r.bulan<=12)||r.bulan-1<=asOf;
+  const planned=fp.filter(r=>r.planned==='Planned');
+  planned.forEach(r=>{const k=mpNorm(mpCanonDiv(r.divisi))+'|'+mpNorm(r.posisi);if(pos[k])pos[k].fptk.push(r);});
+
+  const z=()=>Array(12).fill(0);
+  const planM={buy:z(),build:z()},fulM={buy:z(),build:z()};
+  Object.values(pos).forEach(o=>o.months.forEach(x=>{planM.buy[x.mi]+=x.buy;planM.build[x.mi]+=x.build;}));
+  planned.forEach(r=>{if(r.bulan>=1&&r.bulan<=12)fulM[r.buy_build==='Build'?'build':'buy'][r.bulan-1]+=mpQty(r);});
+  const sumTo=a=>a.slice(0,asOf+1).reduce((s,v)=>s+v,0);
+  const tri=(b,d)=>({buy:b,build:d,total:b+d});
+  const bb=(rows,t)=>rows.filter(r=>(r.buy_build==='Build'?'build':'buy')===t).reduce((s,r)=>s+mpQty(r),0);
+
+  const plan=tri(sumTo(planM.buy),sumTo(planM.build));
+  const annual=tri(Object.values(pos).reduce((s,o)=>s+o.buy,0),Object.values(pos).reduce((s,o)=>s+o.build,0));
+  const fulRows=planned.filter(inRange);
+  const ful=tri(bb(fulRows,'buy'),bb(fulRows,'build'));
+  const outRows=fp.filter(r=>r.planned!=='Planned'&&inRange(r));
+  const out=tri(bb(outRows,'buy'),bb(outRows,'build'));
+  out.repl=outRows.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+mpQty(r),0);
+  out.unpl=outRows.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+mpQty(r),0);
+  const ach={buy:pc(ful.buy,plan.buy),build:pc(ful.build,plan.build),total:pc(ful.total,plan.total)};
+  const unrealized=Math.max(0,plan.total-ful.total);
+
+  // status per posisi
+  const stageName=['OD approval','DH approval','VP HC approval'];
+  Object.values(pos).forEach(o=>{
+    o.total=o.buy+o.build;
+    o.months.sort((a,b)=>a.mi-b.mi);
+    o.first=o.months.length?o.months[0].mi:null;
+    o.approved=o.fptk.reduce((s,r)=>s+mpQty(r),0);
+    const active=o.fptk.find(r=>r.status!=='Completed');
+    if(o.total>0&&o.approved>=o.total){o.st='s';o.lbl='Fulfilled';o.rank=6;}
+    else if(active){const t=trkInfo(active);o.st='w';o.rank=2;o.lbl='FPTK in progress · '+(t.stage>=0?stageName[t.stage]:'awaiting OD completion');}
+    else if(o.approved>0){o.st='w';o.rank=3;o.lbl='Partially fulfilled · '+o.approved+'/'+o.total;}
+    else if(o.first===null){o.st='g';o.rank=5;o.lbl='No FPTK · month not set';}
+    else if(o.first<asOf){const n=asOf-o.first;o.st='d';o.rank=1;o.late=n;o.lbl='No FPTK · '+n+' month'+(n>1?'s':'')+' overdue';}
+    else if(o.first===asOf){o.st='i';o.rank=3.5;o.lbl='No FPTK · due this month';}
+    else{o.st='g';o.rank=4;o.lbl='Planned for '+MP_MON[o.first];}
+    const mons=[...new Set(o.months.map(x=>MP_MON[x.mi]))];
+    const types=[o.buy?'Buy':'',o.build?'Build':''].filter(Boolean).join('/');
+    o.when=(mons.length?mons.slice(0,2).join(', ')+(mons.length>2?' +'+(mons.length-2):''):'—')+' · '+types;
+  });
+
+  // per divisi
+  const divs={};
+  const dv=n=>divs[n]||(divs[n]={div:n,plan:0,ful:0,out:0,annual:0,pos:[]});
+  Object.values(pos).forEach(o=>{const d=dv(o.div);d.pos.push(o);d.annual+=o.total;d.plan+=o.months.filter(x=>x.mi<=asOf).reduce((s,x)=>s+x.buy+x.build,0);});
+  fulRows.forEach(r=>{dv(mpCanonDiv(r.divisi)).ful+=mpQty(r);});
+  outRows.forEach(r=>{dv(mpCanonDiv(r.divisi)).out+=mpQty(r);});
+  const divList=Object.values(divs).map(d=>{d.unr=Math.max(0,d.plan-d.ful);d.pos.sort((a,b)=>a.rank-b.rank||(b.late||0)-(a.late||0)||a.pos.localeCompare(b.pos));return d;})
+    .sort((a,b)=>b.unr-a.unr||b.plan-a.plan||a.div.localeCompare(b.div));
+
+  const cum=a=>{let s=0;return a.map(v=>s+=v);};
+  const curve={
+    buy:{p:cum(planM.buy),f:cum(fulM.buy)},build:{p:cum(planM.build),f:cum(fulM.build)},
+    total:{p:cum(planM.buy.map((v,i)=>v+planM.build[i])),f:cum(fulM.buy.map((v,i)=>v+fulM.build[i]))}};
+  const noMonth=Object.values(pos).filter(o=>o.first===null);
+  return{asOf,plan,annual,ful,out,ach,unrealized,divList,curve,noMonth,fptkCount:fp.length};
+}
+
+function renderMPPPage(){
+  const f=getF();const asOf=mpAsOf();const m=mppModel(f.div,asOf);
+  window._mp=m;
+  document.getElementById('mp-sub').textContent='Plan counted through '+MP_MON[asOf]+' · '+(f.div||'All divisions')+' · '+(D.generated||'');
+  const col={buy:'var(--green)',build:'var(--blue)'};
+  const split=(b,d)=>'<div class="mp-kb"><span style="color:'+col.buy+'">Buy <b>'+b+'</b></span><span style="color:'+col.build+'">Build <b>'+d+'</b></span></div>';
+  const mini=(l,v,c)=>'<div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span style="width:32px;color:'+c+'">'+l+'</span><div class="mp-bar" style="flex:1;height:5px"><div style="width:'+Math.min(100,v)+'%;background:'+c+'"></div></div><b style="width:32px;text-align:right">'+v+'%</b></div>';
+  const achCol=m.ach.total>=100?'var(--green)':m.ach.total>=70?'var(--amber)':'var(--red)';
+  document.getElementById('mp-kpis').innerHTML=
+    '<div class="mp-k"><div class="mp-kl">Plan to Date</div><div class="mp-kv">'+m.plan.total+'</div><div class="mp-ks">of '+m.annual.total+' for the year</div>'+split(m.plan.buy,m.plan.build)+'</div>'+
+    '<div class="mp-k"><div class="mp-kl">Fulfilled</div><div class="mp-kv" style="color:var(--green)">'+m.ful.total+'</div><div class="mp-ks">approved MP, Planned FPTK</div>'+split(m.ful.buy,m.ful.build)+'</div>'+
+    '<div class="mp-k"><div class="mp-kl">Achievement</div><div class="mp-kv" style="color:'+achCol+'">'+m.ach.total+'%</div><div class="mp-ks" style="color:'+(m.unrealized?'var(--amber)':'var(--green)')+'">'+(m.unrealized?m.unrealized+' positions unrealized':'on track')+'</div>'+
+      '<div style="font-size:10px;margin-top:8px;border-top:.5px solid var(--border);padding-top:5px">'+mini('Buy',m.ach.buy,col.buy)+mini('Build',m.ach.build,col.build)+'</div></div>'+
+    '<div class="mp-k"><div class="mp-kl">Outside Plan</div><div class="mp-kv" style="color:var(--blue)">'+m.out.total+'</div><div class="mp-ks">Replacement '+m.out.repl+' · Unplanned '+m.out.unpl+'</div>'+split(m.out.buy,m.out.build)+'</div>';
+  mpDrawCurve();
+  // divisions
+  const P={d:'pill-red',w:'pill-amber',i:'pill-blue',s:'pill-green',g:'pill-grey'};
+  const el=document.getElementById('mp-divs');
+  if(!m.divList.length){el.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--tx3)">No MPP data for this filter.</div>';}
+  else el.innerHTML=m.divList.map((d,i)=>{
+    const pct=d.plan?pc(d.ful,d.plan):null;
+    const bc=pct===null?'var(--border)':pct>=100?'var(--green)':'var(--amber)';
+    return '<div class="mp-g mp-tr" onclick="mpToggleDiv('+i+')"><div style="font-weight:600"><span id="mp-a'+i+'" style="display:inline-block;width:12px;color:var(--tx3)">▸</span>'+d.div+'</div>'+
+      '<div style="text-align:right">'+d.plan+'</div><div style="text-align:right">'+d.ful+'</div>'+
+      '<div style="display:flex;align-items:center;gap:6px">'+(pct===null?'<span style="font-size:10px;color:var(--tx3)">Not due yet</span>':'<div class="mp-bar" style="flex:1"><div style="width:'+Math.min(100,pct)+'%;background:'+bc+'"></div></div><span style="font-size:10px;width:34px;text-align:right">'+pct+'%</span>')+'</div>'+
+      '<div style="text-align:right;font-weight:700;color:'+(d.unr?'var(--red)':'var(--tx3)')+'">'+d.unr+'</div><div style="text-align:right;color:var(--tx3)">'+d.out+'</div></div>'+
+      '<div class="mp-pos" id="mp-p'+i+'"><div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Positions · Most Urgent First</div>'+
+      d.pos.map(o=>'<div class="mp-pr"><div style="font-weight:500">'+o.pos+(o.level?' <span style="color:var(--tx3);font-weight:400">· '+o.level+'</span>':'')+'</div><div style="color:var(--tx3)">'+o.when+'</div><div>'+o.total+' MP</div><div><span class="pill '+P[o.st]+'">'+o.lbl+'</span></div></div>').join('')+'</div>';
+  }).join('');
+  document.getElementById('mp-note').textContent=
+    'Positions are matched to Planned FPTK by division + position name until MPP ID is available.'+(m.noMonth.length?' '+m.noMonth.length+' position(s) have no planned month and are excluded from Plan to Date.':'');
+  document.getElementById('mp-detail-sub').textContent='Full table of '+m.fptkCount+' FPTK with filters for status, type, Buy/Build, and PIC';
+  if(document.getElementById('mp-detail').style.display!=='none')renderFPTKFull();
+}
+function mpSetCurve(k){mpCurve=k;document.querySelectorAll('#mp-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));mpDrawCurve();}
+function mpDrawCurve(){
+  const m=window._mp;if(!m)return;const c=m.curve[mpCurve];const a=m.asOf;
+  const mx=Math.max(1,...c.p,...c.f),X=i=>44+i*50,Y=v=>150-v/mx*130;
+  const pl=arr=>arr.map((v,i)=>X(i)+','+Y(v)).join(' ');
+  const f=c.f.slice(0,a+1),gap=Math.max(0,c.p[a]-c.f[a]);
+  let s='<line x1="44" y1="150" x2="600" y2="150" stroke="var(--border)"/>';
+  [0,.5,1].forEach(t=>{const v=Math.round(mx*t);s+='<text x="36" y="'+(Y(v)+3)+'" font-size="9" text-anchor="end" fill="var(--tx3)">'+v+'</text>';});
+  if(a<11)s+='<rect x="'+(X(a)+25)+'" y="12" width="'+(620-X(a)-25)+'" height="138" fill="var(--bg)" opacity=".8"/>';
+  MP_MON.forEach((mn,i)=>s+='<text x="'+X(i)+'" y="168" font-size="9" text-anchor="middle" fill="'+(i===a?'var(--tx)':'var(--tx3)')+'" font-weight="'+(i===a?'700':'400')+'">'+mn+'</text>');
+  s+='<polyline fill="none" stroke="var(--tx3)" stroke-width="2" stroke-dasharray="5 4" points="'+pl(c.p)+'"/>';
+  s+='<polyline fill="none" stroke="var(--green)" stroke-width="2.5" points="'+pl(f)+'"/>';
+  if(gap>0){s+='<line x1="'+X(a)+'" y1="'+Y(c.p[a])+'" x2="'+X(a)+'" y2="'+Y(c.f[a])+'" stroke="var(--amber)" stroke-width="1.5"/>';
+    s+='<text x="'+(X(a)+8)+'" y="'+((Y(c.p[a])+Y(c.f[a]))/2+4)+'" font-size="11" font-weight="700" fill="var(--amber)">−'+gap+'</text>';}
+  s+='<circle cx="'+X(a)+'" cy="'+Y(c.f[a])+'" r="4" fill="var(--green)"/>';
+  s+='<text x="'+X(11)+'" y="'+(Y(c.p[11])-7)+'" font-size="10" text-anchor="end" fill="var(--tx3)">Plan '+c.p[11]+'</text>';
+  document.getElementById('mp-chart').innerHTML=s;
+}
+function mpToggleDiv(i){const p=document.getElementById('mp-p'+i),o=p.style.display==='block';p.style.display=o?'none':'block';document.getElementById('mp-a'+i).textContent=o?'▸':'▾';}
+function mpToggleDetail(){const d=document.getElementById('mp-detail'),o=d.style.display!=='none';d.style.display=o?'none':'block';document.getElementById('mp-detail-btn').textContent=o?'Show Table ▾':'Hide Table ▴';if(!o)renderFPTKFull();}
+
 // INIT
 document.addEventListener('DOMContentLoaded',async function(){
   renderLanding(); // render empty state first
@@ -2188,7 +2238,7 @@ async function exportPPT(){
     const sumCards=[
       {label:'MPP & Realisasi',color:PK,val:pct(plA,mT||1)+'%',sub:'Achievement Rate YTD',detail:'Plan '+mT+' / FPTK '+plA},
       {label:'Struktur Organisasi',color:GR,val:pct(soSA+soSU,so.length||1)+'%',sub:'Divisi sudah Signed',detail:(soSA+soSU)+' dari '+so.length+' divisi'},
-      {label:'Job Description',color:BL,val:pct(jdC,433)+'%',sub:'Completion dari 433 jabatan',detail:jdC+' jabatan selesai'},
+      {label:'Job Description',color:BL,val:pct(jdC,(window.JD_TOTAL_TARGET||JD_TOTAL_TARGET))+'%',sub:'Completion dari '+(window.JD_TOTAL_TARGET||JD_TOTAL_TARGET)+' jabatan',detail:jdC+' jabatan selesai'},
       {label:'Performance Mgmt',color:PU,val:pct(ippA,kpi.length||1)+'%',sub:'IPP Approved',detail:ippA+' dari '+kpi.length+' karyawan'},
     ];
     sumCards.forEach((c,i)=>{
@@ -2361,7 +2411,7 @@ async function exportPPT(){
       sld.addShape(pres.ShapeType.roundRect,{x,y:1.3,w:2.3,h:1.8,fill:{color:c.bg},line:{color:c.c+'44',width:.5},rectRadius:.12});
       sld.addText(String(c.v),{x,y:1.42,w:2.3,h:.8,fontSize:32,bold:true,color:c.c,align:'center',fontFace:FONT});
       sld.addText(c.l,{x,y:2.22,w:2.3,h:.3,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
-      if(i>0)sld.addText(pct(c.v,433)+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
+      if(i>0)sld.addText(pct(c.v,jdTotal)+'%',{x,y:2.55,w:2.3,h:.28,fontSize:10,bold:true,color:c.c,align:'center',fontFace:FONT});
     });
     // Progress bar
     const pctJD=pct(jdC+jdSgn,jdTotal);
