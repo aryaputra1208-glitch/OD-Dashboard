@@ -2051,20 +2051,30 @@ function mppModel(divF,asOf){
   const fp=(D.fptk||[]).filter(r=>!dF||mpNorm(mpCanonDiv(r.divisi))===dF);
   const inRange=r=>!(r.bulan>=1&&r.bulan<=12)||r.bulan-1<=asOf;
   const planned=fp.filter(r=>r.planned==='Planned');
-  planned.forEach(r=>{const k=mpNorm(mpCanonDiv(r.divisi))+'|'+mpNorm(r.posisi);if(pos[k])pos[k].fptk.push(r);});
+  const unmatched=[];
+  planned.forEach(r=>{const k=mpNorm(mpCanonDiv(r.divisi))+'|'+mpNorm(r.posisi);if(pos[k])pos[k].fptk.push(r);else unmatched.push(r);});
 
   const z=()=>Array(12).fill(0);
   const planM={buy:z(),build:z()},fulM={buy:z(),build:z()};
   Object.values(pos).forEach(o=>o.months.forEach(x=>{planM.buy[x.mi]+=x.buy;planM.build[x.mi]+=x.build;}));
-  planned.forEach(r=>{if(r.bulan>=1&&r.bulan<=12)fulM[r.buy_build==='Build'?'build':'buy'][r.bulan-1]+=mpQty(r);});
+  // Alokasi per posisi: urut bulan, maksimal sebanyak rencana posisi tsb.
+  Object.values(pos).forEach(o=>{
+    let left=o.buy+o.build;o.approved=0;o.fulToDate={buy:0,build:0};
+    o.fptk.slice().sort((a,b)=>(a.bulan||0)-(b.bulan||0)).forEach(r=>{
+      const q=Math.min(mpQty(r),Math.max(0,left));left-=q;o.approved+=q;
+      const t=r.buy_build==='Build'?'build':'buy';
+      if(r.bulan>=1&&r.bulan<=12)fulM[t][r.bulan-1]+=q;
+      if(inRange(r))o.fulToDate[t]+=q;
+    });
+  });
   const sumTo=a=>a.slice(0,asOf+1).reduce((s,v)=>s+v,0);
   const tri=(b,d)=>({buy:b,build:d,total:b+d});
   const bb=(rows,t)=>rows.filter(r=>(r.buy_build==='Build'?'build':'buy')===t).reduce((s,r)=>s+mpQty(r),0);
 
   const plan=tri(sumTo(planM.buy),sumTo(planM.build));
   const annual=tri(Object.values(pos).reduce((s,o)=>s+o.buy,0),Object.values(pos).reduce((s,o)=>s+o.build,0));
-  const fulRows=planned.filter(inRange);
-  const ful=tri(bb(fulRows,'buy'),bb(fulRows,'build'));
+  const ful=tri(Object.values(pos).reduce((s,o)=>s+o.fulToDate.buy,0),Object.values(pos).reduce((s,o)=>s+o.fulToDate.build,0));
+  const unmatchedInRange=unmatched.filter(inRange);
   const outRows=fp.filter(r=>r.planned!=='Planned'&&inRange(r));
   const out=tri(bb(outRows,'buy'),bb(outRows,'build'));
   out.repl=outRows.filter(r=>r.planned==='Replacement').reduce((s,r)=>s+mpQty(r),0);
@@ -2078,7 +2088,6 @@ function mppModel(divF,asOf){
     o.total=o.buy+o.build;
     o.months.sort((a,b)=>a.mi-b.mi);
     o.first=o.months.length?o.months[0].mi:null;
-    o.approved=o.fptk.reduce((s,r)=>s+mpQty(r),0);
     const active=o.fptk.find(r=>r.status!=='Completed');
     if(o.total>0&&o.approved>=o.total){o.st='s';o.lbl='Fulfilled';o.rank=6;}
     else if(active){const t=trkInfo(active);o.st='w';o.rank=2;o.lbl='FPTK in progress · '+(t.stage>=0?stageName[t.stage]:'awaiting OD completion');}
@@ -2094,9 +2103,9 @@ function mppModel(divF,asOf){
 
   // per divisi
   const divs={};
-  const dv=n=>divs[n]||(divs[n]={div:n,plan:0,ful:0,out:0,annual:0,pos:[]});
-  Object.values(pos).forEach(o=>{const d=dv(o.div);d.pos.push(o);d.annual+=o.total;d.plan+=o.months.filter(x=>x.mi<=asOf).reduce((s,x)=>s+x.buy+x.build,0);});
-  fulRows.forEach(r=>{dv(mpCanonDiv(r.divisi)).ful+=mpQty(r);});
+  const dv=n=>divs[n]||(divs[n]={div:n,plan:0,ful:0,out:0,annual:0,pos:[],unmatched:[]});
+  Object.values(pos).forEach(o=>{const d=dv(o.div);d.pos.push(o);d.annual+=o.total;d.ful+=o.fulToDate.buy+o.fulToDate.build;d.plan+=o.months.filter(x=>x.mi<=asOf).reduce((s,x)=>s+x.buy+x.build,0);});
+  unmatchedInRange.forEach(r=>{dv(mpCanonDiv(r.divisi)).unmatched.push(r);});
   outRows.forEach(r=>{dv(mpCanonDiv(r.divisi)).out+=mpQty(r);});
   const divList=Object.values(divs).map(d=>{d.unr=Math.max(0,d.plan-d.ful);d.pos.sort((a,b)=>a.rank-b.rank||(b.late||0)-(a.late||0)||a.pos.localeCompare(b.pos));return d;})
     .sort((a,b)=>b.unr-a.unr||b.plan-a.plan||a.div.localeCompare(b.div));
@@ -2106,7 +2115,7 @@ function mppModel(divF,asOf){
     buy:{p:cum(planM.buy),f:cum(fulM.buy)},build:{p:cum(planM.build),f:cum(fulM.build)},
     total:{p:cum(planM.buy.map((v,i)=>v+planM.build[i])),f:cum(fulM.buy.map((v,i)=>v+fulM.build[i]))}};
   const noMonth=Object.values(pos).filter(o=>o.first===null);
-  return{asOf,plan,annual,ful,out,ach,unrealized,divList,curve,noMonth,fptkCount:fp.length};
+  return{asOf,plan,annual,ful,out,ach,unrealized,divList,curve,noMonth,fptkCount:fp.length,unmatched:unmatchedInRange};
 }
 
 function renderMPPPage(){
@@ -2119,7 +2128,7 @@ function renderMPPPage(){
   const achCol=m.ach.total>=100?'var(--green)':m.ach.total>=70?'var(--amber)':'var(--red)';
   document.getElementById('mp-kpis').innerHTML=
     '<div class="mp-k"><div class="mp-kl">Plan to Date</div><div class="mp-kv">'+m.plan.total+'</div><div class="mp-ks">of '+m.annual.total+' for the year</div>'+split(m.plan.buy,m.plan.build)+'</div>'+
-    '<div class="mp-k"><div class="mp-kl">Fulfilled</div><div class="mp-kv" style="color:var(--green)">'+m.ful.total+'</div><div class="mp-ks">approved MP, Planned FPTK</div>'+split(m.ful.buy,m.ful.build)+'</div>'+
+    '<div class="mp-k"><div class="mp-kl">Fulfilled</div><div class="mp-kv" style="color:var(--green)">'+m.ful.total+'</div><div class="mp-ks"'+(m.unmatched.length?' style="color:var(--amber)">'+m.unmatched.length+' Planned FPTK not matched to MPP':'>approved MP, Planned FPTK')+'</div>'+split(m.ful.buy,m.ful.build)+'</div>'+
     '<div class="mp-k"><div class="mp-kl">Achievement</div><div class="mp-kv" style="color:'+achCol+'">'+m.ach.total+'%</div><div class="mp-ks" style="color:'+(m.unrealized?'var(--amber)':'var(--green)')+'">'+(m.unrealized?m.unrealized+' positions unrealized':'on track')+'</div>'+
       '<div style="font-size:10px;margin-top:8px;border-top:.5px solid var(--border);padding-top:5px">'+mini('Buy',m.ach.buy,col.buy)+mini('Build',m.ach.build,col.build)+'</div></div>'+
     '<div class="mp-k"><div class="mp-kl">Outside Plan</div><div class="mp-kv" style="color:var(--blue)">'+m.out.total+'</div><div class="mp-ks">Replacement '+m.out.repl+' · Unplanned '+m.out.unpl+'</div>'+split(m.out.buy,m.out.build)+'</div>';
@@ -2131,15 +2140,18 @@ function renderMPPPage(){
   else el.innerHTML=m.divList.map((d,i)=>{
     const pct=d.plan?pc(d.ful,d.plan):null;
     const bc=pct===null?'var(--border)':pct>=100?'var(--green)':'var(--amber)';
-    return '<div class="mp-g mp-tr" onclick="mpToggleDiv('+i+')"><div style="font-weight:600"><span id="mp-a'+i+'" style="display:inline-block;width:12px;color:var(--tx3)">▸</span>'+d.div+'</div>'+
+    return '<div class="mp-g mp-tr" onclick="mpToggleDiv('+i+')"><div style="font-weight:600"><span id="mp-a'+i+'" style="display:inline-block;width:12px;color:var(--tx3)">▸</span>'+d.div+(d.unmatched.length?' <span class="pill pill-amber" style="margin-left:4px">'+d.unmatched.length+' unmatched</span>':'')+'</div>'+
       '<div style="text-align:right">'+d.plan+'</div><div style="text-align:right">'+d.ful+'</div>'+
       '<div style="display:flex;align-items:center;gap:6px">'+(pct===null?'<span style="font-size:10px;color:var(--tx3)">Not due yet</span>':'<div class="mp-bar" style="flex:1"><div style="width:'+Math.min(100,pct)+'%;background:'+bc+'"></div></div><span style="font-size:10px;width:34px;text-align:right">'+pct+'%</span>')+'</div>'+
       '<div style="text-align:right;font-weight:700;color:'+(d.unr?'var(--red)':'var(--tx3)')+'">'+d.unr+'</div><div style="text-align:right;color:var(--tx3)">'+d.out+'</div></div>'+
       '<div class="mp-pos" id="mp-p'+i+'"><div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Positions · Most Urgent First</div>'+
-      d.pos.map(o=>'<div class="mp-pr"><div style="font-weight:500">'+o.pos+(o.level?' <span style="color:var(--tx3);font-weight:400">· '+o.level+'</span>':'')+'</div><div style="color:var(--tx3)">'+o.when+'</div><div>'+o.total+' MP</div><div><span class="pill '+P[o.st]+'">'+o.lbl+'</span></div></div>').join('')+'</div>';
+      d.pos.map(o=>'<div class="mp-pr"><div style="font-weight:500">'+o.pos+(o.level?' <span style="color:var(--tx3);font-weight:400">· '+o.level+'</span>':'')+'</div><div style="color:var(--tx3)">'+o.when+'</div><div>'+o.total+' MP</div><div><span class="pill '+P[o.st]+'">'+o.lbl+'</span></div></div>').join('')+
+      (d.unmatched.length?'<div style="font-size:10px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">Planned FPTK Not Matched to MPP · Check Position Name</div>'+
+        d.unmatched.map(r=>'<div class="mp-pr"><div style="font-weight:500">'+(r.posisi||'—')+(r.level?' <span style="color:var(--tx3);font-weight:400">· '+r.level+'</span>':'')+'</div><div style="color:var(--tx3)">'+(r.bulan?MP_MON[r.bulan-1]:'—')+' · '+(r.buy_build||'')+'</div><div>'+mpQty(r)+' MP</div><div><span class="pill pill-amber">Not counted as fulfilled</span></div></div>').join(''):'')+'</div>';
   }).join('');
   document.getElementById('mp-note').textContent=
-    'Positions are matched to Planned FPTK by division + position name until MPP ID is available.'+(m.noMonth.length?' '+m.noMonth.length+' position(s) have no planned month and are excluded from Plan to Date.':'');
+    'Positions are matched to Planned FPTK by division + position name until MPP ID is available. Fulfilled counts only matched FPTK, capped at each position\'s plan.'+
+    (m.unmatched.length?' '+m.unmatched.length+' Planned FPTK could not be matched — fix the position name in the sheet, or change the type if it is not in the MPP.':'')+(m.noMonth.length?' '+m.noMonth.length+' position(s) have no planned month and are excluded from Plan to Date.':'');
   document.getElementById('mp-detail-sub').textContent='Full table of '+m.fptkCount+' FPTK with filters for status, type, Buy/Build, and PIC';
   if(document.getElementById('mp-detail').style.display!=='none')renderFPTKFull();
 }
