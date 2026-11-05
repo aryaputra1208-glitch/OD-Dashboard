@@ -426,7 +426,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   </div>
   <div class="card" id="lp-card" style="margin-top:14px">
     <div class="chdr" style="align-items:center">
-      <div><div class="ct">OD Planner</div><div class="cs" id="lp-sub">Memuat task...</div></div>
+      <div><div class="ct">OD Planner</div></div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="mp-seg" id="lp-seg"><button class="on" data-k="open" onclick="lpSet('open')">Open</button><button data-k="overdue" onclick="lpSet('overdue')">Overdue</button><button data-k="week" onclick="lpSet('week')">This Week</button></div>
         <button class="btn" onclick="goTo('planner')">Open Planner →</button>
@@ -2334,14 +2334,11 @@ function lpSet(k){lpMode=k;document.querySelectorAll('#lp-seg button').forEach(b
 function lpFmt(d){if(!d)return '—';const x=new Date(d+'T00:00:00');if(isNaN(x))return plEsc(d);return x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function lpColor(name){const c=['#E8197D','#007AFF','#34C759','#FF9500','#AF52DE','#5AC8FA','#FF3B30','#30B0C7'];let h=0;for(const ch of String(name))h=(h*31+ch.charCodeAt(0))>>>0;return c[h%c.length];}
 function renderLandingPlanner(){
-  const body=document.getElementById('lp-body'),sub=document.getElementById('lp-sub');if(!body)return;
+  const body=document.getElementById('lp-body');if(!body)return;
   if(!plLoaded){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">Memuat task...</div>';return;}
   const open=PL.filter(t=>t.status!=='Done');
   const dl=t=>plDaysLeft(t.deadline);
   const over=open.filter(t=>(dl(t)??1)<0),week=open.filter(t=>{const d=dl(t);return d!=null&&d>=0&&d<=7;});
-  sub.textContent=open.length+' open · '+over.length+' overdue · '+week.length+' due in 7 days';
-  const segs=document.querySelectorAll('#lp-seg button');
-  if(segs.length){segs[0].textContent='Open '+open.length;segs[1].textContent='Overdue '+over.length;segs[2].textContent='This Week '+week.length;}
   let list=lpMode==='overdue'?over:lpMode==='week'?week:open;
   list=[...list].sort((a,b)=>(dl(a)??9999)-(dl(b)??9999));
   if(!PL.length){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">Belum ada task di OD Planner.</div>';return;}
