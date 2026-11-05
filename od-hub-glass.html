@@ -218,9 +218,7 @@ body{background:
  .topbar,.sidebar{background:#FAFAFC}
  .card,.kpi,.mkpi,.mp-k,.gc-mini{background:#fff!important}
  #trk-modal>div{background:#fff!important}}
-@media (prefers-reduced-transparency:reduce){
- .topbar,.sidebar{background:#FAFAFC;backdrop-filter:none}
- .card,.kpi,.mkpi,.mp-k,.gc-mini{background:#fff!important;backdrop-filter:none}}
+
 /* ===== GLASS v2: colour behind the glass + rim light + sheen ===== */
 html{background:#EEF0F6}
 body{background:transparent!important}
@@ -260,9 +258,7 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 .card:hover,.kpi:hover,.gc-mini:hover,.mkpi:hover,.mp-k:hover{box-shadow:inset 0 1px 0 #fff,inset 0 0 28px rgba(255,255,255,.25),0 16px 40px rgba(31,38,135,.12)}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
  .card,.kpi,.mkpi,.mp-k,.gc-mini{background:rgba(255,255,255,.92)!important}}
-@media (prefers-reduced-transparency:reduce){
- body::before{display:none}
- .card,.kpi,.mkpi,.mp-k,.gc-mini,.card:has(.tbl){background:#fff!important;backdrop-filter:none}}
+
 
 /* ===== BUTTON SYSTEM (based on the Total/Buy/Build segmented control) ===== */
 :root{--seg-track:rgba(120,120,128,.12);--seg-knob:0 1px 3px rgba(0,0,0,.1),0 0 0 .5px rgba(0,0,0,.05)}
