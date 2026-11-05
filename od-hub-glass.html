@@ -303,6 +303,15 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
 .sub-nav{background:var(--seg-track)!important;border:none!important;width:fit-content}
 .sub-nav-btn{flex:0 0 auto;white-space:nowrap;padding:0 16px}
 .gc-mini [style*="uppercase"],.kpi [style*="uppercase"],.card [style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important;font-size:12px!important;font-weight:500!important}
+
+.lp-g{display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px 110px;gap:12px;align-items:center}
+.lp-th{font-size:11px;font-weight:500;color:var(--tx3);padding:0 4px 8px;border-bottom:.5px solid var(--border)}
+.lp-tr{font-size:12.5px;padding:10px 4px;border-bottom:.5px solid var(--border);cursor:pointer;border-radius:8px}
+.lp-tr:last-child{border-bottom:none}
+.lp-tr:hover{background:rgba(120,120,128,.06)}
+.lp-av{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;margin-right:8px;flex-shrink:0}
+.lp-due{font-variant-numeric:tabular-nums}
+.lp-due small{display:block;font-size:11px;margin-top:1px}
 </style>
 </head>
 <body>
@@ -414,6 +423,16 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
       </div>
       <div class="sc-nav">Lihat Detail <span>→</span></div>
     </div>
+  </div>
+  <div class="card" id="lp-card" style="margin-top:14px">
+    <div class="chdr" style="align-items:center">
+      <div><div class="ct">OD Planner</div><div class="cs" id="lp-sub">Memuat task...</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="mp-seg" id="lp-seg"><button class="on" data-k="open" onclick="lpSet('open')">Open</button><button data-k="overdue" onclick="lpSet('overdue')">Overdue</button><button data-k="week" onclick="lpSet('week')">This Week</button></div>
+        <button class="btn" onclick="goTo('planner')">Open Planner →</button>
+      </div>
+    </div>
+    <div id="lp-body"></div>
   </div>
 </div>
 
@@ -2304,7 +2323,44 @@ async function loadPlanner(){
       PL=v.slice(1).filter(x=>x[ix('id')]).map(x=>({id:x[ix('id')]||'',task:x[ix('task')]||'',pic:x[ix('pic')]||'',kategori:x[ix('kategori')]||'',deadline:x[ix('deadline')]||'',status:x[ix('status')]||'To Do',prioritas:x[ix('prioritas')]||'Medium',catatan:x[ix('catatan')]||''}));
     }else PL=[];
   }catch(e){console.warn('Gagal memuat OD Planner:',e);}
+  plLoaded=true;
   renderPlanner();
+  renderLandingPlanner();
+}
+
+// LANDING: OD PLANNER SUMMARY
+let lpMode='open',plLoaded=false;
+function lpSet(k){lpMode=k;document.querySelectorAll('#lp-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));renderLandingPlanner();}
+function lpFmt(d){if(!d)return '—';const x=new Date(d+'T00:00:00');if(isNaN(x))return plEsc(d);return x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function lpColor(name){const c=['#E8197D','#007AFF','#34C759','#FF9500','#AF52DE','#5AC8FA','#FF3B30','#30B0C7'];let h=0;for(const ch of String(name))h=(h*31+ch.charCodeAt(0))>>>0;return c[h%c.length];}
+function renderLandingPlanner(){
+  const body=document.getElementById('lp-body'),sub=document.getElementById('lp-sub');if(!body)return;
+  if(!plLoaded){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">Memuat task...</div>';return;}
+  const open=PL.filter(t=>t.status!=='Done');
+  const dl=t=>plDaysLeft(t.deadline);
+  const over=open.filter(t=>(dl(t)??1)<0),week=open.filter(t=>{const d=dl(t);return d!=null&&d>=0&&d<=7;});
+  sub.textContent=open.length+' open · '+over.length+' overdue · '+week.length+' due in 7 days';
+  const segs=document.querySelectorAll('#lp-seg button');
+  if(segs.length){segs[0].textContent='Open '+open.length;segs[1].textContent='Overdue '+over.length;segs[2].textContent='This Week '+week.length;}
+  let list=lpMode==='overdue'?over:lpMode==='week'?week:open;
+  list=[...list].sort((a,b)=>(dl(a)??9999)-(dl(b)??9999));
+  if(!PL.length){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">Belum ada task di OD Planner.</div>';return;}
+  if(!list.length){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">'+(lpMode==='overdue'?'Tidak ada task yang lewat deadline.':lpMode==='week'?'Tidak ada task jatuh tempo 7 hari ke depan.':'Semua task sudah selesai.')+'</div>';return;}
+  const MAX=8,more=list.length-MAX;
+  const stPill=s=>s==='In Progress'?'<span class="pill pill-blue">In Progress</span>':'<span class="pill pill-grey">'+plEsc(s||'To Do')+'</span>';
+  body.innerHTML='<div class="lp-g lp-th"><div>Item</div><div>PIC</div><div>Due</div><div>Status</div></div>'+
+    list.slice(0,MAX).map(t=>{
+      const d=dl(t);
+      const rel=d==null?'':d<0?'Overdue '+(-d)+' day'+(-d>1?'s':''):d===0?'Due today':d===1?'Tomorrow':'In '+d+' days';
+      const col=d==null?'var(--tx3)':d<0?'#D70015':d<=3?'#C93400':'var(--tx3)';
+      const pic=t.pic||'(No PIC)';
+      return '<div class="lp-g lp-tr" onclick="goTo(\'planner\')">'+
+        '<div style="font-weight:500;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+plEsc(t.task)+'">'+plEsc(t.task)+(t.kategori?'<span style="color:var(--tx3);font-weight:400"> · '+plEsc(t.kategori)+'</span>':'')+'</div>'+
+        '<div style="display:flex;align-items:center;min-width:0"><span class="lp-av" style="background:'+lpColor(pic)+'">'+plEsc(pic.trim().charAt(0).toUpperCase())+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+plEsc(pic)+'</span></div>'+
+        '<div class="lp-due">'+lpFmt(t.deadline)+(rel?'<small style="color:'+col+'">'+rel+'</small>':'')+'</div>'+
+        '<div>'+stPill(t.status)+'</div></div>';
+    }).join('')+
+    (more>0?'<div style="text-align:center;padding-top:10px"><a class="drill-btn" onclick="goTo(\'planner\')">+'+more+' more in OD Planner →</a></div>':'');
 }
 function plDaysLeft(dl){if(!dl)return null;const d=new Date(dl+'T00:00:00');if(isNaN(d))return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/864e5);}
 function renderPlanner(){
@@ -2587,6 +2643,7 @@ function mpToggleDetail(){const d=document.getElementById('mp-detail'),o=d.style
 // INIT
 document.addEventListener('DOMContentLoaded',async function(){
   renderLanding(); // render empty state first
+  renderLandingPlanner();loadPlanner().catch(console.error);
   document.getElementById('badge').textContent='Memuat data...';
   try{
     D=await fetchAllData();
