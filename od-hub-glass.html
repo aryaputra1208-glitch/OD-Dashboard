@@ -263,6 +263,46 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 @media (prefers-reduced-transparency:reduce){
  body::before{display:none}
  .card,.kpi,.mkpi,.mp-k,.gc-mini,.card:has(.tbl){background:#fff!important;backdrop-filter:none}}
+
+/* ===== BUTTON SYSTEM (based on the Total/Buy/Build segmented control) ===== */
+:root{--seg-track:rgba(120,120,128,.12);--seg-knob:0 1px 3px rgba(0,0,0,.1),0 0 0 .5px rgba(0,0,0,.05)}
+.btn,select.tf{height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;border:none!important;border-radius:8px;
+ background:#fff;color:var(--tx);font:500 12px/1 var(--f);box-shadow:var(--seg-knob);cursor:pointer;
+ transition:box-shadow .15s,transform .1s,background .15s,filter .15s}
+.btn:hover,select.tf:hover{background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)}
+.btn:active{transform:scale(.97)}
+.btn-pink{background:var(--accent)!important;color:#fff!important;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn-pink:hover{filter:brightness(1.06);transform:none;box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 35%,transparent),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn:disabled,.btn[disabled]{opacity:.5;cursor:default;transform:none}
+select.tf{-webkit-appearance:none;appearance:none;padding-right:28px;
+ background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center}
+/* groups of controls sit in the same grey track as the segmented control */
+.topbar>div:nth-child(2),.filter-bar{background:var(--seg-track);border-radius:10px;padding:2px;gap:2px!important;align-self:center}
+.topbar>div:nth-child(2){margin-left:16px;padding:2px!important}
+.filter-bar{width:fit-content;max-width:100%}
+.topbar>div:nth-child(2) select.tf,.filter-bar select.tf,.filter-bar .btn{height:28px;box-shadow:none;background-color:transparent}
+.topbar>div:nth-child(2) select.tf:hover,.filter-bar select.tf:hover,.filter-bar .btn:hover{background-color:rgba(255,255,255,.7);box-shadow:var(--seg-knob)}
+.filter-bar input.tf{height:28px;border:none;border-radius:8px;background:rgba(255,255,255,.7)}
+.mp-seg,.sub-nav{background:var(--seg-track)}
+.sub-nav-btn,.mp-seg button{height:28px;font-weight:500;transition:background .15s,box-shadow .15s}
+.sub-nav-btn:hover:not(.active),.mp-seg button:hover:not(.on){background:rgba(255,255,255,.45)}
+/* text fields: same height and radius, inset look */
+input.tf,input[type=date].tf,input[type=number].tf,textarea.tf{height:30px;border:none!important;border-radius:8px;padding:0 10px;
+ background:var(--seg-track)!important;color:var(--tx);font:400 12px var(--f)}
+textarea.tf{height:auto;padding:8px 10px}
+input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+/* destructive */
+#trk-m-clear{color:#D70015!important;background:#fff}
+/* export menu items */
+#export-menu{padding:4px}
+#export-menu button{border-radius:7px;padding:8px 10px;font-size:12px;display:flex;align-items:center;gap:8px}
+#export-menu button:hover{background:var(--accent);color:#fff}
+/* status badge as a pill in the same family */
+.badge{height:24px;display:inline-flex;align-items:center;border:none;box-shadow:var(--seg-knob);background:#fff}
+
+.sub-nav{background:var(--seg-track)!important;border:none!important;width:fit-content}
+.sub-nav-btn{flex:0 0 auto;white-space:nowrap;padding:0 16px}
+.gc-mini [style*="uppercase"],.kpi [style*="uppercase"],.card [style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:0!important;font-size:12px!important;font-weight:500!important}
 </style>
 </head>
 <body>
@@ -508,8 +548,8 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px" id="jd-weekly-kpis"></div>
-    <canvas id="jd-weekly-chart" style="display:block;width:100%;height:160px;margin-bottom:14px"></canvas>
-    <table class="tbl">
+    <canvas id="jd-weekly-chart" style="display:block;width:100%;height:220px"></canvas>
+    <table class="tbl" style="display:none">
       <thead><tr><th>Minggu</th><th style="text-align:right">Ditambahkan</th><th style="text-align:right">Kumulatif</th><th style="text-align:right">% Dari Target</th></tr></thead>
       <tbody id="jd-weekly-tbody"></tbody>
     </table>
@@ -562,7 +602,7 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
       <div style="font-size:11px;color:var(--tx3)" id="pl-sub">Task list tim OD & progres approval FPTK</div>
     </div>
   </div>
-  <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--surface);border:.5px solid var(--border);border-radius:var(--rs);padding:4px;width:fit-content">
+  <div class="sub-nav" style="display:flex;margin-bottom:14px">
     <button class="sub-nav-btn active" id="pl-tab-task" onclick="switchPlannerTab('task')">Task Planner</button>
     <button class="sub-nav-btn" id="pl-tab-tracker" onclick="switchPlannerTab('tracker')">FPTK Tracker</button>
   </div>
@@ -1871,7 +1911,7 @@ async function renderJDWeekly(){
   // Chart
   const canvas=document.getElementById('jd-weekly-chart');
   if(canvas&&rows.length>0){
-    const dpr=window.devicePixelRatio||1;const W=Math.max(canvas.parentElement?canvas.parentElement.offsetWidth:0,400);const H=160;
+    const dpr=window.devicePixelRatio||1;const W=Math.max(canvas.parentElement?canvas.parentElement.offsetWidth:0,400);const H=220;
     canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
     const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
     const PAD={t:20,r:50,b:36,l:44};const CW=W-PAD.l-PAD.r,CH=H-PAD.t-PAD.b;
@@ -1880,7 +1920,7 @@ async function renderJDWeekly(){
     [Math.round(maxV/4),Math.round(maxV/2),Math.round(maxV*3/4),maxV].forEach(v=>{
       const y=yPx(v);ctx.strokeStyle='rgba(0,0,0,.06)';ctx.lineWidth=.5;ctx.setLineDash([3,3]);
       ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(W-PAD.r,y);ctx.stroke();ctx.setLineDash([]);
-      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='10px system-ui';ctx.textAlign='right';ctx.fillText(v,PAD.l-4,y+3.5);
+      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='10px Inter,system-ui';ctx.textAlign='right';ctx.fillText(v,PAD.l-4,y+3.5);
     });
     ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=.5;
     ctx.beginPath();ctx.moveTo(PAD.l,PAD.t);ctx.lineTo(PAD.l,PAD.t+CH);ctx.stroke();
@@ -1893,16 +1933,18 @@ async function renderJDWeekly(){
       const isLast=i===pts.length-1;
       ctx.beginPath();ctx.arc(p.x,p.y,isLast?5:3.5,0,Math.PI*2);ctx.fillStyle='#1D9E75';ctx.fill();
       if(isLast){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
-      ctx.fillStyle=isLast?'#1D9E75':'rgba(0,0,0,.55)';ctx.font=(isLast?'bold ':'')+'10px system-ui';ctx.textAlign='center';
+      ctx.fillStyle=isLast?'#1D9E75':'rgba(0,0,0,.55)';ctx.font=(isLast?'bold ':'')+'10px Inter,system-ui';ctx.textAlign='center';
       ctx.fillText(rows[i].cum,p.x,p.y-10);
-      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='9px system-ui';
+      ctx.fillStyle='rgba(0,0,0,.4)';ctx.font='9px Inter,system-ui';
       const lbl=rows[i].label.length>10?rows[i].label.slice(0,10):rows[i].label;
       ctx.fillText(lbl,p.x,H-PAD.b+14);
     });
   }else if(canvas){
-    const ctx=canvas.getContext('2d');canvas.width=400;canvas.height=160;
-    ctx.fillStyle='rgba(0,0,0,.3)';ctx.font='12px system-ui';ctx.textAlign='center';
-    ctx.fillText('Belum ada data. Klik "+ Catat Minggu Ini" untuk mulai',200,80);}
+    const dpr=window.devicePixelRatio||1;const W=Math.max(canvas.parentElement?canvas.parentElement.offsetWidth:0,400),H=220;
+    canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
+    const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+    ctx.fillStyle='rgba(0,0,0,.35)';ctx.font='12px Inter,system-ui';ctx.textAlign='center';
+    ctx.fillText('Belum ada data. Klik "+ Catat Minggu Ini" untuk mulai',W/2,H/2);}
   // Table
   const tbody=document.getElementById('jd-weekly-tbody');
   if(tbody){
