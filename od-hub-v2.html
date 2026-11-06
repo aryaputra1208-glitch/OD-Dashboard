@@ -318,6 +318,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
 .summary-card:hover{box-shadow:inset 0 .5px 0 rgba(255,255,255,.7),0 16px 36px rgba(31,38,135,.12)}
 .sc-stat{border:none!important;box-shadow:none;background:rgba(255,255,255,.45)}
 .sc-badge{border:none}
+.cs:not(.keep){display:none}
 </style>
 </head>
 <body>
@@ -337,8 +338,8 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
 <div class="topbar">
   <div class="topbar-logo"><span class="logo">anteraja</span><span class="logo-sub">OD Hub</span></div>
   <div style="padding:0 16px;display:flex;align-items:center;gap:8px">
-    <select class="tf" id="fdiv" onchange="applyFilters()"><option value="">Semua Divisi</option></select>
-    <select class="tf" id="fbln" onchange="applyFilters()"><option value="0">Semua 2026</option></select>
+    <select class="tf" id="fdiv" onchange="applyFilters()"><option value="">All Divisions</option></select>
+    <select class="tf" id="fbln" onchange="applyFilters()"><option value="0">All 2026</option></select>
   </div>
   <div class="topbar-right">
     <span class="badge" id="badge">Loading...</span>
@@ -358,52 +359,47 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <div class="sidebar-section">Menu</div>
   <a class="nav-item active" id="nav-landing" onclick="goTo('landing')"><span class="nav-icon"><svg class="ic"><use href="#i-home"/></svg></span><span>Dashboard</span></a>
   <div class="sidebar-divider"></div>
-  <div class="sidebar-section">Modul</div>
-  <a class="nav-item" id="nav-mpp" onclick="goTo('mpp')"><span class="nav-icon"><svg class="ic"><use href="#i-clip"/></svg></span><span>MPP & Realisasi</span></a>
-  <a class="nav-item" id="nav-so" onclick="goTo('so')"><span class="nav-icon"><svg class="ic"><use href="#i-bldg"/></svg></span><span>Struktur Organisasi</span></a>
+  <div class="sidebar-section">Modules</div>
+  <a class="nav-item" id="nav-mpp" onclick="goTo('mpp')"><span class="nav-icon"><svg class="ic"><use href="#i-clip"/></svg></span><span>MPP & Fulfillment</span></a>
+  <a class="nav-item" id="nav-so" onclick="goTo('so')"><span class="nav-icon"><svg class="ic"><use href="#i-bldg"/></svg></span><span>Organization Structure</span></a>
   <a class="nav-item" id="nav-jd" onclick="goTo('jd')"><span class="nav-icon"><svg class="ic"><use href="#i-file"/></svg></span><span>Job Description</span></a>
   <a class="nav-item" id="nav-overlap" onclick="goTo('overlap')"><span class="nav-icon"><svg class="ic"><use href="#i-overlap"/></svg></span><span>Overlap Analysis</span></a>
   <a class="nav-item" id="nav-pm" onclick="goTo('pm')"><span class="nav-icon"><svg class="ic"><use href="#i-target"/></svg></span><span>Performance Management</span></a>
 <a class="nav-item" id="nav-planner" onclick="goTo('planner')"><span class="nav-icon"><svg class="ic"><use href="#i-tasks"/></svg></span><span>OD Planner</span></a>
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section">Info</div>
-  <div style="padding:10px 16px;font-size:10px;color:var(--tx3);line-height:1.6">
-    <div id="sidebar-gen">Data embedded</div>
-    <div style="margin-top:4px">Refresh Data untuk sync Google Sheets</div>
-  </div>
+  <div id="sidebar-gen" style="display:none"></div>
 </div>
 <div class="main"><div class="content-inner">
 
 <!-- LANDING -->
 <div class="page active" id="page-landing">
   <div>
-    <div style="font-size:20px;font-weight:700;color:var(--tx);margin-bottom:4px">Selamat Datang, OD</div>
-    <div style="font-size:12px;color:var(--tx3);margin-bottom:20px">Ringkasan status semua program OD Anteraja · <span id="landing-date"></span></div>
+    <div style="font-size:20px;font-weight:700;color:var(--tx);margin-bottom:4px">Welcome, OD</div>
+    <span id="landing-date" style="display:none"></span><div style="height:16px"></div>
   </div>
   <div class="summary-grid">
     <div class="summary-card mpp" onclick="goTo('mpp')">
       <div class="sc-deco"><svg class="ic-deco"><use href="#i-clip"/></svg></div>
       <div>
-        <div class="sc-badge"><span class="sc-badge-dot" style="background:#E8197D"></span>MPP & Realisasi</div>
+        <div class="sc-badge"><span class="sc-badge-dot" style="background:#E8197D"></span>MPP & Fulfillment</div>
         <div class="sc-title">Manpower Planning</div>
         <div class="sc-main" id="sc-mpp-val">-</div>
-        <div class="sc-sub" id="sc-mpp-sub">Memuat...</div>
+        <div class="sc-sub" id="sc-mpp-sub">Loading...</div>
         <div class="sc-bar"><div class="sc-bar-fill" id="sc-mpp-bar" style="background:#E8197D"></div></div>
         <div class="sc-stats" id="sc-mpp-stats"></div>
       </div>
-      <div class="sc-nav">Lihat Detail <span>→</span></div>
+      <div class="sc-nav">View Details <span>→</span></div>
     </div>
     <div class="summary-card so" onclick="goTo('so')">
       <div class="sc-deco"><svg class="ic-deco"><use href="#i-bldg"/></svg></div>
       <div>
-        <div class="sc-badge"><span class="sc-badge-dot" style="background:#1D9E75"></span>Struktur Organisasi</div>
+        <div class="sc-badge"><span class="sc-badge-dot" style="background:#1D9E75"></span>Organization Structure</div>
         <div class="sc-title">Organization Structure</div>
         <div class="sc-main" id="sc-so-val">-</div>
-        <div class="sc-sub" id="sc-so-sub">Memuat...</div>
+        <div class="sc-sub" id="sc-so-sub">Loading...</div>
         <div class="sc-bar"><div class="sc-bar-fill" id="sc-so-bar" style="background:#1D9E75"></div></div>
         <div class="sc-stats" id="sc-so-stats"></div>
       </div>
-      <div class="sc-nav">Lihat Detail <span>→</span></div>
+      <div class="sc-nav">View Details <span>→</span></div>
     </div>
     <div class="summary-card jd" onclick="goTo('jd')">
       <div class="sc-deco"><svg class="ic-deco"><use href="#i-file"/></svg></div>
@@ -411,11 +407,11 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
         <div class="sc-badge"><span class="sc-badge-dot" style="background:#3D9BE9"></span>Job Description</div>
         <div class="sc-title">JD Tracking</div>
         <div class="sc-main" id="sc-jd-val">-</div>
-        <div class="sc-sub" id="sc-jd-sub">Memuat...</div>
+        <div class="sc-sub" id="sc-jd-sub">Loading...</div>
         <div class="sc-bar"><div class="sc-bar-fill" id="sc-jd-bar" style="background:#3D9BE9"></div></div>
         <div class="sc-stats" id="sc-jd-stats"></div>
       </div>
-      <div class="sc-nav">Lihat Detail <span>→</span></div>
+      <div class="sc-nav">View Details <span>→</span></div>
     </div>
     <div class="summary-card pm" onclick="goTo('pm')">
       <div class="sc-deco"><svg class="ic-deco"><use href="#i-target"/></svg></div>
@@ -423,11 +419,11 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
         <div class="sc-badge"><span class="sc-badge-dot" style="background:#7C3AED"></span>Performance Management</div>
         <div class="sc-title">IPP & IPE Tracking</div>
         <div class="sc-main" id="sc-pm-val">-</div>
-        <div class="sc-sub" id="sc-pm-sub">Memuat...</div>
+        <div class="sc-sub" id="sc-pm-sub">Loading...</div>
         <div class="sc-bar"><div class="sc-bar-fill" id="sc-pm-bar" style="background:#7C3AED"></div></div>
         <div class="sc-stats" id="sc-pm-stats"></div>
       </div>
-      <div class="sc-nav">Lihat Detail <span>→</span></div>
+      <div class="sc-nav">View Details <span>→</span></div>
     </div>
   </div>
   <div class="card" id="lp-card" style="margin-top:14px">
@@ -447,7 +443,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:8px">
     <div>
       <div style="font-size:16px;font-weight:700;margin-bottom:2px" id="mp-title">MPP & Fulfillment 2026</div>
-      <div style="font-size:11px;color:var(--tx3)" id="mp-sub"></div>
+      <div style="display:none" id="mp-sub"></div>
     </div>
   </div>
 
@@ -470,7 +466,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
     </div>
   </div>
 
-  <div class="mp-sec">Which Divisions Have Unrealized Positions? <span style="font-weight:400;text-transform:none;letter-spacing:0">— click a division to see its positions</span></div>
+  <div class="mp-sec">Which Divisions Have Unrealized Positions?</div>
   <div class="card" style="margin-bottom:18px">
     <div class="mp-g mp-th"><div>Division</div><div style="text-align:right">Plan</div><div style="text-align:right">Fulfilled</div><div>Progress</div><div style="text-align:right">Unrealized</div><div style="text-align:right">Outside Plan</div></div>
     <div id="mp-divs"></div>
@@ -499,19 +495,18 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
 <div class="page" id="page-so">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:10px">
     <div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Struktur Organisasi</div>
-      <div style="font-size:11px;color:var(--tx3)">Status SO per divisi · 2026</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Organization Structure</div>
     </div>
-    <a class="btn btn-pink" href="so-generator.html" style="text-decoration:none">Buka SO Generator</a>
+    <a class="btn btn-pink" href="so-generator.html" style="text-decoration:none">Open SO Generator</a>
   </div>
   <div class="r2">
-    <div class="card"><div class="chdr"><div><div class="ct">Status SO per Divisi</div><div class="cs" id="so-sub"></div></div></div><div id="so-list"></div></div>
+    <div class="card"><div class="chdr"><div><div class="ct">SO Status by Division</div><div class="cs" id="so-sub"></div></div></div><div id="so-list"></div></div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="card">
-        <div class="chdr"><div class="ct">Ringkasan</div></div>
+        <div class="chdr"><div class="ct">Summary</div></div>
         <div id="so-summary"></div>
       </div>
-      <div class="card"><div class="chdr"><div class="ct">Progress Keseluruhan</div></div><div id="so-progress"></div></div>
+      <div class="card"><div class="chdr"><div class="ct">Overall Progress</div></div><div id="so-progress"></div></div>
     </div>
   </div>
 </div>
@@ -521,7 +516,6 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-size:16px;font-weight:700;margin-bottom:4px">Overlap Analysis</div>
-      <div style="font-size:11px;color:var(--tx3)">Overlapping responsibilities across roles &middot; updated automatically from JD Generator</div>
     </div>
     <a href="https://jd-generator.arya-putra1208.workers.dev/" target="_blank" class="btn btn-pink" style="text-decoration:none">Open JD Generator</a>
   </div>
@@ -547,7 +541,6 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:10px;flex-wrap:wrap">
     <div>
       <div style="font-size:16px;font-weight:700;margin-bottom:4px">Job Description</div>
-      <div style="font-size:11px;color:var(--tx3)">Tracking status JD per jabatan · 2026</div>
     </div>
     <a href="https://jd-generator.arya-putra1208.workers.dev/" target="_blank" class="btn btn-pink" style="text-decoration:none;display:flex;align-items:center;gap:6px">
       <svg class="ic" style="width:14px;height:14px"><use href="#i-file"/></svg>
@@ -561,36 +554,36 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <!-- Weekly Report (as-is) -->
   <div class="card" style="margin-bottom:14px">
     <div class="chdr">
-      <div><div class="ct">Weekly Progress Report</div><div class="cs">Progres kumulatif Job Description per minggu</div></div>
+      <div><div class="ct">Weekly Progress Report</div><div class="cs"></div></div>
       <div style="display:flex;gap:8px;align-items:center">
         <select class="tf" id="jd-weekly-filter" onchange="renderJDWeekly()">
-          <option value="8">8 Minggu Terakhir</option>
-          <option value="12">12 Minggu Terakhir</option>
-          <option value="24">24 Minggu Terakhir</option>
-          <option value="0">Semua Data</option>
+          <option value="8">Last 8 Weeks</option>
+          <option value="12">Last 12 Weeks</option>
+          <option value="24">Last 24 Weeks</option>
+          <option value="0">All Data</option>
         </select>
-        <button class="btn btn-pink" onclick="showAddWeeklyJD()">+ Catat Minggu Ini</button>
+        <button class="btn btn-pink" onclick="showAddWeeklyJD()">+ Log This Week</button>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px" id="jd-weekly-kpis"></div>
     <canvas id="jd-weekly-chart" style="display:block;width:100%;height:220px"></canvas>
     <table class="tbl" style="display:none">
-      <thead><tr><th>Minggu</th><th style="text-align:right">Ditambahkan</th><th style="text-align:right">Kumulatif</th><th style="text-align:right">% Dari Target</th></tr></thead>
+      <thead><tr><th>Week</th><th style="text-align:right">Added</th><th style="text-align:right">Cumulative</th><th style="text-align:right">% of Target</th></tr></thead>
       <tbody id="jd-weekly-tbody"></tbody>
     </table>
     <div id="jd-weekly-form" style="display:none;margin-top:14px;background:var(--bg);border-radius:var(--rs);padding:14px">
-      <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:10px">Catat Penambahan JD Minggu Ini</div>
+      <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:10px">Log JD Added This Week</div>
       <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
         <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Week</div>
           <select id="jd-week-num" class="tf"><option value="W1">W1</option><option value="W2">W2</option><option value="W3">W3</option><option value="W4">W4</option><option value="W5">W5</option></select></div>
-        <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Bulan</div>
-          <select id="jd-week-bulan" class="tf"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
-        <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Tahun</div>
+        <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Month</div>
+          <select id="jd-week-bulan" class="tf"><option value="Januari">January</option><option value="Februari">February</option><option value="Maret">March</option><option value="April">April</option><option value="Mei">May</option><option value="Juni">June</option><option value="Juli">July</option><option value="Agustus">August</option><option value="September">September</option><option value="Oktober">October</option><option value="November">November</option><option value="Desember">December</option></select></div>
+        <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Year</div>
           <select id="jd-week-tahun" class="tf"><option value="2026">2026</option><option value="2027">2027</option></select></div>
-        <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Jumlah</div>
+        <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Count</div>
           <input type="number" id="jd-week-count" placeholder="0" min="0" class="tf" style="width:80px;padding:6px 10px;border-radius:var(--rs);border:.5px solid var(--border);font-family:var(--f);font-size:11px;background:var(--surface)"></div>
-        <button class="btn btn-pink" id="jd-save-btn" onclick="saveWeeklyJD()">Simpan</button>
-        <button class="btn" onclick="hideAddWeeklyJD()">Batal</button>
+        <button class="btn btn-pink" id="jd-save-btn" onclick="saveWeeklyJD()">Save</button>
+        <button class="btn" onclick="hideAddWeeklyJD()">Cancel</button>
       </div>
       <div id="jd-save-status" style="margin-top:8px;font-size:11px;display:none"></div>
     </div>
@@ -599,7 +592,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <!-- Breakdown per Divisi -->
   <div class="card">
     <div class="chdr">
-      <div><div class="ct">Breakdown per Divisi</div><div class="cs">Diurutkan dari progress terendah</div></div>
+      <div><div class="ct">Breakdown by Division</div><div class="cs"></div></div>
       <div style="display:flex;gap:10px;font-size:10px;color:var(--tx3);align-items:center">
         <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--blue);margin-right:3px"></span>Completed</span>
         <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--green);margin-right:3px"></span>Signing</span>
@@ -609,8 +602,8 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
     </div>
     <!-- Header row -->
     <div style="display:grid;grid-template-columns:200px 1fr 60px;gap:12px;padding:6px 8px;background:var(--bg);border-radius:var(--rs);margin-bottom:6px">
-      <div style="font-size:10px;font-weight:600;color:var(--tx3)">DIVISI</div>
-      <div style="font-size:10px;font-weight:600;color:var(--tx3)">PROGRESS (aktual / target)</div>
+      <div style="font-size:10px;font-weight:600;color:var(--tx3)">Division</div>
+      <div style="font-size:10px;font-weight:600;color:var(--tx3)">Progress (actual / target)</div>
       <div style="font-size:10px;font-weight:600;color:var(--tx3);text-align:right">%</div>
     </div>
     <div id="jd-divisi-rows"></div>
@@ -624,7 +617,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-size:16px;font-weight:700;margin-bottom:2px">OD Planner</div>
-      <div style="font-size:11px;color:var(--tx3)" id="pl-sub">Task list tim OD & progres approval FPTK</div>
+      <div style="display:none" id="pl-sub"></div>
     </div>
   </div>
   <div class="sub-nav" style="display:flex;margin-bottom:14px">
@@ -634,28 +627,28 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
 
   <div id="pl-view-task">
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <select class="tf" id="pl-f-pic" onchange="renderPlanner()"><option value="">Semua Anggota</option></select>
-      <select class="tf" id="pl-f-status" onchange="renderPlanner()"><option value="open">Belum selesai</option><option value="">Semua Status</option><option>To Do</option><option>In Progress</option><option>Done</option></select>
-      <button class="btn btn-pink" onclick="plOpenForm()">+ Tambah Task</button>
+      <select class="tf" id="pl-f-pic" onchange="renderPlanner()"><option value="">All Members</option></select>
+      <select class="tf" id="pl-f-status" onchange="renderPlanner()"><option value="open">Open</option><option value="">All Status</option><option>To Do</option><option>In Progress</option><option>Done</option></select>
+      <button class="btn btn-pink" onclick="plOpenForm()">+ Add Task</button>
     </div></div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px" id="pl-kpi"></div>
   <div class="card" id="pl-form" style="display:none;margin-bottom:14px">
-    <div class="ct" style="margin-bottom:10px" id="pl-form-title">Tambah Task</div>
+    <div class="ct" style="margin-bottom:10px" id="pl-form-title">Add Task</div>
     <input type="hidden" id="pl-id">
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Task</div><input class="tf" id="pl-task" style="width:100%" placeholder="Contoh: Finalisasi SO divisi Finance"></div>
-      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">PIC</div><input class="tf" id="pl-pic" list="pl-pic-list" style="width:100%" placeholder="Nama sesuai tab Nama"><datalist id="pl-pic-list"></datalist></div>
-      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Kategori</div><input class="tf" id="pl-kat" list="pl-kat-list" style="width:100%" placeholder="MPP, SO, JD, PM..."><datalist id="pl-kat-list"><option>MPP</option><option>Struktur Organisasi</option><option>Job Description</option><option>Performance Management</option><option>Culture</option><option>Lainnya</option></datalist></div>
+      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Task</div><input class="tf" id="pl-task" style="width:100%" placeholder="e.g. Finalize Finance SO"></div>
+      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">PIC</div><input class="tf" id="pl-pic" list="pl-pic-list" style="width:100%" placeholder="Team member name"><datalist id="pl-pic-list"></datalist></div>
+      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Category</div><input class="tf" id="pl-kat" list="pl-kat-list" style="width:100%" placeholder="MPP, SO, JD, PM..."><datalist id="pl-kat-list"><option>MPP</option><option>Organization Structure</option><option>Job Description</option><option>Performance Management</option><option>Culture</option><option>Other</option></datalist></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:10px;margin-bottom:12px">
       <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Deadline</div><input type="date" class="tf" id="pl-deadline" style="width:100%"></div>
-      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Prioritas</div><select class="tf" id="pl-prio" style="width:100%"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Priority</div><select class="tf" id="pl-prio" style="width:100%"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
       <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Status</div><select class="tf" id="pl-status" style="width:100%"><option>To Do</option><option>In Progress</option><option>Done</option></select></div>
-      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Catatan</div><input class="tf" id="pl-note" style="width:100%" placeholder="Opsional"></div>
+      <div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Notes</div><input class="tf" id="pl-note" style="width:100%" placeholder="Optional"></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn btn-pink" id="pl-save-btn" onclick="plSave()">Simpan</button>
-      <button class="btn" onclick="plCloseForm()">Batal</button>
+      <button class="btn btn-pink" id="pl-save-btn" onclick="plSave()">Save</button>
+      <button class="btn" onclick="plCloseForm()">Cancel</button>
       <span id="pl-form-msg" style="font-size:11px;color:var(--tx3)"></span>
     </div>
   </div>
@@ -665,17 +658,17 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
 
   <div id="pl-view-tracker" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-      <div style="font-size:11px;color:var(--tx3)" id="trk-sub">Progres approval per FPTK</div>
+      <div style="visibility:hidden" id="trk-sub"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <select class="tf" id="trk-f-view" onchange="renderTracker()"><option value="aktif">Belum selesai</option><option value="selesai">Selesai</option><option value="">Semua</option></select>
-      <select class="tf" id="trk-f-stage" onchange="renderTracker()"><option value="">Semua Tahap</option><option value="0">Menunggu Approval OD</option><option value="1">Menunggu Approve DH</option><option value="2">Menunggu Approve VP HC</option></select>
-      <select class="tf" id="trk-f-div" onchange="renderTracker()"><option value="">Semua Divisi</option></select>
-      <select class="tf" id="trk-f-bln" onchange="renderTracker()"><option value="0">Semua Bulan</option></select>
+      <select class="tf" id="trk-f-view" onchange="renderTracker()"><option value="aktif">Open</option><option value="selesai">Completed</option><option value="">All</option></select>
+      <select class="tf" id="trk-f-stage" onchange="renderTracker()"><option value="">All Stages</option><option value="0">Awaiting OD Approval</option><option value="1">Awaiting DH Approval</option><option value="2">Awaiting VP HC Approval</option></select>
+      <select class="tf" id="trk-f-div" onchange="renderTracker()"><option value="">All Divisions</option></select>
+      <select class="tf" id="trk-f-bln" onchange="renderTracker()"><option value="0">All Months</option></select>
     </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px" id="trk-kpi"></div>
   <div class="card">
-    <div class="chdr"><div><div class="ct">Checklist Approval</div><div class="cs">Diurutkan dari yang paling lama tertahan · merah jika lebih dari <span id="trk-sla-lbl"></span> hari kerja di satu tahap</div></div></div>
+    <div class="chdr"><div><div class="ct">Checklist Approval</div><div class="cs"><span id="trk-sla-lbl"></span></div></div></div>
     <div id="trk-list"></div>
   </div>
 
@@ -687,11 +680,11 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
     <div>
       <div style="font-size:16px;font-weight:700;margin-bottom:2px">Performance Management</div>
-      <div style="font-size:11px;color:var(--tx3)" id="pm-header-sub">Tracking IPP & IPE · 2026</div>
+      <div style="display:none" id="pm-header-sub"></div>
     </div>
     <div style="display:flex;gap:8px">
-      <select class="tf" id="pm-filter-divisi" onchange="renderPM()"><option value="">Semua Divisi</option></select>
-      <select class="tf" id="pm-filter-level" onchange="renderPM()"><option value="">Semua Level</option></select>
+      <select class="tf" id="pm-filter-divisi" onchange="renderPM()"><option value="">All Divisions</option></select>
+      <select class="tf" id="pm-filter-level" onchange="renderPM()"><option value="">All Levels</option></select>
     </div>
   </div>
 
@@ -711,10 +704,10 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   </div>
 
   <!-- SECTION 3: PER DIVISI -->
-  <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Breakdown per Divisi</div>
+  <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Breakdown by Division</div>
   <div class="card" style="margin-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-size:11px;color:var(--tx3)">Diurutkan dari IPP terendah</div>
+      <div style="font-size:11px;color:var(--tx3)"></div>
       <div style="display:flex;gap:10px;font-size:10px;color:var(--tx3)">
         <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--green);margin-right:3px"></span>Approved</span>
         <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--amber);margin-right:3px"></span>Waiting</span>
@@ -723,7 +716,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
       </div>
     </div>
     <div style="display:grid;grid-template-columns:200px 1fr 1fr;gap:12px;padding:6px 8px;background:var(--bg);border-radius:6px;margin-bottom:6px">
-      <div style="font-size:10px;font-weight:600;color:var(--tx3)">DIVISI</div>
+      <div style="font-size:10px;font-weight:600;color:var(--tx3)">Division</div>
       <div style="font-size:10px;font-weight:600;color:var(--purple)">IPP</div>
       <div style="font-size:10px;font-weight:600;color:var(--blue)">IPE</div>
     </div>
@@ -734,19 +727,19 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <!-- REMINDER -->
   <div class="card">
     <div class="chdr">
-      <div><div class="ct">Reminder Karyawan</div><div class="cs" id="remind-sub"></div></div>
+      <div><div class="ct">Employee Reminder</div><div class="cs keep" id="remind-sub"></div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <select class="tf" id="remind-filter" onchange="renderReminder()"><option value="all">IPP & IPE</option><option value="ipp">IPP saja</option><option value="ipe">IPE saja</option></select>
+        <select class="tf" id="remind-filter" onchange="renderReminder()"><option value="all">IPP & IPE</option><option value="ipp">IPP only</option><option value="ipe">IPE only</option></select>
         <select class="tf" id="remind-bulan">
-          <option value="">Pilih Bulan...</option>
-          <option value="Januari 2026">Januari 2026</option><option value="Februari 2026">Februari 2026</option>
-          <option value="Maret 2026">Maret 2026</option><option value="April 2026">April 2026</option>
-          <option value="Mei 2026">Mei 2026</option><option value="Juni 2026">Juni 2026</option>
-          <option value="Juli 2026">Juli 2026</option><option value="Agustus 2026">Agustus 2026</option>
-          <option value="September 2026">September 2026</option><option value="Oktober 2026">Oktober 2026</option>
-          <option value="November 2026">November 2026</option><option value="Desember 2026">Desember 2026</option>
+          <option value="">Select Month...</option>
+          <option value="Januari 2026">January 2026</option><option value="Februari 2026">February 2026</option>
+          <option value="Maret 2026">March 2026</option><option value="April 2026">April 2026</option>
+          <option value="Mei 2026">May 2026</option><option value="Juni 2026">June 2026</option>
+          <option value="Juli 2026">July 2026</option><option value="Agustus 2026">August 2026</option>
+          <option value="September 2026">September 2026</option><option value="Oktober 2026">October 2026</option>
+          <option value="November 2026">November 2026</option><option value="Desember 2026">December 2026</option>
         </select>
-        <button class="btn btn-pink" onclick="sendBulkReminder()"><svg class="ic"><use href="#i-mail"/></svg> Kirim Reminder via PA</button>
+        <button class="btn btn-pink" onclick="sendBulkReminder()"><svg class="ic"><use href="#i-mail"/></svg> Send Reminder via PA</button>
       </div>
     </div>
     <div id="remind-list"></div>
@@ -764,7 +757,7 @@ let D=EMBEDDED;
 let FP=[];
 let currentPage='landing';
 let currentMPPTab='overview';
-const MF=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+const MF=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SLA_T=5;
 const JD_TOTAL_TARGET=552;
 
@@ -781,10 +774,10 @@ function mppBuild(div,mi){
   return Object.values(D.mpp_plan_build).reduce((s,p)=>s+(p[m]||0),0);}
 function mppPlan(div,mi){return mppBuy(div,mi)+mppBuild(div,mi);}
 function pillClass(s){const m={'Planned':'pill-pink','Replacement':'pill-amber','Unplanned':'pill-blue','Completed':'pill-blue','On Process':'pill-blue','Pending':'pill-grey','Buy':'pill-green','Build':'pill-purple','match':'pill-green','partial':'pill-amber','mismatch':'pill-red','unplanned':'pill-blue','replacement':'pill-amber','Approved':'pill-green','Waiting Approval':'pill-amber','Not Yet':'pill-grey','DRAFT':'pill-blue','Revise':'pill-red','REVISE':'pill-red','Signed All':'pill-green','Signed by User':'pill-pink','Sent to User':'pill-amber','Available':'pill-grey','Done':'pill-green','Signing':'pill-green','Review by User':'pill-pink','On Progress':'pill-amber','Not Started':'pill-grey'};return m[s]||'pill-grey';}
-function getF(){const div=document.getElementById('fdiv').value;const bln=parseInt(document.getElementById('fbln').value)||0;const mi=bln>0?bln-1:-1;const bLabel=bln>0?MF[bln-1]+' 2026':'Semua 2026';return{div,bln,mi,bLabel};}
+function getF(){const div=document.getElementById('fdiv').value;const bln=parseInt(document.getElementById('fbln').value)||0;const mi=bln>0?bln-1:-1;const bLabel=bln>0?MF[bln-1]+' 2026':'All 2026';return{div,bln,mi,bLabel};}
 function toggleExportMenu(){const m=document.getElementById('export-menu');m.style.display=m.style.display==='block'?'none':'block';}
 document.addEventListener('click',e=>{const m=document.getElementById('export-menu');if(m&&!e.target.closest('#export-btn'))m.style.display='none';});
-function exportCSV(){const h=['Posisi','Divisi','Level','Jml','Tgl Diajukan','SLA','PIC','Jenis','Buy/Build','Status'];const rows=FP.map(r=>[r.posisi,r.divisi,r.level,r.jml_approved,r.tgl_diajukan,r.sla||'',r.pic,r.planned,r.buy_build,r.status]);const csv=[h,...rows].map(r=>r.map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='MPP_FPTK.csv';a.click();}
+function exportCSV(){const h=['Position','Division','Level','Qty','Submitted','SLA','PIC','Type','Buy/Build','Status'];const rows=FP.map(r=>[r.posisi,r.divisi,r.level,r.jml_approved,r.tgl_diajukan,r.sla||'',r.pic,r.planned,r.buy_build,r.status]);const csv=[h,...rows].map(r=>r.map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='MPP_FPTK.csv';a.click();}
 
 // NAVIGATION
 // ─── ANALISIS OVERLAP ────────────────────────────────────────────────
@@ -1069,12 +1062,12 @@ function switchMPPTab(tab){currentMPPTab='overview';renderMPPPage();}
 function buildFilters(){
   const divs=[...new Set(D.fptk.map(r=>r.divisi).filter(Boolean))].sort();
   const fdiv=document.getElementById('fdiv');
-  fdiv.innerHTML='<option value="">Semua Divisi</option>'+divs.map(d=>`<option>${d}</option>`).join('');
+  fdiv.innerHTML='<option value="">All Divisions</option>'+divs.map(d=>`<option>${d}</option>`).join('');
   const fbln=document.getElementById('fbln');
-  fbln.innerHTML='<option value="0">Semua 2026</option>'+MF.map((m,i)=>`<option value="${i+1}">${m} 2026</option>`).join('');
+  fbln.innerHTML='<option value="0">All 2026</option>'+MF.map((m,i)=>`<option value="${i+1}">${m} 2026</option>`).join('');
   const jdDivs=[...new Set(D.jd.map(r=>r.divisi).filter(Boolean))].sort();
   const jdfd=document.getElementById('jd-filter-divisi');
-  if(jdfd)jdfd.innerHTML='<option value="">Semua Divisi</option>'+jdDivs.map(d=>`<option>${d}</option>`).join('');
+  if(jdfd)jdfd.innerHTML='<option value="">All Divisions</option>'+jdDivs.map(d=>`<option>${d}</option>`).join('');
 }
 function applyFilters(){
   const f=getF();FP=D.fptk.filter(r=>(!f.div||r.divisi===f.div)&&(f.bln===0||r.bulan===f.bln));
@@ -1085,11 +1078,11 @@ function applyFilters(){
 // LANDING
 function renderLanding(){
   const f=getF();
-  document.getElementById('landing-date').textContent='Data per '+D.generated;
+  document.getElementById('landing-date').textContent=D.generated;
   const mm=mppModel('',new Date().getMonth());
   const mT=mm.plan.total,planned=mm.ful.total,gap=mm.unrealized,ach=mm.ach.total;
   document.getElementById('sc-mpp-val').textContent=ach+'%';
-  document.getElementById('sc-mpp-sub').textContent='Achievement s/d '+MF[new Date().getMonth()];
+  document.getElementById('sc-mpp-sub').textContent='Achievement through '+MF[new Date().getMonth()];
   document.getElementById('sc-mpp-bar').style.width=Math.min(100,ach)+'%';
   document.getElementById('sc-mpp-stats').innerHTML=
     '<div class="sc-stat"><div class="sc-stat-val" style="color:#FF5CA8">'+mT+'</div><div class="sc-stat-lbl">Plan to Date</div></div>'+
@@ -1103,7 +1096,7 @@ function renderLanding(){
   const soAvail=so.filter(d=>!d.effective_status||d.effective_status==='Available').length;
   const soSignedPct=pc(soSA+soSU,so.length);
   document.getElementById('sc-so-val').textContent=soSignedPct+'%';
-  document.getElementById('sc-so-sub').textContent='Divisi sudah signed';
+  document.getElementById('sc-so-sub').textContent='Divisions signed';
   document.getElementById('sc-so-bar').style.width=soSignedPct+'%';
   document.getElementById('sc-so-stats').innerHTML=
     '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--green)">'+soSA+'</div><div class="sc-stat-lbl">Signed All</div></div>'+
@@ -1117,13 +1110,13 @@ function renderLanding(){
   const jdProg=jd.filter(r=>r.status==='On Progress').length;
   const jdPct=pc(jdComp,JD_TOTAL_TARGET);
   document.getElementById('sc-jd-val').textContent=jdPct+'%';
-  document.getElementById('sc-jd-sub').textContent='Completion rate dari '+JD_TOTAL_TARGET+' jabatan';
+  document.getElementById('sc-jd-sub').textContent='Completion rate of '+JD_TOTAL_TARGET+' positions';
   document.getElementById('sc-jd-bar').style.width=Math.min(100,jdPct)+'%';
   document.getElementById('sc-jd-stats').innerHTML=
-    '<div class="sc-stat"><div class="sc-stat-val" style="color:#3D9BE9">'+jdComp+'</div><div class="sc-stat-lbl">Selesai</div></div>'+
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:#3D9BE9">'+jdComp+'</div><div class="sc-stat-lbl">Completed</div></div>'+
     '<div class="sc-stat"><div class="sc-stat-val" style="color:#FF5CA8">'+jdRev+'</div><div class="sc-stat-lbl">Review</div></div>'+
     '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--amber)">'+jdProg+'</div><div class="sc-stat-lbl">On Progress</div></div>'+
-    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+(JD_TOTAL_TARGET-(jdComp+jdRev+jdProg))+'</div><div class="sc-stat-lbl">Belum Mulai</div></div>';
+    '<div class="sc-stat"><div class="sc-stat-val" style="color:var(--tx3)">'+(JD_TOTAL_TARGET-(jdComp+jdRev+jdProg))+'</div><div class="sc-stat-lbl">Not Started</div></div>';
   const kpi=D.kpi||[];
   const ippA=kpi.filter(r=>r.ipp==='Approved').length;
   const ipeA=kpi.filter(r=>r.ipe==='Approved').length;
@@ -1190,7 +1183,7 @@ function renderMPPCard(f){
   if(el('mpp-bb-build'))el('mpp-bb-build').style.width=buildPct+'%';
   if(el('mpp-bb-buy-pct'))el('mpp-bb-buy-pct').textContent='Buy '+buyPct+'%';
   if(el('mpp-bb-build-pct'))el('mpp-bb-build-pct').textContent='Build '+buildPct+'%';
-  const ins=el('impp');if(ins){ins.className='ins '+(gap>5?'warn':'ok');ins.textContent=f.bLabel+': Planned '+plannedAppr+' dari '+mT+' MPP Plan. '+(gap>0?'Gap '+gap+' posisi belum terpenuhi.':'Target terpenuhi.');}
+  const ins=el('impp');if(ins){ins.className='ins '+(gap>5?'warn':'ok');ins.textContent=f.bLabel+': Planned '+plannedAppr+' of '+mT+' MPP Plan. '+(gap>0?'Gap: '+gap+' positions unfilled.':'Target met.');}
 }
 function renderFPTKCard(f){
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
@@ -1237,9 +1230,9 @@ function renderKPIs(f){
   }
   const _kpirow=document.getElementById('kpi-row');if(_kpirow)_kpirow.innerHTML=
     kpi('MPP Plan '+f.bLabel,fmt(mT),'Buy '+mppBuy(f.div,f.mi)+' / Build '+mppBuild(f.div,f.mi),100,'rgba(255,255,255,0.97)')+
-    kpi('Planned FPTK',fmt(plannedAppr),pc(plannedAppr,mT)+'% dari MPP',pc(plannedAppr,mT),'var(--pink)')+
-    kpi('Gap vs MPP',fmt(gap),gap>0?'Posisi belum tercapai':'Terpenuhi',Math.max(0,100-pc(plannedAppr,mT)),gap>0?'var(--amber)':'var(--green)')+
-    kpi('Buy/Build',fB+' Buy/'+fBl+' Build','semua kategori',pc(fB,fB+fBl||1),'var(--green)')+
+    kpi('Planned FPTK',fmt(plannedAppr),pc(plannedAppr,mT)+'% of MPP',pc(plannedAppr,mT),'var(--pink)')+
+    kpi('Gap vs MPP',fmt(gap),gap>0?'Positions unfilled':'Met',Math.max(0,100-pc(plannedAppr,mT)),gap>0?'var(--amber)':'var(--green)')+
+    kpi('Buy/Build',fB+' Buy/'+fBl+' Build','all types',pc(fB,fB+fBl||1),'var(--green)')+
     kpi('Rata-Rata SLA',slaAvg!=null?slaAvg+' hr':'-','Target '+SLA_T+' hr',slaAvg?Math.min(100,slaAvg/SLA_T*100):0,slaAvg&&slaAvg>SLA_T?'var(--amber)':'var(--green)');
 }
 function renderMPPChart(f){
@@ -1290,16 +1283,16 @@ function renderMPPChart(f){
   document.body.appendChild(tip);
   canvas.onmousemove=e=>{const rect=canvas.getBoundingClientRect();const mx=(e.clientX-rect.left)*(W/rect.width);const hit=canvas._hits&&canvas._hits.find(b=>mx>=b.x&&mx<=b.x+b.w);if(hit){const d=hit.d,tot=d.planned+d.repl+d.unpl,gap=Math.max(0,d.plan-d.planned);tip.innerHTML='<b>'+d.m+' 2026</b><br>MPP Plan: '+d.plan+'<br><span style="color:#F9A8D4">Planned: '+d.planned+'</span><br>'+(d.repl>0?'<span style="color:#FCD34D">Replacement: '+d.repl+'</span><br>':'')+(d.unpl>0?'<span style="color:#93C5FD">Unplanned: '+d.unpl+'</span><br>':'')+'──────<br>Total FPTK: '+tot+'<br>Gap: <b>'+gap+'</b>';tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-20)+'px';}else tip.style.display='none';};
   canvas.onmouseleave=()=>{if(tip)tip.style.display='none';};
-  document.getElementById('c1s').textContent='Jan–Des 2026 · '+(f.div||'Semua Divisi');
+  document.getElementById('c1s').textContent='Jan–Dec 2026 · '+(f.div||'All Divisions');
   const totalUnpl=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
   const totalPlanned=all.filter(r=>f.bln===0||r.bulan===f.bln).filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);
-  document.getElementById('glbl').textContent=mg>0?'Gap terbesar: '+MF[mgi]+' ('+mg+' posisi)':'Semua bulan sesuai plan';
+  document.getElementById('glbl').textContent=mg>0?'Largest gap: '+MF[mgi]+' ('+mg+' positions)':'All months on plan';
   const ins=document.getElementById('impp');ins.className='ins '+(totalUnpl>3?'warn':'info');
-  ins.textContent=f.bLabel+': '+totalPlanned+' Planned, '+totalUnpl+' Unplanned. '+(mg>0?'Gap terbesar '+MF[mgi]+' ('+mg+' posisi).':'Target terpenuhi.');
+  ins.textContent=f.bLabel+': '+totalPlanned+' Planned, '+totalUnpl+' Unplanned. '+(mg>0?'Largest gap '+MF[mgi]+' ('+mg+' positions).':'Target met.');
   const ytdAll=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
   const totPlan=mppPlan(f.div,-1);const totFPTKPlanned=ytdAll.filter(r=>r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||1),0);const totUnpl=ytdAll.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
   const ys=document.getElementById('ytd-sub'),yst=document.getElementById('ytd-stats');
-  if(ys)ys.textContent='Semua bulan · '+(f.div||'Semua Divisi');
+  if(ys)ys.textContent='All months · '+(f.div||'All Divisions');
   if(yst)yst.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
     '<div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700">'+totPlan+'</div><div style="font-size:10px;color:var(--tx3)">MPP Plan YTD</div></div>'+
     '<div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--pink)">'+totFPTKPlanned+'</div><div style="font-size:10px;color:var(--tx3)">Planned FPTK</div></div>'+
@@ -1312,7 +1305,7 @@ function renderHC(f){
   const byMonth=MF.map((_,i)=>all.filter(r=>r.bulan===i+1).reduce((s,r)=>s+(r.jml_approved||0),0));
   const total=byMonth.reduce((a,b)=>a+b,0);
   const hnumEl=document.getElementById('hnum');if(hnumEl)hnumEl.textContent=total;
-  const hcsEl=document.getElementById('hcs');if(hcsEl)hcsEl.textContent='MP approved per bulan · '+(f.div||'Semua Divisi');
+  const hcsEl=document.getElementById('hcs');if(hcsEl)hcsEl.textContent='MP approved per month · '+(f.div||'All Divisions');
   const _ihc=document.getElementById('ihc');if(_ihc)_ihc.textContent='Total MP approved YTD: '+total+'.';
   const canvas=document.getElementById('hspk');
   if(!canvas||!canvas.getContext)return;
@@ -1382,7 +1375,7 @@ function renderPVU(f){
   const un=FP.filter(r=>r.planned==='Unplanned').reduce((s,r)=>s+(r.jml_approved||1),0);
   const tot=pl+rp+un||1;
   const all=f.div?D.fptk.filter(r=>r.divisi===f.div):D.fptk;
-  const pvusEl=document.getElementById('pvus');if(pvusEl)pvusEl.textContent=f.bLabel+' · '+(f.div||'Semua Divisi');
+  const pvusEl=document.getElementById('pvus');if(pvusEl)pvusEl.textContent=f.bLabel+' · '+(f.div||'All Divisions');
   const divs=[...new Set(all.map(r=>r.divisi))].sort();
   let rows='';
   divs.forEach(d=>{
@@ -1475,7 +1468,7 @@ function renderMgmt(f){
   document.getElementById('mkpis').innerHTML=
     '<div class="mkpi"><div class="mki"><svg class="ic"><use href="#i-chart"/></svg></div><div class="mkv">'+mT+'</div><div class="mkl">Total MPP Plan</div><div class="mkt">Buy '+mppBuy(f.div,f.mi)+' / Build '+mppBuild(f.div,f.mi)+'</div></div>'+
     '<div class="mkpi"><div class="mki"><svg class="ic"><use href="#i-clip"/></svg></div><div class="mkv">'+appr+'</div><div class="mkl">Total FPTK</div><div class="mkt"><span style="color:var(--pink)">'+plannedAppr+' Planned</span> / '+_repl+' Repl / '+_unpl+' Unpl</div></div>'+
-    '<div class="mkpi"><div class="mki"><svg class="ic"><use href="#i-alert"/></svg></div><div class="mkv '+(gap>0?'ca':'cg')+'">'+gap+'</div><div class="mkl">Gap vs MPP</div><div class="mkt">'+(gap>0?'Belum tercapai':'Terpenuhi')+' · '+pc(plannedAppr,mT)+'% achievement</div></div>'+
+    '<div class="mkpi"><div class="mki"><svg class="ic"><use href="#i-alert"/></svg></div><div class="mkv '+(gap>0?'ca':'cg')+'">'+gap+'</div><div class="mkl">Gap vs MPP</div><div class="mkt">'+(gap>0?'Not met':'Met')+' · '+pc(plannedAppr,mT)+'% achievement</div></div>'+
     '<div class="mkpi"><div class="mki"><svg class="ic"><use href="#i-clock"/></svg></div><div class="mkv '+(slaAvg&&slaAvg>SLA_T?'ca':'cg')+'">'+(slaAvg?slaAvg+' hr':'-')+'</div><div class="mkl">Rata-Rata SLA</div><div class="mkt">Target '+SLA_T+' hr</div></div>';
   document.getElementById('mgd').innerHTML=(f.div?[f.div]:divs).map(d=>{
     const p=mppPlan(d,f.mi),r=FP.filter(x=>x.divisi===d).reduce((s,x)=>s+(x.jml_approved||1),0);
@@ -1485,9 +1478,9 @@ function renderMgmt(f){
   const hl=[];const mm=D.match_results.filter(r=>r.match_status==='mismatch'&&(f.bln===0||r.bulan===f.bln)).length;
   if(mm>0)hl.push({c:'warn',t:mm+' FPTK Planned mismatch MPP'});
   if(slaAvg&&slaAvg>SLA_T)hl.push({c:'warn',t:'SLA rata-rata '+slaAvg+' hr melewati target '+SLA_T+' hr'});
-  if(!hl.length)hl.push({c:'ok',t:'Semua indikator normal'});
+  if(!hl.length)hl.push({c:'ok',t:'All indicators normal'});
   document.getElementById('mghl').innerHTML=hl.map(h=>'<div class="ins '+h.c+'" style="margin-bottom:6px">'+h.t+'</div>').join('');
-  document.getElementById('mgbbs').textContent='YTD 2026 · per Kategori';
+  document.getElementById('mgbbs').textContent='YTD 2026 · by Type';
   const totPB=mppBuy(f.div,-1),totPBl=mppBuild(f.div,-1);const fAll=D.fptk;
   function bbRow(label,col,rows){const buy=rows.filter(r=>r.buy_build==='Buy').reduce((s,r)=>s+(r.jml_approved||1),0);const bld=rows.filter(r=>r.buy_build==='Build').reduce((s,r)=>s+(r.jml_approved||1),0);const tot=buy+bld;return '<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:600;color:'+col+';margin-bottom:4px">'+label+' ('+tot+')</div><div class="pb"><div style="display:flex;height:6px"><div style="width:'+pc(buy,tot||1)+'%;background:var(--green);border-radius:2px 0 0 2px"></div><div style="width:'+pc(bld,tot||1)+'%;background:var(--purple);border-radius:0 2px 2px 0"></div></div></div></div>';}
   document.getElementById('mgbb').innerHTML='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px"><span>MPP Plan Buy</span><span>MPP Plan Build</span></div><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:4px"><span style="color:var(--green)">'+totPB+'</span><span style="color:var(--purple)">'+totPBl+'</span></div><div class="pb"><div style="display:flex;height:6px"><div style="width:'+pc(totPB,totPB+totPBl||1)+'%;background:var(--green);border-radius:2px 0 0 2px"></div><div style="width:'+pc(totPBl,totPB+totPBl||1)+'%;background:var(--purple);border-radius:0 2px 2px 0"></div></div></div></div>'+bbRow('Planned','var(--pink)',fAll.filter(r=>r.planned==='Planned'))+bbRow('Replacement','var(--amber)',fAll.filter(r=>r.planned==='Replacement'))+bbRow('Unplanned','var(--blue)',fAll.filter(r=>r.planned==='Unplanned'));
@@ -1500,13 +1493,13 @@ function renderSO(){
   const so=D.so||[];
   const COL={'Signed All':'#1D9E75','Signed by User':'var(--pink)','Sent to User':'var(--amber)','Available':'#888'};
   const BG={'Signed All':'rgba(48,209,88,.16)','Signed by User':'rgba(255,55,145,.16)','Sent to User':'rgba(255,159,10,.16)','Available':'rgba(255,255,255,.08)'};
-  document.getElementById('so-sub').textContent=so.length+' divisi · 2026';
+  document.getElementById('so-sub').textContent=so.length+' divisions · 2026';
   document.getElementById('so-list').innerHTML=so.map(d=>{
     const col=COL[d.effective_status]||'#888',bg=BG[d.effective_status]||'rgba(255,255,255,.08)';
     const url=SO_GENERATOR_URL+'?div='+encodeURIComponent(d.divisi);
     return '<div class="so-row"><div><div style="font-size:12px;font-weight:500">'+d.divisi+'</div></div>'+
       '<div style="display:flex;align-items:center;gap:8px"><span class="pill" style="background:'+bg+';color:'+col+'">'+(d.effective_status||'-')+'</span>'+
-      '<a href="'+url+'" title="Buka struktur divisi ini di SO Generator" style="font-size:11px;color:var(--accent);cursor:pointer;white-space:nowrap">Buka &rsaquo;</a></div></div>';
+      '<a href="'+url+'" title="Open this division in SO Generator" style="font-size:11px;color:var(--accent);cursor:pointer;white-space:nowrap">Open &rsaquo;</a></div></div>';
   }).join('');
   const tot=so.length;
   const counts={'Signed All':so.filter(d=>d.effective_status==='Signed All').length,'Signed by User':so.filter(d=>d.effective_status==='Signed by User').length,'Sent to User':so.filter(d=>d.effective_status==='Sent to User').length,'Available':so.filter(d=>!d.effective_status||d.effective_status==='Available').length};
@@ -1514,7 +1507,7 @@ function renderSO(){
   document.getElementById('so-summary').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
     [['Signed All','linear-gradient(135deg,rgba(48,209,88,.2),rgba(48,209,88,.1))','#63E6A4'],['Signed by User','linear-gradient(135deg,rgba(255,55,145,.22),rgba(255,55,145,.12))','#FF8CC6'],['Sent to User','linear-gradient(135deg,rgba(255,159,10,.2),rgba(255,159,10,.1))','#FFC66B'],['Available','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,0.6)']].map(function(item){
       var l=item[0],grad=item[1],col=item[2],v=counts[l]||0;
-      return '<div class="gc-mini" style="background:'+grad+';text-align:center"><div style="font-size:28px;font-weight:700;color:'+col+'">'+v+'</div><div style="font-size:10px;color:'+col+';font-weight:600;margin-top:2px">'+l+'</div><div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px">'+pc(v,tot)+'% dari total</div></div>';
+      return '<div class="gc-mini" style="background:'+grad+';text-align:center"><div style="font-size:28px;font-weight:700;color:'+col+'">'+v+'</div><div style="font-size:10px;color:'+col+';font-weight:600;margin-top:2px">'+l+'</div><div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px">'+pc(v,tot)+'% of total</div></div>';
     }).join('')+'</div>';
   const signedPct=pc(counts['Signed All']+counts['Signed by User'],tot);
   document.getElementById('so-progress').innerHTML=
@@ -1524,7 +1517,7 @@ function renderSO(){
     '<div style="width:'+pc(counts['Signed by User'],tot)+'%;background:var(--pink)"></div>'+
     '<div style="width:'+pc(counts['Sent to User'],tot)+'%;background:var(--amber)"></div>'+
     '</div></div>'+
-    '<div class="ins '+(counts['Signed All']===tot?'ok':'warn')+'">'+(counts['Signed All']===tot?'Semua divisi sudah Signed All!':(tot-counts['Signed All'])+' divisi belum Signed All. Target: 100% Signed All.')+'</div>';}
+    '<div class="ins '+(counts['Signed All']===tot?'ok':'warn')+'">'+(counts['Signed All']===tot?'All divisions are Signed All!':(tot-counts['Signed All'])+' divisions not yet Signed All. Target: 100% Signed All.')+'</div>';}
 
 // JD
 async function renderJD(){
@@ -1559,7 +1552,7 @@ async function renderJD(){
   // Update divisi filter
   const divs=[...new Set(jd.map(r=>r.divisi).filter(Boolean))].sort();
   const jdfd=document.getElementById('jd-filter-divisi');
-  if(jdfd){jdfd.innerHTML='<option value="">Semua Divisi</option>'+divs.map(d=>'<option>'+d+'</option>').join('');}
+  if(jdfd){jdfd.innerHTML='<option value="">All Divisions</option>'+divs.map(d=>'<option>'+d+'</option>').join('');}
 
   // KPI cards - fetch target total from JD Target sheet first
   fetchJDTarget().then(function(targets){
@@ -1575,7 +1568,7 @@ async function renderJD(){
         '</div>';
       }
       kpiEl.innerHTML=
-        gc('Total Target',totalTarget,divs.length+' divisi tracked','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,1)')+
+        gc('Total Target',totalTarget,divs.length+' divisions tracked','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,1)')+
         gc('Completed',completed,pc(completed,totalTarget)+'%','linear-gradient(135deg,rgba(10,132,255,.22),rgba(10,132,255,.12))','#86C8FF')+
         gc('Signing',signing,pc(signing,totalTarget)+'%','linear-gradient(135deg,rgba(48,209,88,.2),rgba(48,209,88,.1))','#63E6A4')+
         gc('Review By User',review,pc(review,totalTarget)+'%','linear-gradient(135deg,rgba(255,55,145,.22),rgba(255,55,145,.12))','#FF8CC6')+
@@ -1596,7 +1589,7 @@ async function renderJD(){
         '</div>';
       }
       kpiEl.innerHTML=
-        gc2('Total Job Description',JD_TOTAL_TARGET,divs.length+' divisi','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,1)')+
+        gc2('Total Job Description',JD_TOTAL_TARGET,divs.length+' divisions','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,1)')+
         gc2('Completed',completed,pc(completed,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,rgba(10,132,255,.22),rgba(10,132,255,.12))','#86C8FF')+
         gc2('Signing',signing,pc(signing,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,rgba(48,209,88,.2),rgba(48,209,88,.1))','#63E6A4')+
         gc2('Review By User',review,pc(review,JD_TOTAL_TARGET)+'%','linear-gradient(135deg,rgba(255,55,145,.22),rgba(255,55,145,.12))','#FF8CC6')+
@@ -1624,7 +1617,7 @@ function renderPM(){
 
   // Update subtitle
   const sub=document.getElementById('pm-header-sub');
-  if(sub)sub.textContent='Tracking IPP & IPE · '+kpi.length+' karyawan · 2026';
+  if(sub)sub.textContent='Tracking IPP & IPE · '+kpi.length+' employees · 2026';
 
   // IPP / IPE counts
   const ippA=kpi.filter(r=>r.ipp==='Approved').length;
@@ -1695,7 +1688,7 @@ function renderPM(){
       const border=i<levels.length-1?'border-bottom:.5px solid var(--border)':'';
       return '<div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:16px;padding:12px 0;'+border+'">'+
         '<div><div style="font-size:12px;font-weight:500;color:var(--tx)">'+l+'</div>'+
-          '<div style="font-size:10px;color:var(--tx3);margin-top:2px">'+n+' orang</div></div>'+
+          '<div style="font-size:10px;color:var(--tx3);margin-top:2px">'+n+' people</div></div>'+
         '<div>'+
           '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px">'+
             '<span>'+iA+' Approved ('+pc(iA,n)+'%)</span></div>'+
@@ -1735,8 +1728,8 @@ function renderPM(){
   if(warnEl){
     const m=D.kpiMeta||{};const noDiv=(D.kpi||[]).filter(r=>!r.divisi);
     let msg='';
-    if(!m.divCol)msg='Ekspor KPI belum punya kolom Divisi, jadi divisi masih diambil dari Master Karyawan. Tambahkan kolom Divisi di laporan HRIS, lalu Master Karyawan boleh dihapus.';
-    if(noDiv.length)msg+=(msg?' ':'')+noDiv.length+' karyawan tidak punya divisi dan tidak ikut di breakdown ini: '+noDiv.slice(0,5).map(r=>r.nama||r.nik).join(', ')+(noDiv.length>5?', dan '+(noDiv.length-5)+' lainnya':'')+'.';
+    if(!m.divCol)msg='The KPI export has no Division column, so divisions still come from Master Karyawan. Add a Division column to the HRIS report, then Master Karyawan can be removed.';
+    if(noDiv.length)msg+=(msg?' ':'')+noDiv.length+' employees have no division and are excluded from this breakdown: '+noDiv.slice(0,5).map(r=>r.nama||r.nik).join(', ')+(noDiv.length>5?', and '+(noDiv.length-5)+' more':'')+'.';
     warnEl.innerHTML=msg?'<div class="ins warn" style="margin:0 0 10px">'+msg+'</div>':'';
   }
 
@@ -1761,7 +1754,7 @@ function renderPM(){
       const border=i<divData.length-1?'border-bottom:.5px solid var(--border)':'';
       return '<div style="display:grid;grid-template-columns:200px 1fr 1fr;gap:12px;padding:9px 8px;'+border+'">'+
         '<div><div style="font-size:11px;font-weight:500;color:var(--tx)">'+dn+'</div>'+
-          '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+v.n+' orang</div></div>'+
+          '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+v.n+' people</div></div>'+
         '<div style="display:flex;flex-direction:column;justify-content:center">'+
           '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-bottom:3px">'+
             '<span>'+v.iA+'/'+v.n+'</span><span style="font-weight:700;color:var(--purple)">'+pc(v.iA,v.n)+'%</span></div>'+
@@ -1837,7 +1830,7 @@ function renderJDDivisi(jd, targets){
     return '<div style="display:grid;grid-template-columns:200px 1fr 60px;gap:12px;padding:9px 8px;'+border+'">'+
       '<div>'+
         '<div style="font-size:11px;font-weight:500;color:var(--tx)">'+v.d+'</div>'+
-        '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+v.actual+' / '+v.target+' jabatan</div>'+
+        '<div style="font-size:10px;color:var(--tx3);margin-top:1px">'+v.actual+' / '+v.target+' positions</div>'+
       '</div>'+
       '<div style="display:flex;align-items:center">'+
         '<div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;display:flex">'+
@@ -1854,7 +1847,7 @@ function renderJDDivisi(jd, targets){
   const totalActual=divData.reduce((s,v)=>s+v.actual,0);
   const overallPct=pc(totalActual,totalTarget);
   if(footer)footer.innerHTML=
-    'Total ditrack: <b style="color:var(--tx);font-weight:500">'+totalActual+'</b>'+
+    'Total tracked: <b style="color:var(--tx);font-weight:500">'+totalActual+'</b>'+
     ' &nbsp;·&nbsp; Total target: <b style="color:var(--tx);font-weight:500">'+totalTarget+'</b>'+
     ' &nbsp;·&nbsp; Overall progress: <b style="color:var(--blue);font-weight:500">'+overallPct+'%</b>';
 
@@ -1868,8 +1861,8 @@ function renderReminder(){
     const ippNeed=r.ipp!=='Approved';const ipeNeed=r.ipe==='Not Yet'||r.ipe==='REVISE';
     if(filt==='ipp')return ippNeed;if(filt==='ipe')return ipeNeed;return ippNeed||ipeNeed;
   });
-  document.getElementById('remind-sub').textContent=needReminder.length+' karyawan perlu reminder';
-  document.getElementById('remind-list').innerHTML=needReminder.slice(0,50).map(r=>'<div class="remind-row"><div style="flex:1"><div style="font-size:12px;font-weight:500">'+r.nama+'</div><div style="font-size:10px;color:var(--tx3)">'+r.email+' · '+r.level+' · '+(r.divisi||'-')+'</div></div><div style="display:flex;gap:4px;flex-shrink:0"><span class="pill '+pillClass(r.ipp)+'">IPP: '+r.ipp+'</span><span class="pill '+pillClass(r.ipe)+'">IPE: '+r.ipe+'</span></div></div>').join('')+(needReminder.length>50?'<div style="text-align:center;font-size:11px;color:var(--tx3);padding:10px">... dan '+(needReminder.length-50)+' karyawan lainnya</div>':'');}
+  document.getElementById('remind-sub').textContent=needReminder.length+' employees need a reminder';
+  document.getElementById('remind-list').innerHTML=needReminder.slice(0,50).map(r=>'<div class="remind-row"><div style="flex:1"><div style="font-size:12px;font-weight:500">'+r.nama+'</div><div style="font-size:10px;color:var(--tx3)">'+r.email+' · '+r.level+' · '+(r.divisi||'-')+'</div></div><div style="display:flex;gap:4px;flex-shrink:0"><span class="pill '+pillClass(r.ipp)+'">IPP: '+r.ipp+'</span><span class="pill '+pillClass(r.ipe)+'">IPE: '+r.ipe+'</span></div></div>').join('')+(needReminder.length>50?'<div style="text-align:center;font-size:11px;color:var(--tx3);padding:10px">... and '+(needReminder.length-50)+' more employees</div>':'');}
 
 // PA WEBHOOK
 let PA_WEBHOOK='';
@@ -1878,8 +1871,8 @@ function sendBulkReminder(){
   const url=PA_WEBHOOK||localStorage.getItem('pa_webhook');
   const bln=document.getElementById('remind-bulan').value;
   if(!url){const nu=prompt('Masukkan URL webhook Power Automate:');if(nu){setPAWebhook(nu);}else return;}
-  if(!bln){alert('Pilih bulan terlebih dahulu.');return;}
-  alert('Webhook PA akan dipanggil untuk bulan '+bln+'. Pastikan URL sudah dikonfigurasi di Power Automate.');}
+  if(!bln){alert('Select a month first.');return;}
+  alert('The PA webhook will be called for '+bln+'. Make sure the URL is configured in Power Automate.');}
 
 // JD WEEKLY REPORT
 async function loadJDWeeklyLog(){
@@ -1916,8 +1909,8 @@ async function saveWeeklyJD(){
     if(result.success){status.style.color='var(--green)';status.textContent='✓ Tersimpan ke Google Sheets!';setTimeout(()=>{hideAddWeeklyJD();renderJDWeekly().catch(console.error);},1000);}
     else throw new Error(result.error||'Unknown error');
   }catch(e){
-    try{const saved=localStorage.getItem('jd_weekly_log');const log=saved?JSON.parse(saved):[];const ex=log.findIndex(r=>r.label===label);if(ex>=0)log[ex].count=count;else log.push({week,bulan,tahun,label,count,date:new Date().toISOString()});localStorage.setItem('jd_weekly_log',JSON.stringify(log));status.style.color='var(--amber)';status.textContent='⚠ Sheets gagal, tersimpan lokal.';setTimeout(()=>{hideAddWeeklyJD();renderJDWeekly().catch(console.error);},1500);}catch(e2){status.style.color='var(--red)';status.textContent='✗ Gagal menyimpan: '+e.message;}
-  }finally{btn.textContent='Simpan';btn.disabled=false;}
+    try{const saved=localStorage.getItem('jd_weekly_log');const log=saved?JSON.parse(saved):[];const ex=log.findIndex(r=>r.label===label);if(ex>=0)log[ex].count=count;else log.push({week,bulan,tahun,label,count,date:new Date().toISOString()});localStorage.setItem('jd_weekly_log',JSON.stringify(log));status.style.color='var(--amber)';status.textContent='⚠ Sheets failed, saved locally.';setTimeout(()=>{hideAddWeeklyJD();renderJDWeekly().catch(console.error);},1500);}catch(e2){status.style.color='var(--red)';status.textContent='✗ Failed to save: '+e.message;}
+  }finally{btn.textContent='Save';btn.disabled=false;}
 }
 async function renderJDWeekly(){
   const log=await loadJDWeeklyLog();
@@ -1930,9 +1923,9 @@ async function renderJDWeekly(){
   // KPI cards
   const kpiEl=document.getElementById('jd-weekly-kpis');
   if(kpiEl)kpiEl.innerHTML=
-    '<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Total Jabatan Target</div><div style="font-size:30px;font-weight:700;color:var(--tx)">'+JD_TOTAL_TARGET+'</div><div style="font-size:10px;color:var(--tx3);margin-top:4px">Target keseluruhan project JD</div></div>'+
-    '<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Kumulatif Ditambahkan</div><div style="font-size:30px;font-weight:700;color:var(--green)">'+totalCum+'</div><div class="pb" style="margin:6px 0"><div class="pb-fill" style="width:'+pct+'%;background:var(--green)"></div></div><div style="font-size:10px;color:var(--tx3)">'+pct+'% dari total target</div></div>'+
-    '<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Ditambahkan Minggu Ini</div><div style="display:flex;align-items:baseline;gap:8px"><div style="font-size:30px;font-weight:700;color:var(--blue)">'+thisCount+'</div>'+(diff!==0?'<div style="font-size:12px;font-weight:600;color:'+(diff>0?'var(--green)':'var(--red)')+'">'+(diff>0?'↑':'↓')+Math.abs(diff)+' vs minggu lalu</div>':'<div style="font-size:12px;color:var(--tx3)">= minggu lalu</div>')+'</div><div style="font-size:10px;color:var(--tx3);margin-top:4px">'+(lastWeek?'Minggu lalu: '+lastCount:'Belum ada data sebelumnya')+'</div></div>';
+    '<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Total Target Positions</div><div style="font-size:30px;font-weight:700;color:var(--tx)">'+JD_TOTAL_TARGET+'</div><div style="font-size:10px;color:var(--tx3);margin-top:4px">Overall JD project target</div></div>'+
+    '<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Cumulative Added</div><div style="font-size:30px;font-weight:700;color:var(--green)">'+totalCum+'</div><div class="pb" style="margin:6px 0"><div class="pb-fill" style="width:'+pct+'%;background:var(--green)"></div></div><div style="font-size:10px;color:var(--tx3)">'+pct+'% of total target</div></div>'+
+    '<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Added This Week</div><div style="display:flex;align-items:baseline;gap:8px"><div style="font-size:30px;font-weight:700;color:var(--blue)">'+thisCount+'</div>'+(diff!==0?'<div style="font-size:12px;font-weight:600;color:'+(diff>0?'var(--green)':'var(--red)')+'">'+(diff>0?'↑':'↓')+Math.abs(diff)+' vs last week</div>':'<div style="font-size:12px;color:var(--tx3)">= last week</div>')+'</div><div style="font-size:10px;color:var(--tx3);margin-top:4px">'+(lastWeek?'Last week: '+lastCount:'No previous data')+'</div></div>';
   // Chart
   const canvas=document.getElementById('jd-weekly-chart');
   if(canvas&&rows.length>0){
@@ -1969,18 +1962,18 @@ async function renderJDWeekly(){
     canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
     const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
     ctx.fillStyle='rgba(255,255,255,0.54)';ctx.font='12px Inter,system-ui';ctx.textAlign='center';
-    ctx.fillText('Belum ada data. Klik "+ Catat Minggu Ini" untuk mulai',W/2,H/2);}
+    ctx.fillText('No data yet. Click "+ Log This Week" to start',W/2,H/2);}
   // Table
   const tbody=document.getElementById('jd-weekly-tbody');
   if(tbody){
-    if(!allRows.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:20px">Belum ada data mingguan</td></tr>';}
+    if(!allRows.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:20px">No weekly data yet</td></tr>';}
     else{
       tbody.innerHTML=allRows.map((r,i)=>{
         const isLast=i===allRows.length-1;
         const bg=isLast?'background:rgba(48,209,88,.16)':'';const col=isLast?'color:#63E6A4':'';
-        return '<tr style="'+bg+'"><td style="'+col+(isLast?';font-weight:600':'')+'">'+r.label+(isLast?' ← Minggu Ini':'')+'</td><td style="text-align:right;'+col+'">'+r.count+'</td><td style="text-align:right;'+col+(isLast?';font-weight:600':'')+'">'+r.cum+'</td><td style="text-align:right;'+col+'">'+Math.round(r.cum/JD_TOTAL_TARGET*100)+'%</td></tr>';
+        return '<tr style="'+bg+'"><td style="'+col+(isLast?';font-weight:600':'')+'">'+r.label+(isLast?' ← This Week':'')+'</td><td style="text-align:right;'+col+'">'+r.count+'</td><td style="text-align:right;'+col+(isLast?';font-weight:600':'')+'">'+r.cum+'</td><td style="text-align:right;'+col+'">'+Math.round(r.cum/JD_TOTAL_TARGET*100)+'%</td></tr>';
       }).join('');
-      if(filterN>0&&allRows.length>filterN){const hidden=allRows.length-filterN;const firstCum=allRows[allRows.length-filterN-1]?.cum||0;tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:8px;font-size:10px">... '+hidden+' minggu sebelumnya (kumulatif awal: '+firstCum+')</td></tr>'+tbody.innerHTML;}
+      if(filterN>0&&allRows.length>filterN){const hidden=allRows.length-filterN;const firstCum=allRows[allRows.length-filterN-1]?.cum||0;tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:8px;font-size:10px">... '+hidden+' earlier weeks (starting cumulative: '+firstCum+')</td></tr>'+tbody.innerHTML;}
     }
   }
 }
@@ -2158,7 +2151,7 @@ async function refreshData(){
     else if(currentPage==='pm'){renderPM();renderReminder();}
     else if(currentPage==='mpp')switchMPPTab(currentMPPTab);
     else if(currentPage==='planner')switchPlannerTab(currentPlannerTab);
-  }catch(e){alert('Gagal refresh: '+e.message);}
+  }catch(e){alert('Refresh failed: '+e.message);}
   finally{btn.textContent='↺ Refresh Data';btn.disabled=false;}
 }
 
@@ -2189,14 +2182,14 @@ function renderTracker(){
   const base=all.filter(r=>(!fDiv||r.divisi===fDiv)&&(!fBln||r.bulan===fBln));
   // KPI (ikut filter divisi & bulan)
   const cnt=s=>base.filter(r=>r._t.stage===s).length;
-  const k=[['Menunggu Approval OD',cnt(0),'var(--amber)'],['Menunggu Approve DH',cnt(1),'var(--amber)'],['Menunggu Approve VP HC',cnt(2),'var(--amber)'],['Selesai',cnt(-1),'var(--green)']];
+  const k=[['Awaiting OD Approval',cnt(0),'var(--amber)'],['Awaiting DH Approval',cnt(1),'var(--amber)'],['Awaiting VP HC Approval',cnt(2),'var(--amber)'],['Completed',cnt(-1),'var(--green)']];
   document.getElementById('trk-kpi').innerHTML=k.map(([l,v,c])=>'<div class="card" style="margin:0;text-align:center;padding:14px"><div style="font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">'+l+'</div><div style="font-size:24px;font-weight:700;color:'+c+'">'+v+'</div></div>').join('');
   let rows=base.filter(r=>fView==='aktif'?r._t.stage>=0:fView==='selesai'?r._t.stage===-1:true);
   if(fStage!=='')rows=rows.filter(r=>r._t.stage===parseInt(fStage));
   rows.sort((a,b)=>(b._t.age??-1)-(a._t.age??-1));
   document.getElementById('trk-sub').textContent='Progres approval per FPTK · '+rows.length+' FPTK ditampilkan';
   const el=document.getElementById('trk-list');
-  if(!rows.length){el.innerHTML='<div style="padding:24px;text-align:center;font-size:12px;color:var(--tx3)">Tidak ada FPTK untuk filter ini.</div>';return;}
+  if(!rows.length){el.innerHTML='<div style="padding:24px;text-align:center;font-size:12px;color:var(--tx3)">No FPTK for this filter.</div>';return;}
   el.innerHTML=rows.map((r,i)=>{
     const t=r._t;
     const dates=[r.no_fptk?'No. '+r.no_fptk:'',trkShort(r.d_dh),trkShort(r.d_vp)];
@@ -2207,22 +2200,22 @@ function renderTracker(){
       // DH/VP HC bisa diklik: tahap yang sedang menunggu (approve), atau tahap selesai terakhir (ubah/batalkan)
       const lastDone=ok&&(si===2||!t.done[si+1]);
       const clickable=si>0&&r.no_fptk&&(cur||lastDone);
-      const act=clickable?' onclick="trkOpen(\''+plEsc(r.no_fptk).replace(/\\/g,'\\\\')+'\','+si+')" title="'+(cur?'Klik untuk approve':'Klik untuk ubah atau batalkan')+'"':'';
+      const act=clickable?' onclick="trkOpen(\''+plEsc(r.no_fptk).replace(/\\/g,'\\\\')+'\','+si+')" title="'+(cur?'Click to approve':'Click to change or remove')+'"':'';
       const cs=clickable?'cursor:pointer;':'';
       const dot=ok?'<div'+act+' class="'+(clickable?'trk-dot':'')+'" style="'+cs+'width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;line-height:22px;margin:0 auto">✓</div>'
                  :'<div'+act+' class="'+(clickable?'trk-dot trk-dot-wait':'')+'" style="'+cs+'width:22px;height:22px;border-radius:50%;border:2px solid '+col+';margin:0 auto;box-sizing:border-box;'+(clickable?'font-size:10px;line-height:18px;color:'+col+';font-weight:700':'')+'">'+(clickable?'+':'')+'</div>';
-      const sub=ok?dates[si]:(cur?'menunggu':'—');
+      const sub=ok?dates[si]:(cur?'waiting':'—');
       const sc=cur&&!ok?(late?'var(--red)':'var(--amber)'):'var(--tx3)';
       const line=si<2?'<div style="flex:.7;height:2px;background:'+(t.done[si]?'var(--green)':'var(--border)')+';margin-bottom:22px"></div>':'';
       return '<div style="flex:1;text-align:center;min-width:0">'+dot+'<div style="font-size:10px;font-weight:600;color:var(--tx2);margin-top:4px">'+s+'</div><div style="font-size:10px;color:'+sc+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+sub+'</div></div>'+line;
     }).join('');
-    const right=t.stage===-1?'<div style="font-size:13px;font-weight:700;color:var(--green)">Selesai</div>'
-      :'<div style="font-size:15px;font-weight:700;color:'+(late?'var(--red)':'var(--amber)')+'">'+(t.age??'—')+' hari</div><div style="font-size:9px;color:var(--tx3)">kerja di tahap ini</div>';
+    const right=t.stage===-1?'<div style="font-size:13px;font-weight:700;color:var(--green)">Completed</div>'
+      :'<div style="font-size:15px;font-weight:700;color:'+(late?'var(--red)':'var(--amber)')+'">'+(t.age??'—')+' days</div><div style="font-size:9px;color:var(--tx3)">working days at this stage</div>';
     const border=i<rows.length-1?'border-bottom:.5px solid var(--border);':'';
     return '<div style="display:grid;grid-template-columns:240px 1fr 100px;gap:16px;align-items:center;padding:12px 6px;'+border+'">'+
       '<div><div style="font-size:12px;font-weight:600;color:var(--tx)">'+(r.posisi||'—')+'</div>'+
       '<div style="font-size:10px;color:var(--tx3);margin-top:2px">'+r.divisi+' · '+(r.level||'-')+' · '+(r.jml_diajukan||r.jml_approved||0)+' MP</div>'+
-      '<div style="font-size:10px;color:var(--tx3)">Diajukan '+(r.tgl_diajukan||'—')+'</div></div>'+
+      '<div style="font-size:10px;color:var(--tx3)">Submitted '+(r.tgl_diajukan||'—')+'</div></div>'+
       '<div style="display:flex;align-items:flex-start">'+steps+'</div>'+
       '<div style="text-align:right">'+right+'</div></div>';
   }).join('');
@@ -2233,7 +2226,7 @@ async function asPost(payload,timeoutMs){
   const ctrl=new AbortController();const tm=setTimeout(()=>ctrl.abort(),timeoutMs||45000);
   let resp;
   try{resp=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(payload),signal:ctrl.signal});}
-  catch(e){throw new Error(e.name==='AbortError'?'Server tidak merespons (timeout)':'Koneksi gagal: '+e.message);}
+  catch(e){throw new Error(e.name==='AbortError'?'Server did not respond (timeout)':'Connection failed: '+e.message);}
   finally{clearTimeout(tm);}
   const txt=await resp.text();
   try{return JSON.parse(txt);}
@@ -2241,7 +2234,7 @@ async function asPost(payload,timeoutMs){
     // Halaman error Google: ambil pesan aslinya
     const doc=new DOMParser().parseFromString(txt,'text/html');
     const msg=(doc.querySelector('.errorMessage,#errorMessage')||{}).textContent||(doc.title||'')+' '+(doc.body?doc.body.textContent:'');
-    const e=new Error('Respons server tidak valid (HTTP '+resp.status+'): '+msg.replace(/\s+/g,' ').trim().slice(0,180));
+    const e=new Error('Invalid server response (HTTP '+resp.status+'): '+msg.replace(/\s+/g,' ').trim().slice(0,180));
     e.nonJson=true;throw e;
   }
 }
@@ -2269,7 +2262,7 @@ function trkOpen(no,si){
   document.getElementById('trk-m-sub').textContent=r.posisi+' · '+r.divisi+' · No. '+no;
   document.getElementById('trk-m-date').value=cur?trkIsoDay(cur):trkIsoDay(new Date().toISOString());
   document.getElementById('trk-m-clear').style.display=cur?'':'none';
-  document.getElementById('trk-m-note').textContent=rows.length>1?'Nomor FPTK ini dipakai '+rows.length+' baris posisi — semuanya ikut ter-update.':'Tanggal akan ditulis ke sheet FPTK.';
+  document.getElementById('trk-m-note').textContent=rows.length>1?'This FPTK number is used by '+rows.length+' position rows — all of them will be updated.':'The date will be written to the FPTK sheet.';
   const m=document.getElementById('trk-m-msg');m.style.display='none';
   document.getElementById('trk-m-save').disabled=false;
   document.getElementById('trk-modal').style.display='flex';
@@ -2280,8 +2273,8 @@ async function trkSave(clear){
   const ed=trkEdit;
   const date=clear?'':document.getElementById('trk-m-date').value;
   const m=document.getElementById('trk-m-msg');
-  if(!clear&&!date){m.style.display='block';m.style.color='var(--red)';m.textContent='Pilih tanggal dulu.';return;}
-  if(clear&&!confirm('Batalkan '+TRK_STAGES[ed.si]+' untuk FPTK '+ed.no+'?'))return;
+  if(!clear&&!date){m.style.display='block';m.style.color='var(--red)';m.textContent='Select a date first.';return;}
+  if(clear&&!confirm('Remove '+TRK_STAGES[ed.si]+' for FPTK '+ed.no+'?'))return;
   const btn=document.getElementById('trk-m-save');const clr=document.getElementById('trk-m-clear');
   btn.disabled=true;clr.disabled=true;
   m.style.display='block';m.style.color='var(--tx3)';m.textContent='Menyimpan ke Google Sheets...';
@@ -2289,16 +2282,16 @@ async function trkSave(clear){
   const apply=()=>{const iso=date?new Date(date+'T00:00:00').toISOString():'';(D.fptk||[]).forEach(r=>{if(r.no_fptk===ed.no)r[ed.key]=iso;});trkClose();renderTracker();};
   try{
     const res=await asPost({action:'setFPTKApproval',no_fptk:ed.no,stage,date});
-    if(!res.success)throw new Error(res.error||'Gagal menyimpan');
+    if(!res.success)throw new Error(res.error||'Failed to save');
     apply();
   }catch(e){
     // Respons rusak/timeout belum tentu gagal — cek isi sheet
     if(e.nonJson||/timeout|Koneksi/.test(e.message)){
-      m.textContent='Respons server bermasalah, mengecek langsung ke sheet...';
+      m.textContent='Server response problem, checking the sheet directly...';
       try{if(await trkVerify(ed.no,stage,date)){apply();return;}}catch(_){}
     }
     console.error('FPTK approval gagal:',e);
-    m.style.color='var(--red)';m.textContent='Gagal: '+e.message;
+    m.style.color='var(--red)';m.textContent='Failed: '+e.message;
     btn.disabled=false;clr.disabled=false;
   }
 }
@@ -2318,7 +2311,7 @@ let PL=[];
 function plEsc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function loadPlanner(){
   const g=document.getElementById('pl-groups');
-  if(g&&!PL.length)g.innerHTML='<div class="card" style="text-align:center;font-size:12px;color:var(--tx3)">Memuat task...</div>';
+  if(g&&!PL.length)g.innerHTML='<div class="card" style="text-align:center;font-size:12px;color:var(--tx3)">Loading tasks...</div>';
   try{
     const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/'+encodeURIComponent(PL_SHEET)+'?key='+API_KEY);
     const d=await r.json();
@@ -2341,14 +2334,14 @@ function lpFmt(d){if(!d)return '—';const x=new Date(d+'T00:00:00');if(isNaN(x)
 function lpColor(name){const c=['#E8197D','#007AFF','#34C759','#FF9500','#AF52DE','#5AC8FA','#FF3B30','#30B0C7'];let h=0;for(const ch of String(name))h=(h*31+ch.charCodeAt(0))>>>0;return c[h%c.length];}
 function renderLandingPlanner(){
   const body=document.getElementById('lp-body');if(!body)return;
-  if(!plLoaded){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">Memuat task...</div>';return;}
+  if(!plLoaded){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">Loading tasks...</div>';return;}
   const open=PL.filter(t=>t.status!=='Done');
   const dl=t=>plDaysLeft(t.deadline);
   const over=open.filter(t=>(dl(t)??1)<0),week=open.filter(t=>{const d=dl(t);return d!=null&&d>=0&&d<=7;});
   let list=lpMode==='overdue'?over:lpMode==='week'?week:open;
   list=[...list].sort((a,b)=>(dl(a)??9999)-(dl(b)??9999));
-  if(!PL.length){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">Belum ada task di OD Planner.</div>';return;}
-  if(!list.length){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">'+(lpMode==='overdue'?'Tidak ada task yang lewat deadline.':lpMode==='week'?'Tidak ada task jatuh tempo 7 hari ke depan.':'Semua task sudah selesai.')+'</div>';return;}
+  if(!PL.length){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">No tasks in OD Planner yet.</div>';return;}
+  if(!list.length){body.innerHTML='<div style="text-align:center;padding:18px;font-size:12px;color:var(--tx3)">'+(lpMode==='overdue'?'No overdue tasks.':lpMode==='week'?'No tasks due in the next 7 days.':'All tasks are done.')+'</div>';return;}
   const MAX=8,more=list.length-MAX;
   const stPill=s=>s==='In Progress'?'<span class="pill pill-blue">In Progress</span>':'<span class="pill pill-grey">'+plEsc(s||'To Do')+'</span>';
   body.innerHTML='<div class="lp-g lp-th"><div>Item</div><div>PIC</div><div>Due</div><div>Status</div></div>'+
@@ -2369,7 +2362,7 @@ function plDaysLeft(dl){if(!dl)return null;const d=new Date(dl+'T00:00:00');if(i
 function renderPlanner(){
   const pics=[...new Set(PL.map(t=>t.pic).filter(Boolean))].sort();
   const pEl=document.getElementById('pl-f-pic');const cur=pEl.value;
-  pEl.innerHTML='<option value="">Semua Anggota</option>'+pics.map(p=>'<option'+(p===cur?' selected':'')+'>'+plEsc(p)+'</option>').join('');
+  pEl.innerHTML='<option value="">All Members</option>'+pics.map(p=>'<option'+(p===cur?' selected':'')+'>'+plEsc(p)+'</option>').join('');
   document.getElementById('pl-pic-list').innerHTML=pics.map(p=>'<option>'+plEsc(p)+'</option>').join('');
   const fPic=pEl.value,fSt=document.getElementById('pl-f-status').value;
   const base=PL.filter(t=>!fPic||t.pic===fPic);
@@ -2380,26 +2373,26 @@ function renderPlanner(){
   const nProg=base.filter(t=>t.status==='In Progress').length;
   const nDone=base.filter(t=>t.status==='Done').length;
   document.getElementById('pl-kpi').innerHTML=
-    gcMini('Total Task',base.length,pics.length+' anggota','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,1)')+
+    gcMini('Total Task',base.length,pics.length+' members','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,1)')+
     gcMini('To Do',nTodo,pc(nTodo,tot)+'%','linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))','rgba(255,255,255,0.79)')+
     gcMini('In Progress',nProg,pc(nProg,tot)+'%','linear-gradient(135deg,rgba(10,132,255,.22),rgba(10,132,255,.12))','#86C8FF')+
     gcMini('Done',nDone,pc(nDone,tot)+'%','linear-gradient(135deg,rgba(48,209,88,.2),rgba(48,209,88,.1))','#63E6A4')+
-    gcMini('Lewat Deadline',overdue,overdue?'perlu ditindak':'aman','linear-gradient(135deg,rgba(255,55,145,.22),rgba(255,55,145,.12))','#FF8CC6');
-  document.getElementById('pl-sub').textContent='Task list tim OD & progres approval FPTK · '+PL.length+' task · '+pics.length+' anggota';
+    gcMini('Overdue',overdue,overdue?'needs action':'on track','linear-gradient(135deg,rgba(255,55,145,.22),rgba(255,55,145,.12))','#FF8CC6');
+  document.getElementById('pl-sub').textContent=PL.length+' tasks · '+pics.length+' members';
   const list=base.filter(t=>fSt==='open'?t.status!=='Done':(!fSt||t.status===fSt));
   const g=document.getElementById('pl-groups');
-  if(!PL.length){g.innerHTML='<div class="card" style="text-align:center;padding:28px;font-size:12px;color:var(--tx3)">Belum ada task. Klik <b>+ Tambah Task</b> untuk mulai.</div>';return;}
+  if(!PL.length){g.innerHTML='<div class="card" style="text-align:center;padding:28px;font-size:12px;color:var(--tx3)">No tasks yet. Click <b>+ Add Task</b> to start.</div>';return;}
   const order={'High':0,'Medium':1,'Low':2};
-  const groupPics=[...new Set(list.map(t=>t.pic||'(Tanpa PIC)'))].sort();
-  if(!groupPics.length){g.innerHTML='<div class="card" style="text-align:center;padding:24px;font-size:12px;color:var(--tx3)">Tidak ada task untuk filter ini.</div>';return;}
+  const groupPics=[...new Set(list.map(t=>t.pic||'(No PIC)'))].sort();
+  if(!groupPics.length){g.innerHTML='<div class="card" style="text-align:center;padding:24px;font-size:12px;color:var(--tx3)">No tasks for this filter.</div>';return;}
   g.innerHTML=groupPics.map(p=>{
-    const mine=list.filter(t=>(t.pic||'(Tanpa PIC)')===p).sort((a,b)=>(a.status==='Done')-(b.status==='Done')||(plDaysLeft(a.deadline)??9999)-(plDaysLeft(b.deadline)??9999)||(order[a.prioritas]??1)-(order[b.prioritas]??1));
-    const allMine=PL.filter(t=>(t.pic||'(Tanpa PIC)')===p);
+    const mine=list.filter(t=>(t.pic||'(No PIC)')===p).sort((a,b)=>(a.status==='Done')-(b.status==='Done')||(plDaysLeft(a.deadline)??9999)-(plDaysLeft(b.deadline)??9999)||(order[a.prioritas]??1)-(order[b.prioritas]??1));
+    const allMine=PL.filter(t=>(t.pic||'(No PIC)')===p);
     const doneN=allMine.filter(t=>t.status==='Done').length;
     const pctv=pc(doneN,allMine.length);
     const rows=mine.map(t=>{
       const dl=plDaysLeft(t.deadline);const isDone=t.status==='Done';
-      const dlTxt=!t.deadline?'—':(isDone?t.deadline:(dl<0?'Lewat '+(-dl)+' hari':dl===0?'Hari ini':dl+' hari lagi'));
+      const dlTxt=!t.deadline?'—':(isDone?t.deadline:(dl<0?'Overdue '+(-dl)+' day'+(-dl>1?'s':''):dl===0?'Due today':'In '+dl+' day'+(dl>1?'s':'')));
       const dlCol=isDone||dl==null?'var(--tx3)':dl<0?'var(--red)':dl<=3?'var(--amber)':'var(--tx3)';
       const prCls=t.prioritas==='High'?'pill-pink':t.prioritas==='Low'?'pill-grey':'pill-amber';
       const stCls=t.status==='Done'?'pill-green':t.status==='In Progress'?'pill-blue':'pill-grey';
@@ -2412,19 +2405,19 @@ function renderPlanner(){
         '<td><span class="pill '+stCls+'">'+plEsc(t.status)+'</span></td>'+
         '<td><span class="pill '+prCls+'">'+plEsc(t.prioritas)+'</span></td>'+
         '<td style="text-align:right;white-space:nowrap"><a onclick="plEdit(\''+plEsc(t.id)+'\')" style="cursor:pointer;font-size:11px;color:var(--blue)">Edit</a>'+
-          '<a onclick="plDelete(\''+plEsc(t.id)+'\')" style="cursor:pointer;font-size:11px;color:var(--red);margin-left:10px">Hapus</a></td></tr>';
+          '<a onclick="plDelete(\''+plEsc(t.id)+'\')" style="cursor:pointer;font-size:11px;color:var(--red);margin-left:10px">Delete</a></td></tr>';
     }).join('');
     return '<div class="card" style="margin-bottom:12px">'+
-      '<div class="chdr"><div><div class="ct">'+plEsc(p)+'</div><div class="cs">'+doneN+' dari '+allMine.length+' task selesai</div></div>'+
+      '<div class="chdr"><div><div class="ct">'+plEsc(p)+'</div><div class="cs keep">'+doneN+' of '+allMine.length+' tasks done</div></div>'+
       '<div style="display:flex;align-items:center;gap:8px;width:200px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+pctv+'%;height:100%;background:var(--green)"></div></div>'+
       '<span style="font-size:11px;font-weight:600;color:var(--green)">'+pctv+'%</span></div></div>'+
-      '<table class="tbl"><thead><tr><th></th><th>Task</th><th>Deadline</th><th>Status</th><th>Prioritas</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<table class="tbl"><thead><tr><th></th><th>Task</th><th>Deadline</th><th>Status</th><th>Priority</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }).join('');
 }
 
 function plOpenForm(t){
   const f=document.getElementById('pl-form');f.style.display='block';
-  document.getElementById('pl-form-title').textContent=t?'Edit Task':'Tambah Task';
+  document.getElementById('pl-form-title').textContent=t?'Edit Task':'Add Task';
   document.getElementById('pl-id').value=t?t.id:'';
   document.getElementById('pl-task').value=t?t.task:'';
   document.getElementById('pl-pic').value=t?t.pic:(document.getElementById('pl-f-pic').value||'');
@@ -2441,14 +2434,14 @@ function plCloseForm(){document.getElementById('pl-form').style.display='none';}
 function plEdit(id){const t=PL.find(x=>x.id===id);if(t)plOpenForm(t);}
 async function plPost(payload){
   const res=await asPost(payload);
-  if(!res.success)throw new Error(res.error||'Gagal menyimpan');
+  if(!res.success)throw new Error(res.error||'Failed to save');
   return res;
 }
 async function plSave(){
   const t={id:document.getElementById('pl-id').value,task:document.getElementById('pl-task').value.trim(),pic:document.getElementById('pl-pic').value.trim(),kategori:document.getElementById('pl-kat').value.trim(),deadline:document.getElementById('pl-deadline').value,prioritas:document.getElementById('pl-prio').value,status:document.getElementById('pl-status').value,catatan:document.getElementById('pl-note').value.trim()};
   const msg=document.getElementById('pl-form-msg');
-  if(!t.task){msg.style.color='var(--red)';msg.textContent='Nama task wajib diisi.';return;}
-  if(!t.pic){msg.style.color='var(--red)';msg.textContent='PIC wajib diisi.';return;}
+  if(!t.task){msg.style.color='var(--red)';msg.textContent='Task name is required.';return;}
+  if(!t.pic){msg.style.color='var(--red)';msg.textContent='PIC is required.';return;}
   // Tampilkan dulu, simpan di latar belakang
   const isNew=!t.id;
   const tempId=t.id||('tmp'+Date.now());
@@ -2463,10 +2456,10 @@ async function plSave(){
     const row=PL.find(x=>x.id===tempId);
     if(row){row.id=res.id||tempId;delete row._saving;}
     renderPlanner();
-    plToast('Tersimpan','ok');
+    plToast('Saved','ok');
   }catch(e){
     PL=snapshot;renderPlanner();
-    plToast('Gagal menyimpan: '+e.message,'err');
+    plToast('Failed to save: '+e.message,'err');
     console.error('Planner save gagal:',e);
   }
 }
@@ -2484,14 +2477,14 @@ async function plToggle(id,checked){
   const prev=t.status;t.status=checked?'Done':(prev==='Done'?'To Do':prev);
   renderPlanner();
   try{await plPost({action:'saveODTask',task:t});}
-  catch(e){t.status=prev;renderPlanner();plToast('Gagal update status: '+e.message,'err');}
+  catch(e){t.status=prev;renderPlanner();plToast('Failed to update status: '+e.message,'err');}
 }
 async function plDelete(id){
   const t=PL.find(x=>x.id===id);if(!t)return;
-  if(!confirm('Hapus task "'+t.task+'"?'))return;
+  if(!confirm('Delete task "'+t.task+'"?'))return;
   const bak=[...PL];PL=PL.filter(x=>x.id!==id);renderPlanner();
   try{await plPost({action:'deleteODTask',id});}
-  catch(e){PL=bak;renderPlanner();plToast('Gagal menghapus: '+e.message,'err');}
+  catch(e){PL=bak;renderPlanner();plToast('Failed to delete: '+e.message,'err');}
 }
 
 // ══════════ MPP & FULFILLMENT (satu sumber hitung) ══════════
@@ -2647,7 +2640,7 @@ function mpToggleDetail(){const d=document.getElementById('mp-detail'),o=d.style
 document.addEventListener('DOMContentLoaded',async function(){
   renderLanding(); // render empty state first
   renderLandingPlanner();loadPlanner().catch(console.error);
-  document.getElementById('badge').textContent='Memuat data...';
+  document.getElementById('badge').textContent='Loading data...';
   try{
     D=await fetchAllData();
     FP=[...D.fptk];
@@ -2657,7 +2650,7 @@ document.addEventListener('DOMContentLoaded',async function(){
     applyFilters();
     renderLanding();
   }catch(e){
-    document.getElementById('badge').textContent='Gagal memuat data';
+    document.getElementById('badge').textContent='Failed to load data';
     console.error('Init fetch error:',e);
   }
 });
@@ -2671,7 +2664,7 @@ async function exportPPT(){
         const s=document.createElement('script');
         s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
         s.onload=res;
-        s.onerror=function(){rej(new Error('Gagal load library PPT. Cek koneksi internet.'));};
+        s.onerror=function(){rej(new Error('Failed to load the PPT library. Check your internet connection.'));};
         document.head.appendChild(s);
       });
     }
@@ -2713,13 +2706,13 @@ async function exportPPT(){
 
     // ── SLIDE 2: RINGKASAN ──
     sld=pres.addSlide();sld.background={color:BG};
-    sld.addText('Ringkasan OD',{x:.5,y:.35,w:12,h:.65,fontSize:26,bold:true,color:DK,fontFace:FONT});
-    sld.addText('Status keseluruhan program Organization Development',{x:.5,y:.95,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
+    sld.addText('OD Summary',{x:.5,y:.35,w:12,h:.65,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Overall status of Organization Development programs',{x:.5,y:.95,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
     const sumCards=[
-      {label:'MPP & Realisasi',color:PK,val:pct(plA,mT||1)+'%',sub:'Achievement Rate YTD',detail:'Plan '+mT+' / FPTK '+plA},
-      {label:'Struktur Organisasi',color:GR,val:pct(soSA+soSU,so.length||1)+'%',sub:'Divisi sudah Signed',detail:(soSA+soSU)+' dari '+so.length+' divisi'},
-      {label:'Job Description',color:BL,val:pct(jdC,(window.JD_TOTAL_TARGET||JD_TOTAL_TARGET))+'%',sub:'Completion dari '+(window.JD_TOTAL_TARGET||JD_TOTAL_TARGET)+' jabatan',detail:jdC+' jabatan selesai'},
-      {label:'Performance Mgmt',color:PU,val:pct(ippA,kpi.length||1)+'%',sub:'IPP Approved',detail:ippA+' dari '+kpi.length+' karyawan'},
+      {label:'MPP & Fulfillment',color:PK,val:pct(plA,mT||1)+'%',sub:'Achievement Rate YTD',detail:'Plan '+mT+' / FPTK '+plA},
+      {label:'Organization Structure',color:GR,val:pct(soSA+soSU,so.length||1)+'%',sub:'Divisions Signed',detail:(soSA+soSU)+' of '+so.length+' divisions'},
+      {label:'Job Description',color:BL,val:pct(jdC,(window.JD_TOTAL_TARGET||JD_TOTAL_TARGET))+'%',sub:'Completion of '+(window.JD_TOTAL_TARGET||JD_TOTAL_TARGET)+' positions',detail:jdC+' positions completed'},
+      {label:'Performance Mgmt',color:PU,val:pct(ippA,kpi.length||1)+'%',sub:'IPP Approved',detail:ippA+' of '+kpi.length+' employees'},
     ];
     sumCards.forEach((c,i)=>{
       const x=.4+i*3.1,y=1.4,w=2.9,h=3.5;
@@ -2735,12 +2728,12 @@ async function exportPPT(){
       sld.addShape(pres.ShapeType.roundRect,{x:x+.25,y:y+2.3,w:w-.5,h:.12,fill:{color:BORDER},line:{color:BORDER},rectRadius:.06});
       const pv=parseInt(c.val)/100;
       if(pv>0)sld.addShape(pres.ShapeType.roundRect,{x:x+.25,y:y+2.3,w:Math.max(.05,(w-.5)*Math.min(pv,1)),h:.12,fill:{color:c.color},line:{color:c.color},rectRadius:.06});
-      sld.addText(c.val+' tercapai',{x:x+.1,y:y+2.55,w:w-.2,h:.25,fontSize:8,color:GY,align:'center',fontFace:FONT});
+      sld.addText(c.val+' achieved',{x:x+.1,y:y+2.55,w:w-.2,h:.25,fontSize:8,color:GY,align:'center',fontFace:FONT});
     });
 
-    // ── SLIDE 3: MPP & Realisasi ──
+    // ── SLIDE 3: MPP & Fulfillment ──
     sld=pres.addSlide();sld.background={color:BG};
-    sld.addText('MPP & Realisasi',{x:.5,y:.25,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('MPP & Fulfillment',{x:.5,y:.25,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
 
     // ── ROW 1: MPP Plan card (left) + FPTK Summary card (right) ──
     // MPP Plan card: x=0.4, y=0.9, w=6.0, h=2.0
@@ -2781,7 +2774,7 @@ async function exportPPT(){
 
     card(sld,6.5,.9,6.3,2.05);
     sld.addShape(pres.ShapeType.rect,{x:6.5,y:.9,w:.1,h:2.05,fill:{color:GR},line:{color:GR}});
-    sld.addText('FPTK Realisasi YTD',{x:6.7,y:.95,w:4,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
+    sld.addText('FPTK Fulfillment YTD',{x:6.7,y:.95,w:4,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
 
     // 4 FPTK numbers
     [{l:'Total FPTK',v:fptk.length,c:BL},{l:'MP Approved',v:hcA,c:GR},{l:'Completed',v:cmpF,c:GR},{l:'Rata SLA',v:slaAvg+'hr',c:AM}].forEach((n,i)=>{
@@ -2803,7 +2796,7 @@ async function exportPPT(){
 
     // ── ROW 2: HC per bulan chart (full width) ──
     card(sld,.4,3.15,12.5,4.1);
-    sld.addText('Headcount Masuk per Bulan',{x:.65,y:3.22,w:8,h:.38,fontSize:12,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Headcount Added per Month',{x:.65,y:3.22,w:8,h:.38,fontSize:12,bold:true,color:DK,fontFace:FONT});
 
     // FPTK breakdown per bulan: Planned / Replacement / Unplanned bars (stacked)
     const bPlanned=MF.map((_,i)=>fptk.filter(r=>r.bulan===i+1&&r.planned==='Planned').reduce((s,r)=>s+(r.jml_approved||0),0));
@@ -2842,8 +2835,8 @@ async function exportPPT(){
 
     // ──  SLIDE 4: SO ──
     sld=pres.addSlide();sld.background={color:BG};
-    sld.addText('Struktur Organisasi',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
-    sld.addText('Status pengesahan struktur organisasi per divisi',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
+    sld.addText('Organization Structure',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Organization structure sign-off status by division',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
     const soSent=so.filter(d=>d.effective_status==='Sent to User').length;
     const soAv=so.filter(d=>!d.effective_status||d.effective_status==='Available').length;
     const soCards2=[
@@ -2857,10 +2850,10 @@ async function exportPPT(){
       sld.addShape(pres.ShapeType.roundRect,{x,y:1.3,w:2.9,h:1.9,fill:{color:c.bg},line:{color:c.c+'44',width:.5},rectRadius:.12});
       sld.addText(String(c.v),{x,y:1.45,w:2.9,h:.85,fontSize:38,bold:true,color:c.c,align:'center',fontFace:FONT});
       sld.addText(c.l,{x,y:2.3,w:2.9,h:.3,fontSize:11,bold:true,color:c.c,align:'center',fontFace:FONT});
-      sld.addText(pct(c.v,so.length||1)+'% dari total',{x,y:2.62,w:2.9,h:.28,fontSize:9,color:c.c,align:'center',fontFace:FONT,transparency:30});
+      sld.addText(pct(c.v,so.length||1)+'% of total',{x,y:2.62,w:2.9,h:.28,fontSize:9,color:c.c,align:'center',fontFace:FONT,transparency:30});
     });
     // SO divisi list
-    sld.addText('Detail per Divisi',{x:.5,y:3.45,w:12,h:.38,fontSize:13,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Detail by Division',{x:.5,y:3.45,w:12,h:.38,fontSize:13,bold:true,color:DK,fontFace:FONT});
     const cMso2={'Signed All':GR,'Signed by User':PK,'Sent to User':AM,'Available':GY};
     so.slice(0,15).forEach((d,i)=>{
       const col=Math.floor(i/5),row=i%5;
@@ -2874,7 +2867,7 @@ async function exportPPT(){
     // ── SLIDE 5: JD ──
     sld=pres.addSlide();sld.background={color:BG};
     sld.addText('Job Description',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
-    sld.addText('Tracking status pembuatan Job Description per jabatan',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
+    sld.addText('Job Description progress by position',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
     const jdSgn=jd.filter(r=>r.status==='Signing').length;
     const jdR=jd.filter(r=>r.status==='Review by User').length;
     const jdPr=jd.filter(r=>r.status==='On Progress').length;
@@ -2913,7 +2906,7 @@ async function exportPPT(){
       if(r.status==='Completed')dGjd[canon].comp++;
       if(r.status==='Signing')dGjd[canon].sign++;
     });
-    sld.addText('Progress per Divisi',{x:.5,y:4.05,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
+    sld.addText('Progress by Division',{x:.5,y:4.05,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
     Object.entries(dGjd).filter(([d,v])=>v.comp+v.sign>0).sort((a,b)=>(b[1].comp+b[1].sign)-(a[1].comp+a[1].sign)).slice(0,7).forEach(([div,v],i)=>{
       const y=4.5+i*.42;
       const done=v.comp+v.sign;
@@ -2930,7 +2923,7 @@ async function exportPPT(){
     // ── SLIDE 6: PM ──
     sld=pres.addSlide();sld.background={color:BG};
     sld.addText('Performance Management',{x:.5,y:.35,w:12,h:.55,fontSize:26,bold:true,color:DK,fontFace:FONT});
-    sld.addText('Tracking pengisian IPP & IPE per karyawan',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
+    sld.addText('IPP & IPE completion by employee',{x:.5,y:.88,w:12,h:.3,fontSize:12,color:GY,fontFace:FONT});
     const ippWp=kpi.filter(r=>r.ipp==='Waiting Approval').length;
     const ippNp=kpi.filter(r=>r.ipp==='Not Yet'||r.ipp==='Revise'||r.ipp==='REVISE').length;
     const ipeAp=kpi.filter(r=>r.ipe==='Approved').length;
@@ -2938,7 +2931,7 @@ async function exportPPT(){
     const ipeNp=kpi.filter(r=>r.ipe==='Not Yet'||r.ipe==='REVISE').length;
     const kTp=kpi.length||1;
     const pmCards2=[
-      {l:'Total Karyawan',v:kTp,c:DK,bg:'F8F6F0'},
+      {l:'Total Employees',v:kTp,c:DK,bg:'F8F6F0'},
       {l:'IPP Approved',v:ippA,c:GR,bg:'D1FAE5',pp:pct(ippA,kTp)},
       {l:'IPP Pending',v:ippWp+ippNp,c:AM,bg:'FEF3C7',pp:pct(ippWp+ippNp,kTp)},
       {l:'IPE Approved',v:ipeAp,c:BL,bg:'DBEAFE',pp:pct(ipeAp,kTp)},
@@ -2963,7 +2956,7 @@ async function exportPPT(){
     sld.addText('Approved '+ipeAp+' / Waiting '+ipeWp+' / Not Yet '+ipeNp,{x:7.2,y:4.05,w:5.5,h:.28,fontSize:9,color:GY,fontFace:FONT});
     // Per divisi
     const dKp={};kpi.forEach(r=>{if(!dKp[r.divisi])dKp[r.divisi]={iA:0,eA:0,t:0};dKp[r.divisi].t++;if(r.ipp==='Approved')dKp[r.divisi].iA++;if(r.ipe==='Approved')dKp[r.divisi].eA++;});
-    sld.addText('IPP & IPE per Divisi',{x:.5,y:4.45,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
+    sld.addText('IPP & IPE by Division',{x:.5,y:4.45,w:12,h:.35,fontSize:12,bold:true,color:DK,fontFace:FONT});
     Object.entries(dKp).filter(([d,v])=>d&&v.t>0).sort((a,b)=>b[1].t-a[1].t).slice(0,6).forEach(([div,v],i)=>{
       const y=4.9+i*.4;
       sld.addText(div.slice(0,32),{x:.5,y,w:4.8,h:.35,fontSize:9.5,color:DK,fontFace:FONT});
@@ -2980,7 +2973,7 @@ async function exportPPT(){
     await pres.writeFile({fileName:'OD_Hub_'+new Date().toISOString().slice(0,10)+'.pptx'});
   }catch(e){
     console.error('PPT Error:',e);
-    alert('Gagal export PPT: '+(e.message||e.toString()||'Unknown error'));
+    alert('PPT export failed: '+(e.message||e.toString()||'Unknown error'));
   }finally{
     const b=document.querySelector('[onclick="exportPPT()"]');
     if(b){b.textContent='Export PowerPoint';b.disabled=false;}
@@ -2991,13 +2984,13 @@ async function exportPPT(){
   <div style="background:var(--surface);border-radius:14px;padding:20px;width:340px;max-width:92vw;box-shadow:0 12px 32px rgba(0,0,0,.25)">
     <div style="font-size:14px;font-weight:700;color:var(--tx)" id="trk-m-title">Approve</div>
     <div style="font-size:11px;color:var(--tx3);margin:4px 0 14px" id="trk-m-sub"></div>
-    <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Tanggal approve</div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Approval date</div>
     <input type="date" class="tf" id="trk-m-date" style="width:100%;margin-bottom:10px">
     <div id="trk-m-note" style="font-size:10px;color:var(--tx3);margin-bottom:14px"></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn btn-pink" id="trk-m-save" onclick="trkSave(false)">Simpan</button>
-      <button class="btn" onclick="trkClose()">Batal</button>
-      <button class="btn" id="trk-m-clear" onclick="trkSave(true)" style="margin-left:auto;color:var(--red);border-color:var(--red)">Batalkan approval</button>
+      <button class="btn btn-pink" id="trk-m-save" onclick="trkSave(false)">Save</button>
+      <button class="btn" onclick="trkClose()">Cancel</button>
+      <button class="btn" id="trk-m-clear" onclick="trkSave(true)" style="margin-left:auto;color:var(--red);border-color:var(--red)">Remove approval</button>
     </div>
     <div id="trk-m-msg" style="font-size:11px;margin-top:10px;display:none"></div>
   </div>
