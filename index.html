@@ -363,7 +363,6 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
   <a class="nav-item" id="nav-mpp" onclick="goTo('mpp')"><span class="nav-icon"><svg class="ic"><use href="#i-clip"/></svg></span><span>MPP & Fulfillment</span></a>
   <a class="nav-item" id="nav-so" onclick="goTo('so')"><span class="nav-icon"><svg class="ic"><use href="#i-bldg"/></svg></span><span>Organization Structure</span></a>
   <a class="nav-item" id="nav-jd" onclick="goTo('jd')"><span class="nav-icon"><svg class="ic"><use href="#i-file"/></svg></span><span>Job Description</span></a>
-  <a class="nav-item" id="nav-overlap" onclick="goTo('overlap')"><span class="nav-icon"><svg class="ic"><use href="#i-overlap"/></svg></span><span>Overlap Analysis</span></a>
   <a class="nav-item" id="nav-pm" onclick="goTo('pm')"><span class="nav-icon"><svg class="ic"><use href="#i-target"/></svg></span><span>Performance Management</span></a>
 <a class="nav-item" id="nav-planner" onclick="goTo('planner')"><span class="nav-icon"><svg class="ic"><use href="#i-tasks"/></svg></span><span>OD Planner</span></a>
   <div id="sidebar-gen" style="display:none"></div>
@@ -512,31 +511,6 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
 </div>
 
 <!-- OVERLAP -->
-<div class="page" id="page-overlap">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-    <div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Overlap Analysis</div>
-    </div>
-    <a href="https://jd-generator.arya-putra1208.workers.dev/" target="_blank" class="btn btn-pink" style="text-decoration:none">Open JD Generator</a>
-  </div>
-
-  <div id="ovh-kpi-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px"></div>
-
-  <div class="card" style="margin-bottom:16px">
-    <div class="chdr"><div><div class="ct">By relationship type</div><div class="cs">Counted per role pair, not per role</div></div></div>
-    <div id="ovh-jenis-rows"></div>
-  </div>
-
-  <div class="card">
-    <div class="chdr">
-      <div><div class="ct">Roles</div><div class="cs">Click a role to see which KRAs overlap</div></div>
-      <select class="tf" id="ovh-filter-jenis" onchange="paintOverlapHub()"><option value="">All types</option></select>
-    </div>
-    <div id="ovh-list"></div>
-  </div>
-</div>
-
-<!-- JD -->
 <div class="page" id="page-jd">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:10px;flex-wrap:wrap">
     <div>
@@ -548,6 +522,27 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
     </a>
   </div>
 
+  <div class="sub-nav" style="display:flex;margin-bottom:14px">
+    <button class="sub-nav-btn active" id="jd-tab-progress" onclick="switchJDTab('progress')">Progress</button>
+    <button class="sub-nav-btn" id="jd-tab-overlap" onclick="switchJDTab('overlap')">Overlap Analysis</button>
+  </div>
+  <div id="jd-view-overlap" style="display:none">
+  <div id="ovh-kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px"></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="chdr"><div><div class="ct">By Relationship Type</div><div class="cs">Counted per role pair, not per role</div></div></div>
+    <div id="ovh-jenis-rows"></div>
+  </div>
+
+  <div class="card">
+    <div class="chdr">
+      <div><div class="ct">Roles</div><div class="cs">Click a role to see which KRAs overlap</div></div>
+      <select class="tf" id="ovh-filter-jenis" onchange="paintOverlapHub()"><option value="">All types</option></select>
+    </div>
+    <div id="ovh-list"></div>
+  </div>
+  </div>
+  <div id="jd-view-progress">
   <!-- JD KPI -->
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px" id="jd-kpi-row"></div>
 
@@ -610,6 +605,7 @@ input.tf:focus,textarea.tf:focus,select.tf:focus{outline:none;box-shadow:0 0 0 3
     <!-- Footer -->
     <div id="jd-divisi-footer" style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--border);font-size:11px;color:var(--tx3);display:flex;gap:16px"></div>
   </div>
+</div>
 </div>
 
 <!-- OD PLANNER -->
@@ -868,6 +864,15 @@ function ovhJenis(j){
   return j?'Unknown':'';
 }
 
+let jdTab='progress',ovhLoaded=false;
+function switchJDTab(t){
+  jdTab=t;
+  ['progress','overlap'].forEach(function(x){
+    const v=document.getElementById('jd-view-'+x);if(v)v.style.display=x===t?'':'none';
+    const b=document.getElementById('jd-tab-'+x);if(b)b.classList.toggle('active',x===t);
+  });
+  if(t==='overlap'&&!ovhLoaded){ovhLoaded=true;renderOverlapHub().catch(console.error);}
+}
 async function renderOverlapHub(){
   try{
     const res=await Promise.all([fetchOverlap(),fetchRepoTotals().catch(function(){return {};})]);
@@ -903,9 +908,9 @@ function paintOverlapHub(){
   const high=agg.filter(function(a){return a.pct>=60;}).length;
 
   function card(lbl,val,sub,col){
-    return '<div style="background:var(--surface);border:.5px solid var(--border);border-radius:12px;padding:14px 16px">'+
-      '<div style="font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">'+lbl+'</div>'+
-      '<div style="font-size:26px;font-weight:700;color:'+col+';line-height:1">'+val+'</div>'+
+    return '<div class="gc-mini" style="text-align:center">'+
+      '<div style="font-size:12px;color:var(--tx2);font-weight:500;margin-bottom:6px">'+lbl+'</div>'+
+      '<div style="font-size:28px;font-weight:600;color:'+col+';line-height:1;letter-spacing:-.03em">'+val+'</div>'+
       '<div style="font-size:11px;color:var(--tx3);margin-top:5px">'+sub+'</div></div>';
   }
   kpi.innerHTML=
@@ -1023,7 +1028,7 @@ function goTo(page){
   if(page==='jd'){renderJD().catch(console.error);renderJDWeekly().catch(console.error);}
   if(page==='pm'){renderPM();renderReminder();}
   if(page==='planner')switchPlannerTab(currentPlannerTab);
-  if(page==='overlap')renderOverlapHub().catch(console.error);
+  if(page==='overlap'){goTo('jd');switchJDTab('overlap');return;}
 }
 function switchDetailTab(tab){
   ['fptk','mpp'].forEach(t=>{
