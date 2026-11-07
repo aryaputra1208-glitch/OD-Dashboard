@@ -1651,7 +1651,7 @@ function renderPM(){
       const grad=bigColor==='var(--purple)'?'linear-gradient(135deg,rgba(191,90,242,.22),rgba(191,90,242,.12))':'linear-gradient(135deg,rgba(10,132,255,.22),rgba(10,132,255,.12))';
       const darkCol=bigColor==='var(--purple)'?'#E4D9FF':'#CFE6FF';
       const midCol=bigColor==='var(--purple)'?'#C8B5FF':'#86C8FF';
-      return '<div style="background:'+grad+';border-radius:16px;padding:20px">'+
+      return '<div class="card" style="padding:20px">'+
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'+
           '<div><div style="font-size:10px;font-weight:700;color:'+midCol+';text-transform:uppercase;letter-spacing:.07em">'+title+'</div>'+
           '<div style="font-size:13px;font-weight:600;color:'+darkCol+';margin-top:2px">'+subtitle+'</div></div>'+
@@ -2984,6 +2984,65 @@ async function exportPPT(){
     if(b){b.textContent='Export PowerPoint';b.disabled=false;}
   }
 }
+/* ===================== MOTION (lens, card light) ===================== */
+(function(){
+var LENS_SEL=[];
+function lens(box,itemSel,activeSel,opts){if(!box||box._rest)return;opts=opts||{};box.classList.add('lz');
+ var L=document.createElement('div');L.className='lens';box.insertBefore(L,box.firstChild);
+ var items=function(){return Array.prototype.slice.call(box.querySelectorAll(itemSel))};
+ items().forEach(function(i){i.classList.add('li')});
+ function place(el,show){if(!el||!el.offsetParent){L.classList.remove('on');return;}
+  var b=box.getBoundingClientRect(),r=el.getBoundingClientRect();
+  var appear=!L.classList.contains('on');if(appear)L.style.transition='opacity .22s ease';
+  L.style.width=r.width+'px';L.style.height=r.height+'px';
+  L.style.transform='translate('+(r.left-b.left+box.scrollLeft)+'px,'+(r.top-b.top+box.scrollTop)+'px)';
+  if(appear){void L.offsetWidth;L.style.transition='';}
+  L.classList.toggle('on',show!==false);}
+ function mag(el){items().forEach(function(x){x.classList.add('li');x.classList.toggle('mag',x===el);});}
+ function rest(){var a=activeSel?box.querySelector(activeSel):null;mag(null);if(opts.hoverOnly||!a){L.classList.remove('on');return;}place(a);}
+ box.addEventListener('mouseover',function(e){var it=e.target.closest(itemSel);if(!it||!box.contains(it))return;place(it);mag(it);});
+ box.addEventListener('mouseleave',rest);
+ box.addEventListener('mousemove',function(e){var r=L.getBoundingClientRect();if(!r.width)return;L.style.setProperty('--mx',(e.clientX-r.left)+'px');L.style.setProperty('--my',(e.clientY-r.top)+'px');});
+ box.addEventListener('click',function(){setTimeout(rest,0)});
+ box._rest=rest;requestAnimationFrame(function(){L.style.transition='none';rest();void L.offsetWidth;L.style.transition='';});
+ return rest;}
+function restAll(){document.querySelectorAll('.lz').forEach(function(b){b._rest&&b._rest()});}
+function setup(){
+ lens(document.querySelector('.sidebar'),'.nav-item',null,{hoverOnly:true});
+ document.querySelectorAll('.mp-seg').forEach(function(s){lens(s,'button','button.on')});
+ document.querySelectorAll('.sub-nav').forEach(function(s){lens(s,'.sub-nav-btn','.sub-nav-btn.active')});
+}
+/* ---- rows inside cards: one lens per card, rebuilt if the list re-renders ---- */
+var ROWS='.lp-tr,.mp-tr,.so-row,.remind-row,.tbl tbody tr,#trk-list>div,#ovh-list>div>div[onclick],#jd-divisi-rows>div,#pm-divisi-rows>div,#pm-level-rows>div';
+var cur=null;
+function rowLens(card){var L=card.querySelector(':scope>.lens.row');if(!L){L=document.createElement('div');L.className='lens row';card.insertBefore(L,card.firstChild);card.classList.add('rows-lz');if(getComputedStyle(card).position==='static')card.style.position='relative';}return L;}
+function placeRow(row){var card=row.closest('.card')||row.parentElement;var L=rowLens(card);
+ var b=card.getBoundingClientRect(),r=row.getBoundingClientRect(),pad=Math.min(8,Math.max(0,r.left-b.left-4));
+ var appear=!L.classList.contains('on');if(appear)L.style.transition='opacity .22s ease';
+ L.style.width=(r.width+pad*2)+'px';L.style.height=r.height+'px';
+ L.style.transform='translate('+(r.left-b.left-pad)+'px,'+(r.top-b.top)+'px)';
+ if(appear){void L.offsetWidth;L.style.transition='';}
+ L.classList.add('on');if(cur&&cur!==L)cur.classList.remove('on');cur=L;}
+document.addEventListener('mouseover',function(e){
+ var row=e.target.closest&&e.target.closest(ROWS);
+ if(row&&!row.closest('thead')&&row.offsetHeight){placeRow(row);return;}
+ if(cur&&!(e.target.closest&&e.target.closest(ROWS))){cur.classList.remove('on');cur=null;}
+});
+/* ---- soft light that follows the cursor on every card ---- */
+var G='.card,.kpi,.mkpi,.mp-k,.gc-mini,.summary-card',raf=0,ev=null;
+document.addEventListener('pointermove',function(e){ev=e;if(raf)return;raf=requestAnimationFrame(function(){raf=0;
+ var t=ev.target;if(!t.closest)return;var el=t.closest(G);if(!el)return;
+ var up=el.parentElement&&el.parentElement.closest(G);while(up){el=up;up=el.parentElement&&el.parentElement.closest(G);}
+ var r=el.getBoundingClientRect();el.style.setProperty('--mx',(ev.clientX-r.left)+'px');el.style.setProperty('--my',(ev.clientY-r.top)+'px');
+ if(cur){var lr=cur.getBoundingClientRect();cur.style.setProperty('--mx',(ev.clientX-lr.left)+'px');cur.style.setProperty('--my',(ev.clientY-lr.top)+'px');}
+});},{passive:true});
+/* keep lenses in place after page / tab switches */
+function wrap(n){var f=window[n];if(typeof f!=='function')return;window[n]=function(){var r=f.apply(this,arguments);requestAnimationFrame(function(){setup();restAll();});return r;};}
+['goTo','switchPlannerTab','switchJDTab','mpSetCurve','lpSet','switchMPPTab'].forEach(wrap);
+window.addEventListener('resize',restAll);
+document.addEventListener('DOMContentLoaded',function(){setup();setTimeout(restAll,600);});
+if(document.readyState!=='loading')setup();
+})();
 </script>
 <div id="trk-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9998;align-items:center;justify-content:center">
   <div style="background:var(--surface);border-radius:14px;padding:20px;width:340px;max-width:92vw;box-shadow:0 12px 32px rgba(0,0,0,.25)">
@@ -3072,6 +3131,53 @@ input::placeholder,textarea::placeholder{color:rgba(255,255,255,.35)}
 [style*="background:#1a1a1a"]{background:rgba(44,43,58,.94)!important;border:.5px solid rgba(255,255,255,.12)}
 #pl-toast{background:rgba(44,43,58,.94)!important;color:#fff}
 .pill{box-shadow:none}
+/* ===================== MOTION + UNIFORM GLASS (from JD Generator) ===================== */
+:root{--spring:linear(0, 0.018, 0.062, 0.123, 0.192, 0.266, 0.339, 0.41, 0.477, 0.539, 0.596, 0.647, 0.693, 0.734, 0.771, 0.802, 0.83, 0.855, 0.876, 0.894, 0.909, 0.923, 0.935, 0.944, 0.953, 0.96, 0.966, 0.972, 0.976, 0.98, 0.983, 0.986, 0.988, 0.99, 0.991, 0.993, 1);--spring-d:.58s;--lens:linear(0, 0.018, 0.063, 0.126, 0.199, 0.276, 0.353, 0.429, 0.5, 0.566, 0.626, 0.681, 0.729, 0.771, 0.808, 0.84, 0.868, 0.891, 0.911, 0.928, 0.942, 0.953, 0.963, 0.971, 0.977, 0.982, 0.987, 0.99, 0.993, 0.995, 0.996, 0.998, 0.998, 0.999, 1);--lens-d:.48s}
+/* one glass material for every top-level card */
+.card,.kpi,.mkpi,.mp-k,.gc-mini,.card:has(.tbl),.card:has(.mp-g),.card:has(svg[viewBox]){
+ background:linear-gradient(135deg,rgba(255,255,255,.085),rgba(255,255,255,.025)),linear-gradient(rgba(18,17,28,.38),rgba(18,17,28,.38))!important;
+ -webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);
+ box-shadow:inset 0 .5px 0 rgba(255,255,255,.18),0 10px 30px rgba(0,0,0,.32)!important;
+ transform:none!important;transition:box-shadow .3s ease,transform .35s var(--spring)}
+/* surfaces nested inside a card: flat tile, no second layer of glass */
+.card .card,.card .kpi,.card .mkpi,.card .mp-k,.card .gc-mini{background:rgba(255,255,255,.06)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:inset 0 .5px 0 rgba(255,255,255,.1)!important}
+.card .card::before,.card .kpi::before,.card .mkpi::before,.card .mp-k::before,.card .gc-mini::before,
+.card .card::after,.card .kpi::after,.card .mkpi::after,.card .mp-k::after,.card .gc-mini::after{display:none}
+/* same hover for every card: soft light that follows the cursor, no jumping */
+.card::after,.kpi::after,.mkpi::after,.mp-k::after,.gc-mini::after,.summary-card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+ background:radial-gradient(320px circle at var(--mx,30%) var(--my,0%),rgba(255,255,255,.075),transparent 62%)!important;opacity:0;transition:opacity .35s ease}
+.card:hover::after,.kpi:hover::after,.mkpi:hover::after,.mp-k:hover::after,.gc-mini:hover::after,.summary-card:hover::after{opacity:1}
+.card:hover,.kpi:hover,.mkpi:hover,.mp-k:hover,.gc-mini:hover{box-shadow:inset 0 .5px 0 rgba(255,255,255,.24),0 14px 36px rgba(0,0,0,.4)!important}
+.summary-card,.summary-card:hover{transform:none!important;transition:box-shadow .3s ease,transform .35s var(--spring)!important}
+/* press feedback only on things you can click */
+.summary-card:active,.card[onclick]:active,.gc-mini[onclick]:active,.kpi[onclick]:active{transform:scale(.985)!important;transition-duration:.12s!important}
+/* ---- liquid-glass lens ---- */
+.lz{position:relative;isolation:isolate}
+.sidebar.lz{position:sticky}
+.lens{position:absolute;left:0;top:0;width:0;height:0;border-radius:10px;pointer-events:none;z-index:-1;opacity:0;
+ background:radial-gradient(120px 60px at var(--mx,50%) var(--my,0%),rgba(255,255,255,.14),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.035));
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(255,255,255,.07),inset 0 0 12px rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.3);
+ transition:transform var(--lens-d) var(--lens),width var(--lens-d) var(--lens),height var(--lens-d) var(--lens),opacity .22s ease;will-change:transform,width}
+.lens.on{opacity:1}
+.sidebar>.lens{border-radius:9px;-webkit-backdrop-filter:blur(2px) brightness(1.08) saturate(1.3);backdrop-filter:blur(2px) brightness(1.08) saturate(1.3)}
+.mp-seg>.lens,.sub-nav>.lens{border-radius:8px}
+.lz .li{transition:transform .3s var(--spring),color .2s ease}
+.lz .li.mag{color:#fff}
+.lz .li:active{transform:scale(.97);transition-duration:.12s}
+.nav-item.li{transform-origin:left center}
+.nav-item:hover{background:transparent!important}
+/* segmented controls: the lens IS the selected knob, so it glides between options */
+.mp-seg.lz button.on,.sub-nav.lz .sub-nav-btn.active{background:transparent!important;box-shadow:none!important}
+.mp-seg.lz>.lens,.sub-nav.lz>.lens{background:rgba(255,255,255,.2);box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 .5px 0 rgba(255,255,255,.22)}
+.mp-seg button,.sub-nav-btn{position:relative;background:transparent}
+/* list rows: lens replaces the flat hover tint */
+.tbl tr:hover td,.mp-tr:hover,.lp-tr:hover,.so-row:hover,.remind-row:hover{background:transparent!important}
+.rows-lz>.lens{border-radius:10px}
+/* page switch */
+.page.active>*{animation:pgin var(--spring-d) var(--spring) both}
+.page.active>*:nth-child(2){animation-delay:.02s}.page.active>*:nth-child(3){animation-delay:.04s}.page.active>*:nth-child(4){animation-delay:.06s}.page.active>*:nth-child(n+5){animation-delay:.08s}
+@keyframes pgin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.lens,.lz .li{transition:none!important}.page.active>*{animation:none!important}}
 </style>
 <div id="gap-tooltip" style="position:fixed;display:none;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;line-height:1.8;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.3)"></div>
 </body>
